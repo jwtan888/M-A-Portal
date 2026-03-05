@@ -18,26 +18,19 @@
 </head>
 <body class="bg-slate-50 p-4 font-sans text-slate-900">
     <div class="max-w-6xl mx-auto">
-        <header class="mb-6 flex flex-col md:flex-row justify-between items-center md:items-start gap-4">
-            <div class="text-center md:text-left">
-                <h1 class="text-3xl font-bold text-slate-800">Auto Template Machine Setting Log</h1>
-                <p class="text-slate-500 text-sm italic font-medium text-blue-600">Garment Production Process Planning</p>
-                <div id="specCard" class="hidden mt-3 bg-blue-600 text-white p-3 rounded-lg shadow-lg border-l-4 border-blue-300 animate-pulse inline-block">
-                    <p class="text-[10px] uppercase font-bold opacity-80">Current Selection Spec:</p>
-                    <p id="specText" class="text-sm font-black tracking-wide italic">Brand & Model Info</p>
-                </div>
+        <header class="mb-6 flex justify-between items-center bg-white p-4 rounded-xl border shadow-sm">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold text-slate-800">Auto Template Machine Setting Log</h1>
+                <p class="text-blue-600 text-lg font-black tracking-widest">M&A</p>
             </div>
-            
-            <div class="flex flex-col items-center md:items-end">
-                <img src="logo.png" alt="M&A Logo" class="h-12 md:h-16 object-contain mb-2">
-            </div>
+            <img src="logo.png" alt="M&A Logo" class="h-12 md:h-16 object-contain">
         </header>
 
         <div class="bg-white p-6 rounded-xl shadow-sm border mb-6">
             <div class="flex flex-wrap items-center justify-between mb-4 border-b pb-4 gap-2">
                 <h2 class="text-sm font-bold text-slate-400 uppercase tracking-widest">New Log Entry</h2>
                 <div class="flex items-center gap-3 bg-slate-50 px-3 py-2 rounded-lg border">
-                    <span class="text-sm font-semibold text-slate-700 text-xs md:text-sm">New Template Request</span>
+                    <span class="text-sm font-semibold text-slate-700">New Template Request</span>
                     <label class="switch">
                         <input type="checkbox" id="requestToggle">
                         <span class="slider"></span>
@@ -74,7 +67,15 @@
             </div>
             
             <div class="w-full">
-                <h3 class="text-xs font-bold text-slate-400 uppercase mb-2 tracking-widest">Search Records:</h3>
+                <div id="specDisplay" class="hidden mb-4 p-4 bg-slate-50 border-l-4 border-blue-600 rounded-r-lg">
+                    <p id="brandRow" class="text-sm font-bold text-slate-500 uppercase tracking-tight"></p>
+                    <p id="modelRow" class="text-xl font-black text-blue-800 italic"></p>
+                </div>
+
+                <div class="flex justify-between items-end mb-2">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Search Records:</h3>
+                    <span id="syncStatus" class="text-[10px] text-slate-400 italic">Syncing with Excel...</span>
+                </div>
                 <input type="text" id="fileSearch" oninput="applyFilters()" placeholder="Search by File Name or PIC..." 
                     class="w-full p-2.5 border rounded-lg bg-slate-50 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
             </div>
@@ -94,7 +95,7 @@
                     </tr>
                 </thead>
                 <tbody id="logTable">
-                    <tr><td colspan="7" class="p-10 text-center text-slate-400 italic">No records found.</td></tr>
+                    <tr><td colspan="7" class="p-10 text-center text-slate-400 italic">Loading live data...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -103,28 +104,31 @@
             <button onclick="exportToExcel()" class="bg-emerald-600 text-white px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 hover:bg-emerald-700 shadow-md transition-all active:scale-95">
                 📥 Export Local Backup (.csv)
             </button>
-            <p class="text-slate-400 text-xs italic">Only Admin can remove records from local history.</p>
+            <p class="text-slate-400 text-xs italic">Syncing automatically with M&A Central Database.</p>
         </div>
     </div>
 
     <script>
-        const powerAutomateURL = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/8467b362b45c4408a5c3b36138d34d8d/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=kYDfwYnTE9IU71pqIibsp0QU2WYzQ0zORaGj2bjaDAs";
+        // URLs
+        const postURL = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/8467b362b45c4408a5c3b36138d34d8d/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=kYDfwYnTE9IU71pqIibsp0QU2WYzQ0zORaGj2bjaDAs";
+        const fetchURL = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/47006a48f8764a49ab01dbb665617acf/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=2eqeoBWF-80BETYDfV2HdHZeqJW7-fDYjd3GXri1wNo";
 
         const machineSpecs = {
-            "AQM0001": "Brand: JACK | Model: ZJ-AM5770AH-750",
-            "AQM0002": "Brand: JACK | Model: ZJ-AMS-AH-RK900",
-            "AQM0003": "Brand: JACK | Model: ZJ-M5-S900H-SF",
-            "AQM0004": "Brand: JACK | Model: ZJ-M5-S900H-SF",
-            "AQM0005": "Brand: JTK | Model: JTK8T-8037AJS",
-            "AQM0006": "Brand: - | Model: M9-SS-F13-X",
-            "AQM0007": "Brand: JTK | Model: JTK8T-8037AJS",
-            "AQM0008": "Brand: JTK | Model: JTK8T-8037AJS"
+            "AQM0001": { brand: "JACK", model: "ZJ-AM5770AH-750" },
+            "AQM0002": { brand: "JACK", model: "ZJ-AMS-AH-RK900" },
+            "AQM0003": { brand: "JACK", model: "ZJ-M5-S900H-SF" },
+            "AQM0004": { brand: "JACK", model: "ZJ-M5-S900H-SF" },
+            "AQM0005": { brand: "JTK", model: "JTK8T-8037AJS" },
+            "AQM0006": { brand: "UNKNOWN", model: "M9-SS-F13-X" },
+            "AQM0007": { brand: "JTK", model: "JTK8T-8037AJS" },
+            "AQM0008": { brand: "JTK", model: "JTK8T-8037AJS" }
         };
 
-        let allRecords = JSON.parse(localStorage.getItem('factory_logs_final_v8')) || [];
+        let allRecords = [];
         let currentMachineFilter = 'ALL';
         const machines = Object.keys(machineSpecs);
 
+        // Setup Buttons
         const filterContainer = document.getElementById('filterContainer');
         machines.forEach(m => {
             const btn = document.createElement('button');
@@ -134,6 +138,32 @@
             btn.onclick = () => setMachineFilter(m);
             filterContainer.appendChild(btn);
         });
+
+        // LIVE SYNC FUNCTION
+        async function refreshLiveLogs() {
+            const status = document.getElementById('syncStatus');
+            try {
+                const response = await fetch(fetchURL);
+                const data = await response.json();
+                
+                // Map Power Automate JSON keys to our logic if they differ
+                allRecords = data.map(item => ({
+                    id: item.id || Date.now(),
+                    timestamp: item.timestamp || item.Timestamp,
+                    machine: item.machine || item.Machine,
+                    pic: item.pic || item.PIC,
+                    type: item.type || item.LogType || item.Type,
+                    file: item.file || item.FileName || item.File,
+                    time: item.time || item.Time
+                }));
+
+                status.innerText = "Last sync: " + new Date().toLocaleTimeString();
+                applyFilters();
+            } catch (error) {
+                status.innerText = "Sync Error - Offline Mode";
+                console.error("Sync error:", error);
+            }
+        }
 
         async function addEntry() {
             const m = document.getElementById('mID').value;
@@ -159,23 +189,22 @@
             btn.disabled = true;
 
             try {
-                await fetch(powerAutomateURL, {
+                await fetch(postURL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(entry)
                 });
                 
-                allRecords.unshift(entry);
-                localStorage.setItem('factory_logs_final_v8', JSON.stringify(allRecords));
-                
+                // Refresh immediately to show new data from server
+                setTimeout(refreshLiveLogs, 2000); 
+
                 document.getElementById('fName').value = '';
                 document.getElementById('sTime').value = '';
                 document.getElementById('requestToggle').checked = false;
-                applyFilters();
 
             } catch (error) {
+                alert("Failed to send to Excel. Data saved locally.");
                 allRecords.unshift(entry);
-                localStorage.setItem('factory_logs_final_v8', JSON.stringify(allRecords));
                 applyFilters();
             } finally {
                 btn.innerText = "Add Record";
@@ -184,10 +213,9 @@
         }
 
         function deleteRecord(id) {
-            const pw = prompt("Admin password to remove entry:");
+            const pw = prompt("Admin password to remove entry (Excel row must be deleted manually):");
             if (pw === "admin") {
                 allRecords = allRecords.filter(record => record.id !== id);
-                localStorage.setItem('factory_logs_final_v8', JSON.stringify(allRecords));
                 applyFilters();
             } else if (pw !== null) {
                 alert("Incorrect Password!");
@@ -199,15 +227,17 @@
             document.querySelectorAll('.machine-btn').forEach(b => b.classList.remove('active-filter'));
             document.getElementById(`btn-${machineId}`).classList.add('active-filter');
             
-            const specCard = document.getElementById('specCard');
-            const specText = document.getElementById('specText');
+            const specDisplay = document.getElementById('specDisplay');
+            const brandRow = document.getElementById('brandRow');
+            const modelRow = document.getElementById('modelRow');
+
             if(machineId === 'ALL') {
-                specCard.classList.add('hidden');
+                specDisplay.classList.add('hidden');
             } else {
-                specCard.classList.remove('hidden');
-                specText.innerText = machineSpecs[machineId];
+                specDisplay.classList.remove('hidden');
+                brandRow.innerText = "Brand: " + machineSpecs[machineId].brand;
+                modelRow.innerText = "Model: " + machineSpecs[machineId].model;
             }
-            
             applyFilters();
         }
 
@@ -215,7 +245,7 @@
             const searchVal = document.getElementById('fileSearch').value.toLowerCase();
             const filtered = allRecords.filter(r => {
                 const matchesMachine = (currentMachineFilter === 'ALL' || r.machine === currentMachineFilter);
-                const matchesSearch = r.file.toLowerCase().includes(searchVal) || r.pic.toLowerCase().includes(searchVal);
+                const matchesSearch = String(r.file).toLowerCase().includes(searchVal) || String(r.pic).toLowerCase().includes(searchVal);
                 return matchesMachine && matchesSearch;
             });
             updateTable(filtered);
@@ -224,7 +254,7 @@
         function updateTable(data) {
             const tbody = document.getElementById('logTable');
             if(data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="p-10 text-center text-slate-400 italic">No matching records.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="p-10 text-center text-slate-400 italic">No records found.</td></tr>';
                 return;
             }
             tbody.innerHTML = data.map(r => `
@@ -255,11 +285,13 @@
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
-            link.download = `Production_Log_Backup_${new Date().toISOString().slice(0,10)}.csv`;
+            link.download = `Log_Backup_${new Date().toISOString().slice(0,10)}.csv`;
             link.click();
         }
 
-        applyFilters();
+        // Initialize & Auto-Sync
+        refreshLiveLogs();
+        setInterval(refreshLiveLogs, 30000); // Sync every 30 seconds
     </script>
 </body>
 </html>
