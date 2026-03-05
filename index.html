@@ -24,7 +24,7 @@
                 <p class="text-blue-600 text-xl font-black tracking-widest mt-1">M&A</p>
             </div>
             <div class="flex-none h-full flex items-center justify-end">
-                <img src="image_8454b6.png" alt="M&A Logo" class="h-18 w-auto object-contain">
+                <img src="image_8454b6.png" alt="M&A Logo" class="h-28 w-auto object-contain">
             </div>
         </header>
 
@@ -78,7 +78,7 @@
                     <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Search Records:</h3>
                     <div class="flex items-center gap-2">
                         <span id="syncStatus" class="text-[10px] text-slate-400 font-bold">Syncing...</span>
-                        <button onclick="refreshLiveLogs()" class="text-[10px] bg-slate-100 px-2 py-0.5 rounded border hover:bg-slate-200">Force Sync</button>
+                        <button onclick="refreshLiveLogs()" class="text-[10px] bg-slate-100 px-2 py-0.5 rounded border hover:bg-slate-200">Manual Sync</button>
                     </div>
                 </div>
                 <input type="text" id="fileSearch" oninput="applyFilters()" placeholder="Search by File Name or PIC..." 
@@ -99,7 +99,7 @@
                     </tr>
                 </thead>
                 <tbody id="logTable">
-                    <tr><td colspan="6" class="p-10 text-center text-slate-400 italic font-medium">Checking M&A Central Database...</td></tr>
+                    <tr><td colspan="6" class="p-10 text-center text-slate-400 italic">Connecting to M&A Database...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -134,30 +134,45 @@
             filterContainer.appendChild(btn);
         });
 
+        // Helper to find data regardless of column name variation
+        function getVal(item, keys) {
+            for (let key of keys) {
+                if (item[key] !== undefined) return item[key];
+                // Try case-insensitive and space-replaced versions
+                for (let actualKey in item) {
+                    if (actualKey.toLowerCase().replace(/[^a-z]/g, '') === key.toLowerCase().replace(/[^a-z]/g, '')) {
+                        return item[actualKey];
+                    }
+                }
+            }
+            return "---";
+        }
+
         async function refreshLiveLogs() {
             const status = document.getElementById('syncStatus');
             try {
-                // Changed from GET to POST because some flows reject GET with 400 errors
                 const response = await fetch(fetchURL, { method: 'POST', body: JSON.stringify({}) });
                 if (!response.ok) throw new Error("HTTP " + response.status);
                 
                 const data = await response.json();
+                
+                // SMART MAPPER logic
                 allRecords = data.map(item => ({
-                    timestamp: item.timestamp || item.Timestamp || "N/A",
-                    machine: item.machine || item.Machine || "N/A",
-                    pic: item.pic || item.PIC || "N/A",
-                    type: item.type || item.LogType || item['Log Type'] || "SETTING",
-                    file: item.file || item.FileName || "N/A",
-                    time: item.time || item.Time || "0"
+                    timestamp: getVal(item, ['Timestamp', 'Date', 'Time_x0020_Stamp']),
+                    machine: getVal(item, ['Machine', 'MachineID', 'mID']),
+                    pic: getVal(item, ['PIC', 'Operator', 'Name']),
+                    type: getVal(item, ['Type', 'LogType', 'RequestType']),
+                    file: getVal(item, ['FileName', 'file name', 'File', 'Style']),
+                    time: getVal(item, ['Time', 'SettingTime', 'Minutes'])
                 }));
 
                 status.innerText = "LIVE: " + new Date().toLocaleTimeString();
                 status.className = "text-[10px] text-emerald-500 font-bold";
                 applyFilters();
             } catch (error) {
-                status.innerText = "DATABASE ERROR (400)";
+                status.innerText = "EXCEL READ ERROR";
                 status.className = "text-[10px] text-red-500 font-bold";
-                console.error("Fetch Error:", error);
+                console.error("Mapping Error:", error);
             }
         }
 
@@ -168,12 +183,13 @@
             const t = document.getElementById('sTime').value;
             const isNewRequest = document.getElementById('requestToggle').checked;
 
-            if(!pic || !f || !t) return alert("Fill all fields");
+            if(!pic || !f || !t) return alert("Please complete the form");
 
             const btn = document.getElementById('submitBtn');
-            btn.innerText = "Saving...";
+            btn.innerText = "Logging...";
             btn.disabled = true;
 
+            // Ensure these keys match exactly what your Post flow expects
             const entry = {
                 timestamp: new Date().toLocaleString(),
                 machine: m,
@@ -193,11 +209,10 @@
                 if(res.ok) {
                     document.getElementById('fName').value = '';
                     document.getElementById('sTime').value = '';
-                    // Wait for Excel to refresh
-                    setTimeout(refreshLiveLogs, 4000);
+                    setTimeout(refreshLiveLogs, 5000); // 5 sec delay for Excel sync
                 }
             } catch (error) {
-                alert("Upload failed. Check internet.");
+                alert("Upload failed.");
             } finally {
                 btn.innerText = "Add Record";
                 btn.disabled = false;
@@ -233,7 +248,7 @@
         function updateTable(data) {
             const tbody = document.getElementById('logTable');
             if(data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="p-10 text-center text-slate-400 italic">No history found.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="p-10 text-center text-slate-400 italic">No records found. Check Excel data.</td></tr>';
                 return;
             }
             tbody.innerHTML = data.map(r => `
