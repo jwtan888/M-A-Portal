@@ -18,14 +18,18 @@
 </head>
 <body class="bg-slate-50 p-4 font-sans text-slate-900">
     <div class="max-w-6xl mx-auto">
-        <header class="mb-6 text-center md:text-left flex flex-col md:flex-row justify-between items-end gap-4">
-            <div>
+        <header class="mb-6 flex flex-col md:flex-row justify-between items-center md:items-start gap-4">
+            <div class="text-center md:text-left">
                 <h1 class="text-3xl font-bold text-slate-800">Auto Template Machine Setting Log</h1>
-                <p class="text-slate-500 text-sm italic font-medium text-blue-600">M&A</p>
+                <p class="text-slate-500 text-sm italic font-medium text-blue-600">Garment Production Process Planning</p>
+                <div id="specCard" class="hidden mt-3 bg-blue-600 text-white p-3 rounded-lg shadow-lg border-l-4 border-blue-300 animate-pulse inline-block">
+                    <p class="text-[10px] uppercase font-bold opacity-80">Current Selection Spec:</p>
+                    <p id="specText" class="text-sm font-black tracking-wide italic">Brand & Model Info</p>
+                </div>
             </div>
-            <div id="specCard" class="hidden bg-blue-600 text-white p-3 rounded-lg shadow-lg border-l-4 border-blue-300 animate-pulse">
-                <p class="text-[10px] uppercase font-bold opacity-80">Current Selection Spec:</p>
-                <p id="specText" class="text-sm font-black tracking-wide italic">Brand & Model Info</p>
+            
+            <div class="flex flex-col items-center md:items-end">
+                <img src="logo.png" alt="M&A Logo" class="h-12 md:h-16 object-contain mb-2">
             </div>
         </header>
 
@@ -117,7 +121,7 @@
             "AQM0008": "Brand: JTK | Model: JTK8T-8037AJS"
         };
 
-        let allRecords = JSON.parse(localStorage.getItem('factory_logs_final_v7')) || [];
+        let allRecords = JSON.parse(localStorage.getItem('factory_logs_final_v8')) || [];
         let currentMachineFilter = 'ALL';
         const machines = Object.keys(machineSpecs);
 
@@ -162,7 +166,7 @@
                 });
                 
                 allRecords.unshift(entry);
-                localStorage.setItem('factory_logs_final_v7', JSON.stringify(allRecords));
+                localStorage.setItem('factory_logs_final_v8', JSON.stringify(allRecords));
                 
                 document.getElementById('fName').value = '';
                 document.getElementById('sTime').value = '';
@@ -171,7 +175,7 @@
 
             } catch (error) {
                 allRecords.unshift(entry);
-                localStorage.setItem('factory_logs_final_v7', JSON.stringify(allRecords));
+                localStorage.setItem('factory_logs_final_v8', JSON.stringify(allRecords));
                 applyFilters();
             } finally {
                 btn.innerText = "Add Record";
@@ -183,7 +187,7 @@
             const pw = prompt("Admin password to remove entry:");
             if (pw === "admin") {
                 allRecords = allRecords.filter(record => record.id !== id);
-                localStorage.setItem('factory_logs_final_v7', JSON.stringify(allRecords));
+                localStorage.setItem('factory_logs_final_v8', JSON.stringify(allRecords));
                 applyFilters();
             } else if (pw !== null) {
                 alert("Incorrect Password!");
@@ -195,7 +199,6 @@
             document.querySelectorAll('.machine-btn').forEach(b => b.classList.remove('active-filter'));
             document.getElementById(`btn-${machineId}`).classList.add('active-filter');
             
-            // Show Spec Card
             const specCard = document.getElementById('specCard');
             const specText = document.getElementById('specText');
             if(machineId === 'ALL') {
