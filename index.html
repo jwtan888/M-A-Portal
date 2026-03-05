@@ -18,12 +18,14 @@
 </head>
 <body class="bg-slate-50 p-4 font-sans text-slate-900">
     <div class="max-w-6xl mx-auto">
-        <header class="mb-6 flex justify-between items-center bg-white p-4 rounded-xl border shadow-sm">
-            <div>
-                <h1 class="text-2xl md:text-3xl font-bold text-slate-800">Auto Template Machine Setting Log</h1>
-                <p class="text-blue-600 text-lg font-black tracking-widest">M&A</p>
+        <header class="mb-6 flex justify-between items-center bg-white p-6 rounded-xl border shadow-sm h-32">
+            <div class="flex-1">
+                <h1 class="text-2xl md:text-3xl font-bold text-slate-800 leading-tight">Auto Template<br>Machine Setting Log</h1>
+                <p class="text-blue-600 text-xl font-black tracking-widest mt-1">M&A</p>
             </div>
-            <img src="logo.png" alt="M&A Logo" class="h-12 md:h-16 object-contain">
+            <div class="flex-none h-full flex items-center">
+                <img src="logo.png" alt="M&A Logo" class="h-24 w-auto object-contain max-h-full">
+            </div>
         </header>
 
         <div class="bg-white p-6 rounded-xl shadow-sm border mb-6">
@@ -56,7 +58,7 @@
                 </select>
                 <input type="text" id="fName" placeholder="File Name / Style" class="p-2 border rounded text-sm">
                 <input type="number" id="sTime" placeholder="Setting Time (min)" class="p-2 border rounded text-sm">
-                <button onclick="addEntry()" id="submitBtn" class="bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700 shadow-md">Add Record</button>
+                <button onclick="addEntry()" id="submitBtn" class="bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700 shadow-md transition-all active:scale-95">Add Record</button>
             </div>
         </div>
 
@@ -74,7 +76,7 @@
 
                 <div class="flex justify-between items-end mb-2">
                     <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Search Records:</h3>
-                    <span id="syncStatus" class="text-[10px] text-slate-400 italic">Syncing with Excel...</span>
+                    <span id="syncStatus" class="text-[10px] text-slate-400 italic font-medium">Connecting...</span>
                 </div>
                 <input type="text" id="fileSearch" oninput="applyFilters()" placeholder="Search by File Name or PIC..." 
                     class="w-full p-2.5 border rounded-lg bg-slate-50 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
@@ -95,21 +97,13 @@
                     </tr>
                 </thead>
                 <tbody id="logTable">
-                    <tr><td colspan="7" class="p-10 text-center text-slate-400 italic">Loading live data...</td></tr>
+                    <tr><td colspan="7" class="p-10 text-center text-slate-400 italic">Syncing with Excel...</td></tr>
                 </tbody>
             </table>
-        </div>
-
-        <div class="mt-6 flex flex-wrap justify-between items-center gap-4">
-            <button onclick="exportToExcel()" class="bg-emerald-600 text-white px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 hover:bg-emerald-700 shadow-md transition-all active:scale-95">
-                📥 Export Local Backup (.csv)
-            </button>
-            <p class="text-slate-400 text-xs italic">Syncing automatically with M&A Central Database.</p>
         </div>
     </div>
 
     <script>
-        // URLs
         const postURL = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/8467b362b45c4408a5c3b36138d34d8d/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=kYDfwYnTE9IU71pqIibsp0QU2WYzQ0zORaGj2bjaDAs";
         const fetchURL = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/47006a48f8764a49ab01dbb665617acf/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=2eqeoBWF-80BETYDfV2HdHZeqJW7-fDYjd3GXri1wNo";
 
@@ -128,7 +122,6 @@
         let currentMachineFilter = 'ALL';
         const machines = Object.keys(machineSpecs);
 
-        // Setup Buttons
         const filterContainer = document.getElementById('filterContainer');
         machines.forEach(m => {
             const btn = document.createElement('button');
@@ -139,28 +132,30 @@
             filterContainer.appendChild(btn);
         });
 
-        // LIVE SYNC FUNCTION
         async function refreshLiveLogs() {
             const status = document.getElementById('syncStatus');
             try {
                 const response = await fetch(fetchURL);
+                if (!response.ok) throw new Error("HTTP " + response.status);
                 const data = await response.json();
                 
-                // Map Power Automate JSON keys to our logic if they differ
+                // Flexible Mapping for Excel Columns
                 allRecords = data.map(item => ({
-                    id: item.id || Date.now(),
-                    timestamp: item.timestamp || item.Timestamp,
-                    machine: item.machine || item.Machine,
-                    pic: item.pic || item.PIC,
-                    type: item.type || item.LogType || item.Type,
-                    file: item.file || item.FileName || item.File,
-                    time: item.time || item.Time
+                    id: item.id || Math.random(),
+                    timestamp: item.timestamp || item.Timestamp || item['Timestamp'] || "N/A",
+                    machine: item.machine || item.Machine || item['Machine'] || "N/A",
+                    pic: item.pic || item.PIC || item['PIC'] || "N/A",
+                    type: item.type || item.LogType || item['Log Type'] || item['Type'] || "SETTING",
+                    file: item.file || item.FileName || item['File Name'] || item['File'] || "N/A",
+                    time: item.time || item.Time || item['Time'] || "0"
                 }));
 
-                status.innerText = "Last sync: " + new Date().toLocaleTimeString();
+                status.innerText = "Live: " + new Date().toLocaleTimeString();
+                status.className = "text-[10px] text-emerald-500 font-bold";
                 applyFilters();
             } catch (error) {
-                status.innerText = "Sync Error - Offline Mode";
+                status.innerText = "Sync Error - Excel Offline";
+                status.className = "text-[10px] text-red-500 font-bold";
                 console.error("Sync error:", error);
             }
         }
@@ -172,10 +167,16 @@
             const t = document.getElementById('sTime').value;
             const isNewRequest = document.getElementById('requestToggle').checked;
 
-            if(!pic || !f || !t) return;
+            if(!pic || !f || !t) {
+                alert("Please fill all fields");
+                return;
+            }
+
+            const btn = document.getElementById('submitBtn');
+            btn.innerText = "Logging...";
+            btn.disabled = true;
 
             const entry = {
-                id: Date.now(),
                 timestamp: new Date().toLocaleString(),
                 machine: m,
                 pic: pic,
@@ -184,41 +185,24 @@
                 time: t.toString()
             };
 
-            const btn = document.getElementById('submitBtn');
-            btn.innerText = "Syncing...";
-            btn.disabled = true;
-
             try {
-                await fetch(postURL, {
+                const response = await fetch(postURL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(entry)
                 });
                 
-                // Refresh immediately to show new data from server
-                setTimeout(refreshLiveLogs, 2000); 
-
-                document.getElementById('fName').value = '';
-                document.getElementById('sTime').value = '';
-                document.getElementById('requestToggle').checked = false;
-
+                if(response.ok) {
+                    document.getElementById('fName').value = '';
+                    document.getElementById('sTime').value = '';
+                    // Wait 3 seconds for Excel to update, then pull fresh data
+                    setTimeout(refreshLiveLogs, 3000);
+                }
             } catch (error) {
-                alert("Failed to send to Excel. Data saved locally.");
-                allRecords.unshift(entry);
-                applyFilters();
+                alert("Network Error. Check internet connection.");
             } finally {
                 btn.innerText = "Add Record";
                 btn.disabled = false;
-            }
-        }
-
-        function deleteRecord(id) {
-            const pw = prompt("Admin password to remove entry (Excel row must be deleted manually):");
-            if (pw === "admin") {
-                allRecords = allRecords.filter(record => record.id !== id);
-                applyFilters();
-            } else if (pw !== null) {
-                alert("Incorrect Password!");
             }
         }
 
@@ -269,29 +253,14 @@
                     </td>
                     <td class="p-3 text-slate-700 font-mono">${r.file}</td>
                     <td class="p-3 font-bold text-slate-800">${r.time} min</td>
-                    <td class="p-3 text-center">
-                        <button onclick="deleteRecord(${r.id})" class="text-red-400 hover:text-red-600 font-bold text-[10px] uppercase tracking-tighter">Remove</button>
-                    </td>
+                    <td class="p-3 text-center text-slate-300">---</td>
                 </tr>
             `).join('');
         }
 
-        function exportToExcel() {
-            if(allRecords.length === 0) return;
-            let csv = "Timestamp,Machine,PIC,Log Type,File Name,Time (min)\n";
-            allRecords.forEach(r => {
-                csv += `"${r.timestamp}","${r.machine}","${r.pic}","${r.type}","${r.file}","${r.time}"\n`;
-            });
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = `Log_Backup_${new Date().toISOString().slice(0,10)}.csv`;
-            link.click();
-        }
-
-        // Initialize & Auto-Sync
+        // Initialize & Auto-Sync every 60 seconds
         refreshLiveLogs();
-        setInterval(refreshLiveLogs, 30000); // Sync every 30 seconds
+        setInterval(refreshLiveLogs, 60000);
     </script>
 </body>
 </html>
