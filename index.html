@@ -18,13 +18,13 @@
 </head>
 <body class="bg-slate-50 p-4 font-sans text-slate-900">
     <div class="max-w-6xl mx-auto">
-        <header class="mb-6 flex flex-row justify-between items-center bg-white p-6 rounded-xl border shadow-sm min-h-[120px]">
+        <header class="mb-6 flex flex-row justify-between items-center bg-white p-6 rounded-xl border shadow-sm min-h-[140px]">
             <div class="flex-shrink-0">
                 <h1 class="text-xl md:text-3xl font-bold text-slate-800 leading-tight">Auto Template<br>Machine Setting Log</h1>
-                <p class="text-blue-600 text-xl font-black tracking-widest mt-1">M&A</p>
+                <p class="text-slate-400 text-lg font-light tracking-[0.2em] mt-1">M&A</p>
             </div>
             <div class="flex items-center justify-end overflow-hidden ml-4">
-                <img src="image_8454b6.png" alt="M&A Logo" class="h-16 md:h-24 w-auto object-contain">
+                <img src="https://i.ibb.co/mFmPqS5/image-8454b6.png" alt="M&A Logo" class="h-12 md:h-16 w-auto object-contain">
             </div>
         </header>
 
@@ -99,7 +99,7 @@
                     </tr>
                 </thead>
                 <tbody id="logTable">
-                    <tr><td colspan="6" class="p-10 text-center text-slate-400 italic">Syncing with M&A Central Database...</td></tr>
+                    <tr><td colspan="6" class="p-10 text-center text-slate-400 italic">Reading Excel Data...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -109,7 +109,7 @@
         const postURL = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/8467b362b45c4408a5c3b36138d34d8d/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=kYDfwYnTE9IU71pqIibsp0QU2WYzQ0zORaGj2bjaDAs";
         const fetchURL = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/47006a48f8764a49ab01dbb665617acf/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=2eqeoBWF-80BETYDfV2HdHZeqJW7-fDYjd3GXri1wNo";
 
-        // Updated Brands
+        // Fixed Brand Logic
         const machineSpecs = {
             "AQM0001": { brand: "ZOJE", model: "ZJ-AM5770AH-750" },
             "AQM0002": { brand: "ZOJE", model: "ZJ-AMS-AH-RK900" },
@@ -123,10 +123,9 @@
 
         let allRecords = [];
         let currentMachineFilter = 'ALL';
-        const machines = Object.keys(machineSpecs);
 
         const filterContainer = document.getElementById('filterContainer');
-        machines.forEach(m => {
+        Object.keys(machineSpecs).forEach(m => {
             const btn = document.createElement('button');
             btn.innerText = m;
             btn.id = `btn-${m}`;
@@ -135,20 +134,20 @@
             filterContainer.appendChild(btn);
         });
 
-        // Smart Mapping for Excel
+        // Smart Mapping to catch any variation of Excel headers
         function getVal(item, keys) {
             for (let key of keys) {
                 if (item[key] !== undefined && item[key] !== null) return item[key];
                 for (let actualKey in item) {
-                    if (actualKey.toLowerCase().replace(/[^a-z0-9]/g, '') === key.toLowerCase().replace(/[^a-z0-9]/g, '')) {
-                        return item[actualKey];
-                    }
+                    let cleanActual = actualKey.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    let cleanTarget = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    if (cleanActual === cleanTarget) return item[actualKey];
                 }
             }
             return "---";
         }
 
-        // Fix for Excel Serial Date (e.g. 45678.123)
+        // Improved Date Parsing for Excel Serial numbers
         function formatTimestamp(val) {
             if (!val || val === "---") return "---";
             if (!isNaN(val) && parseFloat(val) > 40000) {
@@ -166,19 +165,19 @@
                 
                 const data = await response.json();
                 allRecords = data.map(item => ({
-                    timestamp: formatTimestamp(getVal(item, ['Timestamp', 'Date', 'Time_x0020_Stamp', 'DateTime'])),
+                    timestamp: formatTimestamp(getVal(item, ['Timestamp', 'Date', 'Time', 'DateTime'])),
                     machine: getVal(item, ['Machine', 'MachineID', 'mID']),
-                    pic: getVal(item, ['PIC', 'Operator', 'PICName']),
-                    type: getVal(item, ['Type', 'LogType', 'Log_x0020_Type']),
-                    file: getVal(item, ['FileName', 'file name', 'File_x0020_Name', 'Style']),
-                    time: getVal(item, ['Time', 'SettingTime', 'Minutes'])
+                    pic: getVal(item, ['PIC', 'Operator', 'Name']),
+                    type: getVal(item, ['Type', 'LogType', 'Status']),
+                    file: getVal(item, ['FileName', 'file name', 'Style', 'File']),
+                    time: getVal(item, ['Time', 'SettingTime', 'Minutes', 'Min'])
                 }));
 
-                status.innerText = "LIVE SYNC OK";
+                status.innerText = "DB CONNECTED";
                 status.className = "text-[10px] text-emerald-500 font-bold";
                 applyFilters();
             } catch (error) {
-                status.innerText = "SYNC FAILED (400)";
+                status.innerText = "DB ERROR";
                 status.className = "text-[10px] text-red-500 font-bold";
             }
         }
@@ -193,7 +192,7 @@
             if(!pic || !f || !t) return alert("Fill all fields");
 
             const btn = document.getElementById('submitBtn');
-            btn.innerText = "Saving...";
+            btn.innerText = "Syncing...";
             btn.disabled = true;
 
             const entry = {
@@ -215,10 +214,10 @@
                 if(res.ok) {
                     document.getElementById('fName').value = '';
                     document.getElementById('sTime').value = '';
-                    setTimeout(refreshLiveLogs, 5000);
+                    setTimeout(refreshLiveLogs, 4000);
                 }
             } catch (error) {
-                alert("Network Error");
+                alert("Upload failed.");
             } finally {
                 btn.innerText = "Add Record";
                 btn.disabled = false;
