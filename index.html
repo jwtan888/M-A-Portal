@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .machine-btn:active { transform: scale(0.95); }
-        .active-filter { border-color: #2563eb; background-color: #eff6ff; color: #1e40af; }
+        .active-filter { border-color: #2563eb; background-color: #eff6ff; color: #1e40af; border-width: 2px; }
         .switch { position: relative; display: inline-block; width: 44px; height: 22px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
@@ -16,11 +16,17 @@
         input:checked + .slider:before { transform: translateX(22px); }
     </style>
 </head>
-<body class="bg-slate-50 p-4 font-sans">
+<body class="bg-slate-50 p-4 font-sans text-slate-900">
     <div class="max-w-6xl mx-auto">
-        <header class="mb-6 text-center md:text-left">
-            <h1 class="text-3xl font-bold text-slate-800">Auto Template Machine Setting Log</h1>
-            <p class="text-slate-500 text-sm italic font-medium text-blue-600">Garment Production Process Planning</p>
+        <header class="mb-6 text-center md:text-left flex flex-col md:flex-row justify-between items-end gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-800">Auto Template Machine Setting Log</h1>
+                <p class="text-slate-500 text-sm italic font-medium text-blue-600">M&A</p>
+            </div>
+            <div id="specCard" class="hidden bg-blue-600 text-white p-3 rounded-lg shadow-lg border-l-4 border-blue-300 animate-pulse">
+                <p class="text-[10px] uppercase font-bold opacity-80">Current Selection Spec:</p>
+                <p id="specText" class="text-sm font-black tracking-wide italic">Brand & Model Info</p>
+            </div>
         </header>
 
         <div class="bg-white p-6 rounded-xl shadow-sm border mb-6">
@@ -87,15 +93,10 @@
                     <tr><td colspan="7" class="p-10 text-center text-slate-400 italic">No records found.</td></tr>
                 </tbody>
             </table>
-            <div class="bg-slate-50 p-4 border-t flex justify-end items-center gap-4">
-                <span class="text-slate-500 font-bold text-sm uppercase">Total Setting Time:</span>
-                <span id="totalMinutes" class="text-2xl font-black text-blue-600">0</span>
-                <span class="text-blue-600 font-bold text-sm uppercase">Minutes</span>
-            </div>
         </div>
 
         <div class="mt-6 flex flex-wrap justify-between items-center gap-4">
-            <button onclick="exportToExcel()" class="bg-emerald-600 text-white px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 hover:bg-emerald-700 shadow-md">
+            <button onclick="exportToExcel()" class="bg-emerald-600 text-white px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 hover:bg-emerald-700 shadow-md transition-all active:scale-95">
                 📥 Export Local Backup (.csv)
             </button>
             <p class="text-slate-400 text-xs italic">Only Admin can remove records from local history.</p>
@@ -105,11 +106,21 @@
     <script>
         const powerAutomateURL = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/8467b362b45c4408a5c3b36138d34d8d/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=kYDfwYnTE9IU71pqIibsp0QU2WYzQ0zORaGj2bjaDAs";
 
-        let allRecords = JSON.parse(localStorage.getItem('factory_logs_final_v6')) || [];
-        let currentMachineFilter = 'ALL';
-        const machines = ["AQM0001", "AQM0002", "AQM0003", "AQM0004", "AQM0005", "AQM0006", "AQM0007", "AQM0008"];
+        const machineSpecs = {
+            "AQM0001": "Brand: JACK | Model: ZJ-AM5770AH-750",
+            "AQM0002": "Brand: JACK | Model: ZJ-AMS-AH-RK900",
+            "AQM0003": "Brand: JACK | Model: ZJ-M5-S900H-SF",
+            "AQM0004": "Brand: JACK | Model: ZJ-M5-S900H-SF",
+            "AQM0005": "Brand: JTK | Model: JTK8T-8037AJS",
+            "AQM0006": "Brand: - | Model: M9-SS-F13-X",
+            "AQM0007": "Brand: JTK | Model: JTK8T-8037AJS",
+            "AQM0008": "Brand: JTK | Model: JTK8T-8037AJS"
+        };
 
-        // Setup Filter Buttons
+        let allRecords = JSON.parse(localStorage.getItem('factory_logs_final_v7')) || [];
+        let currentMachineFilter = 'ALL';
+        const machines = Object.keys(machineSpecs);
+
         const filterContainer = document.getElementById('filterContainer');
         machines.forEach(m => {
             const btn = document.createElement('button');
@@ -151,7 +162,7 @@
                 });
                 
                 allRecords.unshift(entry);
-                localStorage.setItem('factory_logs_final_v6', JSON.stringify(allRecords));
+                localStorage.setItem('factory_logs_final_v7', JSON.stringify(allRecords));
                 
                 document.getElementById('fName').value = '';
                 document.getElementById('sTime').value = '';
@@ -160,7 +171,7 @@
 
             } catch (error) {
                 allRecords.unshift(entry);
-                localStorage.setItem('factory_logs_final_v6', JSON.stringify(allRecords));
+                localStorage.setItem('factory_logs_final_v7', JSON.stringify(allRecords));
                 applyFilters();
             } finally {
                 btn.innerText = "Add Record";
@@ -172,7 +183,7 @@
             const pw = prompt("Admin password to remove entry:");
             if (pw === "admin") {
                 allRecords = allRecords.filter(record => record.id !== id);
-                localStorage.setItem('factory_logs_final_v6', JSON.stringify(allRecords));
+                localStorage.setItem('factory_logs_final_v7', JSON.stringify(allRecords));
                 applyFilters();
             } else if (pw !== null) {
                 alert("Incorrect Password!");
@@ -183,6 +194,17 @@
             currentMachineFilter = machineId;
             document.querySelectorAll('.machine-btn').forEach(b => b.classList.remove('active-filter'));
             document.getElementById(`btn-${machineId}`).classList.add('active-filter');
+            
+            // Show Spec Card
+            const specCard = document.getElementById('specCard');
+            const specText = document.getElementById('specText');
+            if(machineId === 'ALL') {
+                specCard.classList.add('hidden');
+            } else {
+                specCard.classList.remove('hidden');
+                specText.innerText = machineSpecs[machineId];
+            }
+            
             applyFilters();
         }
 
@@ -194,10 +216,6 @@
                 return matchesMachine && matchesSearch;
             });
             updateTable(filtered);
-            
-            // Calculate Total Time
-            const total = filtered.reduce((acc, current) => acc + (parseFloat(current.time) || 0), 0);
-            document.getElementById('totalMinutes').innerText = total;
         }
 
         function updateTable(data) {
@@ -234,7 +252,7 @@
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
-            link.download = `Machine_Setting_Log_${new Date().toISOString().slice(0,10)}.csv`;
+            link.download = `Production_Log_Backup_${new Date().toISOString().slice(0,10)}.csv`;
             link.click();
         }
 
