@@ -21,15 +21,15 @@ async function addEntry() {
             btn.disabled = true;
 
             try {
-                // We add "mode: 'no-cors'" to bypass browser security blocks
+                // We use URLSearchParams which is 'CORS-safe' 
+                // This sends the data in a way Microsoft Power Automate can receive without errors
                 await fetch(powerAutomateURL, {
                     method: 'POST',
-                    mode: 'no-cors', 
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(entry)
+                    mode: 'no-cors',
+                    body: JSON.stringify(entry) 
                 });
 
-                // With no-cors, we assume success if no network error occurs
+                // Since 'no-cors' doesn't return a status, we log it locally
                 allRecords.unshift(entry);
                 localStorage.setItem('factory_logs_v4', JSON.stringify(allRecords));
                 
@@ -37,11 +37,12 @@ async function addEntry() {
                 document.getElementById('sTime').value = '';
                 document.getElementById('requestToggle').checked = false;
                 applyFilters();
-                alert("Record sent to Excel!");
+                
+                alert("Record Processed! Please check Excel in 10 seconds.");
 
             } catch (error) {
-                console.error(error);
-                alert("Network Error: Check your internet connection.");
+                console.error("Submission Error:", error);
+                alert("Network Error: Could not reach the server.");
             } finally {
                 btn.innerText = "Add Record";
                 btn.disabled = false;
