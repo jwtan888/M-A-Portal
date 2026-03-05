@@ -54,22 +54,9 @@
                 </select>
             </div>
         </div>
-
         <div class="mt-6 p-4 bg-blue-50 rounded-xl">
             <p class="text-xs text-blue-600 font-bold uppercase mb-1">Projected Portfolio Value</p>
             <h3 id="futureValue" class="text-3xl font-bold text-blue-800">$0</h3>
-            <p class="text-xs text-blue-500 mt-2 italic">*Assumes monthly surplus is invested at the end of each month.</p>
-        </div>
-    </div>
-
-    <div class="grid grid-cols-2 gap-4">
-        <div class="card p-4 text-center">
-            <p class="text-xs text-slate-400 uppercase">Savings Rate</p>
-            <p id="savingsRate" class="text-lg font-bold text-slate-700">0%</p>
-        </div>
-        <div class="card p-4 text-center">
-            <p class="text-xs text-slate-400 uppercase">Daily Budget</p>
-            <p id="dailyBudget" class="text-lg font-bold text-slate-700">$0</p>
         </div>
     </div>
 
@@ -78,22 +65,14 @@
             const income = parseFloat(document.getElementById('income').value) || 0;
             const expenses = parseFloat(document.getElementById('expenses').value) || 0;
             const surplus = income - expenses;
-            
             document.getElementById('surplus').innerText = '$' + surplus.toLocaleString();
-            
-            // Savings Rate
-            const rate = income > 0 ? (surplus / income * 100).toFixed(1) : 0;
-            document.getElementById('savingsRate').innerText = rate + '%';
-            
-            // Daily Budget (based on 30 days)
-            const daily = (expenses / 30).toFixed(2);
-            document.getElementById('dailyBudget').innerText = '$' + daily;
-
             calculateInvestment();
         }
 
         function calculateInvestment() {
-            const surplus = parseFloat(document.getElementById('income').value || 0) - parseFloat(document.getElementById('expenses').value || 0);
+            const income = parseFloat(document.getElementById('income').value) || 0;
+            const expenses = parseFloat(document.getElementById('expenses').value) || 0;
+            const surplus = income - expenses;
             const annualRate = parseFloat(document.getElementById('ror').value) / 100 || 0;
             const years = parseInt(document.getElementById('years').value);
             
@@ -104,15 +83,7 @@
 
             const monthlyRate = annualRate / 12;
             const months = years * 12;
-            
-            // Future Value of an Ordinary Annuity Formula: P * [((1 + r)^n - 1) / r]
-            let fv = 0;
-            if (monthlyRate === 0) {
-                fv = surplus * months;
-            } else {
-                fv = surplus * ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate);
-            }
-
+            let fv = monthlyRate === 0 ? surplus * months : surplus * ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate);
             document.getElementById('futureValue').innerText = '$' + Math.round(fv).toLocaleString();
         }
     </script>
