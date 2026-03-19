@@ -23,9 +23,9 @@
         .admin-input { border: 1px solid #3b82f6; background-color: #f0f7ff; width: 110px; font-weight: bold; }
         .qty-input { width: 60px; font-weight: bold; color: #2563eb; border: 1px solid #94a3b8; }
         .manual-input:focus { border-color: #2563eb; box-shadow: 0 0 0 1px #2563eb; }
-        
-        /* Performance Enhancement: Smooth transition for machine images */
-        #machineImg { transition: opacity 0.3s ease-in-out; opacity: 0; }
+
+        /* FIX 3: Machine image - default visible so no infinite loading spinner */
+        #machineImg { transition: opacity 0.3s ease-in-out; opacity: 1; }
     </style>
 </head>
 <body class="bg-slate-50 p-4 font-sans text-slate-900">
@@ -62,11 +62,88 @@
         </nav>
 
         <div id="content-laser" class="tab-content hidden">
+
+            <!-- Add New Row Form -->
             <div class="bg-white p-6 rounded-xl border shadow-sm mb-4">
-                <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Laser Production Log</h2>
+                <div class="flex justify-between items-center mb-4 border-b pb-3">
+                    <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest">New Laser Entry</h2>
+                    <span id="laserSyncStatus" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Syncing...</span>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-3">
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Received Time</label>
+                        <input type="text" id="l_receivedTime" placeholder="3/18/2026 13:15 (M/D/YYYY)" class="p-2 border rounded text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Season</label>
+                        <input type="text" id="l_season" placeholder="e.g. SP27" class="p-2 border rounded text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Style Number</label>
+                        <input type="text" id="l_styleNumber" placeholder="e.g. IU3284" class="p-2 border rounded text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Section</label>
+                        <select id="l_section" class="p-2 border rounded text-xs focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                            <option value="">Select...</option>
+                            <option>Sample Development</option>
+                            <option>Production</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Category</label>
+                        <input type="text" id="l_category" placeholder="e.g. NK/JORDAN" class="p-2 border rounded text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Proto Stage</label>
+                        <input type="text" id="l_protoStage" placeholder="e.g. P2" class="p-2 border rounded text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Garment Qty</label>
+                        <input type="number" id="l_garmentQty" placeholder="0" class="p-2 border rounded text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Laser Parts</label>
+                        <input type="number" id="l_laserParts" placeholder="0" class="p-2 border rounded text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Ironing Parts</label>
+                        <input type="number" id="l_ironParts" placeholder="0" class="p-2 border rounded text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Trim Parts</label>
+                        <input type="number" id="l_trimParts" placeholder="0" class="p-2 border rounded text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Complete Date</label>
+                        <input type="text" id="l_completeDate" placeholder="3/18/2026 13:15" class="p-2 border rounded text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Cons. Start Date</label>
+                        <input type="text" id="l_consStart" placeholder="m/d/yyyy" class="p-2 border rounded text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Cons. End Date</label>
+                        <input type="text" id="l_consEnd" placeholder="m/d/yyyy" class="p-2 border rounded text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Remark</label>
+                        <input type="text" id="l_remark" placeholder="Optional" class="p-2 border rounded text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">M&A PIC (Auto)</label>
+                        <div id="l_picDisplay" class="p-2 border rounded text-xs bg-slate-50 text-blue-700 font-bold">Not logged in</div>
+                    </div>
+                    <div class="flex flex-col justify-end">
+                        <button onclick="addLaserRow()" id="laserAddBtn" class="bg-blue-600 text-white text-xs font-bold py-2 px-4 rounded hover:bg-blue-700 active:scale-95 transition-all shadow-md">+ ADD ROW</button>
+                    </div>
+                </div>
             </div>
+
+            <!-- Laser Table -->
             <div class="bg-white rounded-xl shadow-sm border overflow-x-auto">
-                <table class="w-full text-left min-w-[2000px]">
+                <table class="w-full text-left min-w-[2200px]">
                     <thead class="bg-slate-100 border-b text-[10px] uppercase tracking-wider text-slate-500 font-bold">
                         <tr>
                             <th class="p-3">ID</th>
@@ -76,38 +153,21 @@
                             <th class="p-3">Section</th>
                             <th class="p-3">Category</th>
                             <th class="p-3">Proto Stage</th>
-                            <th class="p-3">Garment Quantity</th>
-                            <th class="p-3">Laser Part Count</th>
-                            <th class="p-3">Ironing Part Count</th>
-                            <th class="p-3">Laser Trim Part Count</th>
+                            <th class="p-3">Garment Qty</th>
+                            <th class="p-3">Laser Parts</th>
+                            <th class="p-3">Ironing Parts</th>
+                            <th class="p-3">Trim Parts</th>
                             <th class="p-3">Complete Date</th>
                             <th class="p-3">M&A PIC</th>
-                            <th class="p-3">Consumption Start Date</th>
-                            <th class="p-3">Consumption Complete Date</th>
-                            <th class="p-3">Consumption PIC</th>
+                            <th class="p-3">Cons. Start</th>
+                            <th class="p-3">Cons. End</th>
+                            <th class="p-3">Cons. PIC</th>
                             <th class="p-3">Remark</th>
+                            <th class="p-3">Action</th>
                         </tr>
                     </thead>
-                    <tbody class="text-slate-700">
-                        <tr class="border-b hover:bg-slate-50">
-                            <td class="p-3 font-mono text-slate-400">1</td>
-                            <td class="p-3">12/19/2025 16:42</td>
-                            <td class="p-3 font-bold">SP27</td>
-                            <td class="p-3 text-blue-700 font-bold">IU3284</td>
-                            <td class="p-3">Sample Development</td>
-                            <td class="p-3">NK/JORDAN</td>
-                            <td class="p-3 font-semibold text-purple-700">P2</td>
-                            <td class="p-3 font-bold">44</td>
-                            <td class="p-3 font-bold">44</td>
-                            <td class="p-3 text-slate-400">---</td>
-                            <td class="p-3 text-slate-400">---</td>
-                            <td class="p-3 text-emerald-600 font-bold">12/20/2025 10:00</td>
-                            <td class="p-3">Phone</td>
-                            <td class="p-3 text-slate-500">12/20/2025 11:00</td>
-                            <td class="p-3 text-slate-500">12/20/2025 13:00</td>
-                            <td class="p-3">Phone</td>
-                            <td class="p-3 italic text-slate-400">---</td>
-                        </tr>
+                    <tbody id="laserTable" class="text-slate-700">
+                        <tr><td colspan="18" class="p-6 text-center text-slate-400 italic text-xs">Loading laser data...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -212,9 +272,12 @@
                     <input type="number" id="sTime" placeholder="Time (min)" class="p-2 border rounded text-sm">
                     <button onclick="addEntry()" id="submitBtn" class="bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700 shadow-md active:scale-95 transition-all">SAVE LOG</button>
                 </div>
+                <!-- FIX 3: Removed opacity:0 from CSS. Image is visible by default. onerror/onload handlers updated to be safe. -->
                 <div class="mt-4 flex flex-col justify-center items-center bg-slate-50 border rounded-lg p-4 h-48 relative overflow-hidden">
-                    <img id="machineImg" src="" alt="Machine Image" loading="lazy" class="max-h-full object-contain" onerror="this.style.display='none'; document.getElementById('imgFallback').style.display='block';" onload="this.style.opacity='1'; this.style.display='block'; document.getElementById('imgFallback').style.display='none';">
-                    <div id="imgFallback" class="hidden text-slate-400 text-sm flex flex-col items-center">
+                    <img id="machineImg" src="" alt="Machine Image" class="max-h-full object-contain"
+                        onerror="this.style.display='none'; document.getElementById('imgFallback').style.display='flex';"
+                        onload="this.style.display='block'; document.getElementById('imgFallback').style.display='none';">
+                    <div id="imgFallback" class="hidden text-slate-400 text-sm flex-col items-center">
                         <svg class="w-12 h-12 text-slate-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                         <span class="font-bold tracking-wider uppercase text-[10px]">Image Unavailable</span>
                         <span class="text-[9px]" id="imgFallbackText"></span>
@@ -260,6 +323,9 @@
         const fetchURL = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/47006a48f8764a49ab01dbb665617acf/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=2eqeoBWF-80BETYDfV2HdHZeqJW7-fDYjd3GXri1wNo";
         const templateFetchURL = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/81581050d13a4df09275905e9e05e2df/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=yWugYHV-OyqB2yVi3eSd94XXEA2CgOngdaCVf83xBtA";
         const updateURL = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/a37c891f30994fef90aac14c55e2388e/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=6ostk6jCT6jb4Nx4lBi6fO_56axOeQPPm9Oo1_hcw7c";
+        const laserFetchURL  = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/f7fd69d7c4114bd2af5d8fffe467982a/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=hAWB_aTnAgdah1KM8cUx2fbYcjNNLN67GGAMOT3jeLI";
+        const laserAddURL    = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/2a02949cf9a843cc820034dbbb755a78/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=N6f1qPIEpKL-Kyns7-9t1l2KTKpCD90gM--hO5AojvU";
+        const laserUpdateURL = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/b95ddd4d695844b296c4917272ae318e/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=dp4tjbo8kArWt-sSfRcj3nmBCxL_o42g1mAtqIcTE_c";
 
         const machineSpecs = { 
             "AQM0001": { brand: "ZOJE", model: "ZJ-AM5770AH-750" }, 
@@ -279,19 +345,50 @@
             "AQM0009": "Juita1.png"
         };
 
-        const picList = ["Gavin", "Keat", "Viki", "Ram", "James", "Phone", "Mark", "Joe"];
+        // picList MUST exactly match the Data Validation list in Excel column Q (M&A PIC).
+        // If you add/remove names here, also update the Excel Data Validation list to match.
+        const picList = ["Keat", "Viki", "Ram", "James", "Mark"];
         let allRecords = [], allTemplates = [], currentUser = localStorage.getItem('ma_session_user') || null;
         let sectionChart = null, volumeChart = null;
 
-        function prefetchMachineImages() {
-            Object.values(machineImages).forEach(src => { const img = new Image(); img.src = src; });
-        }
+        // FIX 3: Removed prefetchMachineImages entirely — it caused the img onload to fire on the
+        // prefetch object instead of the #machineImg element, leaving opacity stuck at 0 forever.
+        // The browser cache still works without manual prefetch; images load on first switch.
 
         function formatWebDisplay(dateObj) {
             if (!dateObj || isNaN(dateObj.getTime())) return "---";
             const d = dateObj.getDate(), m = dateObj.getMonth() + 1, y = dateObj.getFullYear();
             const hh = String(dateObj.getHours()).padStart(2, '0'), mm = String(dateObj.getMinutes()).padStart(2, '0');
-            return `${d}/${m}/${y} ${hh}:${mm}`;
+            return `${m}/${d}/${y} ${hh}:${mm}`;
+        }
+        // Format current datetime as M/D/YYYY HH:MM for laser entries
+        function nowAsLaserDate() {
+            const now = new Date();
+            return `${now.getMonth()+1}/${now.getDate()}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+        }
+
+        // Convert any date string to M/D/YYYY HH:MM for Excel.
+        // Handles both DD/MM/YYYY and M/D/YYYY input from users.
+        // Rule: if day part > 12 it must be DD/MM — swap it. Otherwise assume M/D already.
+        function toExcelDateFormat(str) {
+            if (!str || !str.trim()) return '';
+            const s = str.trim();
+            // Split date and time parts
+            const [datePart, timePart] = s.split(' ');
+            if (!datePart) return s;
+            const parts = datePart.split('/');
+            if (parts.length !== 3) return s; // unknown format, pass through
+            let [a, b, y] = parts;
+            a = parseInt(a); b = parseInt(b);
+            let month, day;
+            // If first number > 12 it cannot be a month — must be DD/MM/YYYY
+            if (a > 12) { day = a; month = b; }
+            // If second number > 12 it cannot be a month — must be M/DD/YYYY already
+            else if (b > 12) { month = a; day = b; }
+            // Both <= 12: ambiguous — trust user typed M/D/YYYY as instructed
+            else { month = a; day = b; }
+            const time = timePart ? ` ${timePart}` : '';
+            return `${month}/${day}/${y}${time}`;
         }
 
         function formatExcelPayload(dateStr) {
@@ -301,14 +398,46 @@
             return `${m}/${d}/${y} ${timePart}`;
         }
 
+        // Exact-match first, fuzzy fallback. Never use this for M&A PIC — use getMAPic() instead.
         function getVal(item, keys) {
             if (!item) return "---";
+            // Pass 1: exact match (case-insensitive, trimmed)
+            for (let k of Object.keys(item)) {
+                for (let target of keys) {
+                    if (k.trim().toLowerCase() === target.trim().toLowerCase()) return item[k];
+                }
+            }
+            // Pass 2: fuzzy contains match (original behaviour fallback)
             for (let k of Object.keys(item)) {
                 let cleanK = k.toLowerCase().replace(/[^a-z0-9]/g, '');
                 for (let target of keys) {
                     if (cleanK.includes(target.toLowerCase().replace(/[^a-z0-9]/g, ''))) return item[k];
                 }
-            } return "---";
+            }
+            return "---";
+        }
+
+        // Dedicated function to read the "M&A PIC" column safely.
+        // The fuzzy getVal(i, ['M&A PIC','PIC']) was matching "Consumption PIC" (another column)
+        // because 'PIC' as a fallback is too broad. This does: exact match on known variants of
+        // "M&A PIC" only, and never falls through to a bare "PIC" match.
+        function getMAPic(item) {
+            if (!item) return "---";
+            const candidates = ['M&A PIC', 'MA PIC', 'M & A PIC', 'M&APIC', 'MAPIC'];
+            // Pass 1: exact match
+            for (let k of Object.keys(item)) {
+                for (let c of candidates) {
+                    if (k.trim().toLowerCase() === c.toLowerCase()) return item[k];
+                }
+            }
+            // Pass 2: key must START WITH "m" and contain "pic" but NOT contain "consumption"
+            for (let k of Object.keys(item)) {
+                const kl = k.trim().toLowerCase();
+                if (kl.includes('pic') && !kl.includes('consumption') && (kl.startsWith('m&a') || kl.startsWith('ma') || kl.startsWith('m &'))) {
+                    return item[k];
+                }
+            }
+            return "---";
         }
 
         function convertExcelDate(v, isTimestamp = true) {
@@ -326,13 +455,24 @@
             return `${d}/${m}/${y} ${hh}:${mm}`;
         }
 
+        // FIX 3: updateMachineImage no longer sets opacity to 0 and relies on a timeout.
+        // It shows the fallback immediately while loading, then image onload/onerror handles display.
         function updateMachineImage() {
             const mID = document.getElementById('mID').value;
             const imgEl = document.getElementById('machineImg');
+            const fallback = document.getElementById('imgFallback');
             const targetSrc = machineImages[mID];
-            imgEl.style.opacity = '0';
             document.getElementById('imgFallbackText').innerText = "Missing file: " + targetSrc;
-            if(imgEl && targetSrc) { setTimeout(() => { imgEl.src = targetSrc; }, 50); }
+            if (imgEl && targetSrc) {
+                imgEl.style.display = 'none';
+                fallback.style.display = 'none';
+                imgEl.src = targetSrc;
+                // If image already cached, onload may not re-fire — force it
+                if (imgEl.complete && imgEl.naturalWidth > 0) {
+                    imgEl.style.display = 'block';
+                    fallback.style.display = 'none';
+                }
+            }
         }
 
         async function refreshTemplateLogs(isSilent = false) {
@@ -362,7 +502,7 @@
                         protoStage: getVal(i, ['Proto Stage', 'Stage']), description: getVal(i, ['Description', 'Desc']),
                         jobNo: getVal(i, ['Job Number', 'JobNo']), machine: getVal(i, ['Machine Type']),
                         requiredDate: reqDateFormatted, completeDateDisplay: convertExcelDate(doneRaw),
-                        qty: getVal(i, ['Quantity', 'Complete Qty']), pic: getVal(i, ['M&A PIC', 'PIC']),
+                        qty: getVal(i, ['Quantity', 'Complete Qty']), pic: getMAPic(i),
                         remark: getVal(i, ['Remark']), status: currentStatus, raw: getVal(i, ['Start time'])
                     };
                 }).sort((a,b)=>b.raw - a.raw);
@@ -422,6 +562,271 @@
             });
         }
 
+        // Store laser rows in memory
+        let allLaserRows = [];
+
+        async function refreshLaserData(isSilent = false) {
+            const st = document.getElementById('laserSyncStatus');
+            if (!isSilent && st) { st.innerText = 'Syncing...'; st.classList.add('sync-active'); }
+            try {
+                const r = await fetch(laserFetchURL + "&cb=" + Date.now(), { method: 'POST', body: JSON.stringify({}) });
+                const d = await r.json();
+                let rows = [];
+                if (Array.isArray(d)) { rows = d; }
+                else if (d && Array.isArray(d.value)) { rows = d.value; }
+                else { for (const k of Object.keys(d || {})) { if (Array.isArray(d[k])) { rows = d[k]; break; } } }
+                // Sort by ID descending — largest (newest) on top
+                rows.sort((a, b) => {
+                    const ia = parseInt(getVal(a, ['Id','ID','id'])) || 0;
+                    const ib = parseInt(getVal(b, ['Id','ID','id'])) || 0;
+                    return ib - ia;
+                });
+                allLaserRows = rows;
+                renderLaserTable();
+                if (st) { st.innerText = 'LIVE: ' + new Date().toLocaleTimeString(); st.classList.remove('sync-active'); }
+            } catch(e) {
+                const tbody = document.getElementById('laserTable');
+                if (tbody) tbody.innerHTML = '<tr><td colspan="18" class="p-6 text-center text-red-400 italic text-xs">Failed to load laser data. Check the Power Automate flow.</td></tr>';
+                if (st) { st.innerText = 'Error'; st.classList.remove('sync-active'); }
+            }
+        }
+
+        function renderLaserTable() {
+            const tbody = document.getElementById('laserTable');
+            if (!tbody) return;
+            const isAdmin = (currentUser === 'Gavin');
+            if (!allLaserRows.length) {
+                tbody.innerHTML = '<tr><td colspan="18" class="p-6 text-center text-slate-400 italic text-xs">No laser records found.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = allLaserRows.map(i => {
+                const id           = getVal(i, ['Id','ID','id']);
+                const received     = convertExcelDate(getVal(i, ['Received Time','ReceivedTime','Received']));
+                const season       = getVal(i, ['Season']);
+                const style        = getVal(i, ['Style Number','StyleNumber','Style']);
+                const section      = getVal(i, ['Section']);
+                const category     = getVal(i, ['Category']);
+                const proto        = getVal(i, ['Proto Stage','ProtoStage','Stage']);
+                const garmentQty   = getVal(i, ['Garment Quantity','GarmentQty','Garment Qty']);
+                const laserParts   = getVal(i, ['Laser Part Count','LaserPartCount','Laser Parts']);
+                const ironParts    = getVal(i, ['Ironing Part Count','IroningPartCount','Iron Parts']);
+                const trimParts    = getVal(i, ['Laser Trim Part Count','LaserTrimPartCount','Trim Parts']);
+                const completeDate = convertExcelDate(getVal(i, ['Complete Date','CompleteDate']));
+                const maPic        = getMAPic(i);
+                const consStart    = convertExcelDate(getVal(i, ['Consumption Start Date','ConsumptionStartDate','Cons Start']));
+                const consEnd      = convertExcelDate(getVal(i, ['Consumption Complete Date','ConsumptionCompleteDate','Cons End']));
+                const consPic      = getVal(i, ['Consumption PIC','ConsumptionPIC','Cons PIC']);
+                const remark       = getVal(i, ['Remark','Remarks']);
+                const isComplete   = completeDate && completeDate !== '---';
+                const rid          = String(id);
+                // Consumption always editable — no lock needed
+                const consDisabled = '';
+                const consClass    = 'manual-input admin-input';
+
+                const sectionDropdown = (editable) => editable
+                    ? `<select id="le-section-${rid}" class="manual-input admin-input" style="width:130px">
+                        <option value="">Select...</option>
+                        ${['Sample Development','Production','Other'].map(s => `<option ${s===section?'selected':''}>${s}</option>`).join('')}
+                       </select>`
+                    : section;
+
+                if (isAdmin) {
+                    return `<tr class="border-b hover:bg-blue-50" id="lrow-${rid}">
+                        <td class="p-2 font-mono text-slate-400 text-[10px]">${id}</td>
+                        <td class="p-2"><input id="le-received-${rid}" class="manual-input" value="${received==='---'?'':received}" placeholder="m/d/yyyy hh:mm"></td>
+                        <td class="p-2"><input id="le-season-${rid}" class="manual-input" value="${season==='---'?'':season}"></td>
+                        <td class="p-2"><input id="le-style-${rid}" class="manual-input" value="${style==='---'?'':style}"></td>
+                        <td class="p-2">${sectionDropdown(true)}</td>
+                        <td class="p-2"><input id="le-category-${rid}" class="manual-input" value="${category==='---'?'':category}"></td>
+                        <td class="p-2"><input id="le-proto-${rid}" class="manual-input" value="${proto==='---'?'':proto}"></td>
+                        <td class="p-2"><input id="le-garmentQty-${rid}" class="manual-input qty-input" value="${garmentQty==='---'?'':garmentQty}" type="number"></td>
+                        <td class="p-2"><input id="le-laserParts-${rid}" class="manual-input qty-input" value="${laserParts==='---'?'':laserParts}" type="number"></td>
+                        <td class="p-2"><input id="le-ironParts-${rid}" class="manual-input qty-input" value="${ironParts==='---'?'':ironParts}" type="number"></td>
+                        <td class="p-2"><input id="le-trimParts-${rid}" class="manual-input qty-input" value="${trimParts==='---'?'':trimParts}" type="number"></td>
+                        <td class="p-2"><input id="le-completeDate-${rid}" class="manual-input admin-input" value="${completeDate==='---'?'':completeDate}" placeholder="m/d/yyyy hh:mm"></td>
+                        <td class="p-2"><input id="le-maPic-${rid}" class="manual-input admin-input" value="${maPic==='---'?'':maPic}"></td>
+                        <td class="p-2"><input id="le-consStart-${rid}" class="${consClass}" value="${consStart==='---'?'':consStart}" placeholder="m/d/yyyy"${consDisabled}></td>
+                        <td class="p-2"><input id="le-consEnd-${rid}" class="${consClass}" value="${consEnd==='---'?'':consEnd}" placeholder="m/d/yyyy"${consDisabled}></td>
+                        <td class="p-2"><input id="le-consPic-${rid}" class="${consClass}" value="${consPic==='---'?'':consPic}" placeholder="PIC"${consDisabled}></td>
+                        <td class="p-2"><input id="le-remark-${rid}" class="manual-input" value="${remark==='---'?'':remark}" placeholder="Remark"></td>
+                        <td class="p-2"><button onclick="saveLaserRow('${rid}', event)" class="bg-blue-600 text-white text-[9px] font-bold px-3 py-1 rounded hover:bg-blue-700 whitespace-nowrap">SAVE</button></td>
+                    </tr>`;
+                } else {
+                    // Regular users: consumption fields always editable by ANY logged-in user
+                    // Consumption PIC auto-fills from currentUser on save
+                    const canEditCons = !!currentUser;
+                    return `<tr class="border-b hover:bg-slate-50">
+                        <td class="p-3 font-mono text-slate-400">${id}</td>
+                        <td class="p-3 text-slate-500">${received}</td>
+                        <td class="p-3 font-bold">${season}</td>
+                        <td class="p-3 text-blue-700 font-bold">${style}</td>
+                        <td class="p-3">${section}</td>
+                        <td class="p-3">${category}</td>
+                        <td class="p-3 font-semibold text-purple-700">${proto}</td>
+                        <td class="p-3 font-bold">${garmentQty}</td>
+                        <td class="p-3 font-bold">${laserParts}</td>
+                        <td class="p-3">${ironParts}</td>
+                        <td class="p-3">${trimParts}</td>
+                        <td class="p-3 ${isComplete?'text-emerald-600 font-bold':'text-slate-400'}">${completeDate}</td>
+                        <td class="p-3 font-medium">${maPic}</td>
+                        <td class="p-3">${canEditCons
+                            ? `<input id="le-consStart-${rid}" class="manual-input admin-input" value="${consStart==='---'?'':consStart}" placeholder="m/d/yyyy">`
+                            : consStart}</td>
+                        <td class="p-3">${canEditCons
+                            ? `<input id="le-consEnd-${rid}" class="manual-input admin-input" value="${consEnd==='---'?'':consEnd}" placeholder="m/d/yyyy">`
+                            : consEnd}</td>
+                        <td class="p-3">
+                            ${canEditCons
+                                ? `<span class="text-blue-700 font-bold text-xs bg-blue-50 px-2 py-1 rounded border border-blue-200">${currentUser}</span>`
+                                : consPic}
+                        </td>
+                        <td class="p-3 italic text-slate-400 text-[10px]">${remark}</td>
+                        <td class="p-3">${canEditCons
+                            ? `<button onclick="saveConsumption('${rid}', event)" class="bg-emerald-600 text-white text-[9px] font-bold px-3 py-1 rounded hover:bg-emerald-700 whitespace-nowrap">SAVE</button>`
+                            : ''}</td>
+                    </tr>`;
+                }
+            }).join('');
+        }
+
+        // When Gavin types a complete date, unlock consumption fields immediately in the DOM
+        function onCompleteDateChange(rid) {
+            const val = document.getElementById(`le-completeDate-${rid}`)?.value.trim();
+            const locked = !val;
+            ['le-consStart','le-consEnd','le-consPic'].forEach(prefix => {
+                const el = document.getElementById(`${prefix}-${rid}`);
+                if (!el) return;
+                el.disabled = locked;
+                el.className = locked ? 'manual-input bg-slate-100 text-slate-400 cursor-not-allowed' : 'manual-input admin-input';
+            });
+        }
+
+        function updateLaserPicDisplay() {
+            const el = document.getElementById('l_picDisplay');
+            if (el) el.innerText = currentUser || 'Not logged in';
+        }
+
+        async function addLaserRow() {
+            if (!currentUser) return alert('Please login first.');
+            const receivedTime = document.getElementById('l_receivedTime').value.trim() || nowAsLaserDate();
+            const payload = {
+                receivedTime:  toExcelDateFormat(receivedTime),
+                season:        document.getElementById('l_season').value.trim(),
+                styleNumber:   document.getElementById('l_styleNumber').value.trim(),
+                section:       document.getElementById('l_section').value,
+                category:      document.getElementById('l_category').value.trim(),
+                protoStage:    document.getElementById('l_protoStage').value.trim(),
+                garmentQty:    document.getElementById('l_garmentQty').value || '0',
+                laserParts:    document.getElementById('l_laserParts').value || '0',
+                ironParts:     document.getElementById('l_ironParts').value || '0',
+                trimParts:     document.getElementById('l_trimParts').value || '0',
+                completeDate:  toExcelDateFormat(document.getElementById('l_completeDate').value.trim()),
+                consStart:     toExcelDateFormat(document.getElementById('l_consStart').value.trim()),
+                consEnd:       toExcelDateFormat(document.getElementById('l_consEnd').value.trim()),
+                maPic:         currentUser,
+                consumptionPic: currentUser,
+                remark:        document.getElementById('l_remark').value.trim()
+            };
+            if (!payload.styleNumber) return alert('Style Number is required.');
+            const btn = document.getElementById('laserAddBtn');
+            btn.innerText = 'Saving...'; btn.disabled = true;
+            try {
+                const res = await fetch(laserAddURL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                const respText = await res.text();
+                if (res.ok) {
+                    btn.innerText = 'ADDED!';
+                    ['l_receivedTime','l_season','l_styleNumber','l_category','l_protoStage',
+                     'l_garmentQty','l_laserParts','l_ironParts','l_trimParts',
+                     'l_completeDate','l_consStart','l_consEnd','l_remark'].forEach(id => {
+                        const el = document.getElementById(id); if(el) el.value = '';
+                    });
+                    document.getElementById('l_section').value = '';
+                    setTimeout(() => { btn.innerText = '+ ADD ROW'; btn.disabled = false; refreshLaserData(); }, 3000);
+                } else {
+                    alert(`Add failed (HTTP ${res.status}).\n\nThis usually means your Power Automate Add Flow has a field name mismatch.\nCheck that all triggerBody() expressions match exactly:\n- receivedTime\n- styleNumber\n- garmentQty\n- laserParts\n- ironParts\n- trimParts\n- protoStage\n- consumptionPic\n\nResponse: ${respText.substring(0,200)}`);
+                    btn.innerText = '+ ADD ROW'; btn.disabled = false;
+                }
+            } catch(e) {
+                alert(`Network error: ${e.message}`);
+                btn.innerText = '+ ADD ROW'; btn.disabled = false;
+            }
+        }
+
+        // Gavin full-row save
+        async function saveLaserRow(rid, event) {
+            const btn = event.target; btn.innerText = 'SAVING...'; btn.disabled = true;
+            const g = id => document.getElementById(`le-${id}-${rid}`)?.value.trim() || '';
+            const payload = {
+                recordID:       rid,
+                receivedTime:   toExcelDateFormat(g('received')),
+                season:         g('season'),
+                styleNumber:    g('style'),
+                section:        document.getElementById(`le-section-${rid}`)?.value || '',
+                category:       g('category'),
+                protoStage:     g('proto'),
+                garmentQty:     g('garmentQty'),
+                laserParts:     g('laserParts'),
+                ironParts:      g('ironParts'),
+                trimParts:      g('trimParts'),
+                completeDate:   toExcelDateFormat(g('completeDate')),
+                maPic:          g('maPic'),
+                consStart:      toExcelDateFormat(g('consStart')),
+                consEnd:        toExcelDateFormat(g('consEnd')),
+                consumptionPic: g('consPic'),
+                remark:         g('remark')
+            };
+            try {
+                const res = await fetch(laserUpdateURL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                if (res.ok) {
+                    btn.innerText = 'SAVED!';
+                    setTimeout(() => { btn.innerText = 'SAVE'; btn.disabled = false; refreshLaserData(true); }, 3000);
+                } else {
+                    btn.innerText = 'ERROR'; setTimeout(() => { btn.innerText = 'SAVE'; btn.disabled = false; }, 2000);
+                }
+            } catch(e) {
+                btn.innerText = 'ERROR'; setTimeout(() => { btn.innerText = 'SAVE'; btn.disabled = false; }, 2000);
+            }
+        }
+
+        // PIC saves consumption fields only (consStart, consEnd, consumptionPic auto = currentUser)
+        async function saveConsumption(rid, event) {
+            const btn = event.target; btn.innerText = 'SAVING...'; btn.disabled = true;
+            const consStart = document.getElementById(`le-consStart-${rid}`)?.value.trim() || '';
+            const consEnd   = document.getElementById(`le-consEnd-${rid}`)?.value.trim() || '';
+            if (!consStart) { alert('Please fill Consumption Start Date.'); btn.innerText = 'SAVE'; btn.disabled = false; return; }
+            // Send full row payload but only consumption fields are changed; others kept as-is from allLaserRows
+            const row = allLaserRows.find(r => String(getVal(r, ['Id','ID','id'])) === String(rid));
+            const payload = {
+                recordID:       rid,
+                receivedTime:   convertExcelDate(getVal(row, ['Received Time','ReceivedTime','Received'])),
+                season:         getVal(row, ['Season']),
+                styleNumber:    getVal(row, ['Style Number','StyleNumber','Style']),
+                section:        getVal(row, ['Section']),
+                category:       getVal(row, ['Category']),
+                protoStage:     getVal(row, ['Proto Stage','ProtoStage','Stage']),
+                garmentQty:     getVal(row, ['Garment Quantity','GarmentQty','Garment Qty']),
+                laserParts:     getVal(row, ['Laser Part Count','LaserPartCount','Laser Parts']),
+                ironParts:      getVal(row, ['Ironing Part Count','IroningPartCount','Iron Parts']),
+                trimParts:      getVal(row, ['Laser Trim Part Count','LaserTrimPartCount','Trim Parts']),
+                completeDate:   convertExcelDate(getVal(row, ['Complete Date','CompleteDate'])),
+                maPic:          getMAPic(row),
+                consStart:      toExcelDateFormat(consStart),
+                consEnd:        toExcelDateFormat(consEnd),
+                consumptionPic: currentUser,
+                remark:         getVal(row, ['Remark','Remarks'])
+            };
+            try {
+                const res = await fetch(laserUpdateURL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                if (res.ok) {
+                    btn.innerText = 'SAVED!';
+                    setTimeout(() => { btn.innerText = 'SAVE'; btn.disabled = false; refreshLaserData(true); }, 3000);
+                } else {
+                    btn.innerText = 'ERROR'; setTimeout(() => { btn.innerText = 'SAVE'; btn.disabled = false; }, 2000);
+                }
+            } catch(e) {
+                btn.innerText = 'ERROR'; setTimeout(() => { btn.innerText = 'SAVE'; btn.disabled = false; }, 2000);
+            }
+        }
         async function refreshLiveLogs(isSilent = false) {
             const st = document.getElementById('syncStatus');
             if(!isSilent && st) st.classList.add('sync-active');
@@ -494,15 +899,61 @@
         async function adminUpdate(simpleId, event) {
             const record = allTemplates.find(t => String(t.id) === String(simpleId));
             if (!record) return;
-            const tNo = document.getElementById(`edit-tno-${simpleId}`)?.value || "", picDropdown = document.getElementById(`edit-pic-${simpleId}`), tQty = document.getElementById(`qty-${simpleId}`)?.value || "", tDateRaw = document.getElementById(`date-${simpleId}`)?.value || "", tRem = document.getElementById(`remark-${simpleId}`)?.value || "", tDateExcel = formatExcelPayload(tDateRaw);
-            let tPic = picDropdown ? picDropdown.value : (record.pic || (currentUser || ""));
+            const tNo = document.getElementById(`edit-tno-${simpleId}`)?.value.trim() || "";
+            const picDropdown = document.getElementById(`edit-pic-${simpleId}`);
+            const tQty = document.getElementById(`qty-${simpleId}`)?.value || "";
+            const tDateRaw = document.getElementById(`date-${simpleId}`)?.value || "";
+            const tRem = document.getElementById(`remark-${simpleId}`)?.value.trim() || "";
+            const tDateExcel = formatExcelPayload(tDateRaw);
+
+            let tPic = "";
+            if (picDropdown) {
+                tPic = picDropdown.value.trim();
+                if (!tPic) tPic = record.pic || "";
+            } else {
+                tPic = record.pic || "";
+            }
+
             if (!currentUser) return alert("Please login first.");
+            if (!tPic) return alert("Please select a M&A PIC before saving.");
+            // Guard: ensure the selected PIC exactly matches one of the Excel-validated names
+            // This prevents a silent Excel write-rejection caused by a name not in the validation list
+            if (!picList.includes(tPic)) {
+                return alert(`"${tPic}" is not in the Excel Data Validation list.\nValid PICs are: ${picList.join(", ")}\nPlease update the Excel validation list to include this name.`);
+            }
+
             const btn = event.target; btn.innerText = "SAVING..."; btn.disabled = true;
+
+            const payload = {
+                recordID: String(record.guid),
+                templateNo: String(tNo),
+                pic: String(tPic),
+                completionDate: String(tDateExcel),
+                completeQty: String(tQty),
+                remark: String(tRem)
+            };
+
             try {
-                const res = await fetch(updateURL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ recordID: String(record.guid), templateNo: String(tNo), pic: String(tPic), completionDate: String(tDateExcel), completeQty: String(tQty), remark: String(tRem) }) });
-                if(res.ok) { btn.innerText = "UPDATED!"; setTimeout(() => { btn.innerText = "SAVE"; btn.disabled = false; refreshTemplateLogs(); }, 3000); }
-                else { btn.innerText = "SAVE"; btn.disabled = false; }
-            } catch(e) { btn.innerText = "SAVE"; btn.disabled = false; }
+                const res = await fetch(updateURL, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    record.pic = tPic;
+                    record.templateNo = tNo || record.templateNo;
+                    record.remark = tRem || record.remark;
+                    btn.innerText = "UPDATED!";
+                    applyTempFilters(false);
+                    setTimeout(() => { btn.innerText = "SAVE"; btn.disabled = false; refreshTemplateLogs(); }, 3000);
+                } else {
+                    btn.innerText = "ERROR - RETRY";
+                    setTimeout(() => { btn.innerText = "SAVE"; btn.disabled = false; }, 2000);
+                }
+            } catch(e) {
+                btn.innerText = "ERROR - RETRY";
+                setTimeout(() => { btn.innerText = "SAVE"; btn.disabled = false; }, 2000);
+            }
         }
 
         function generateMonthOptions() {
@@ -526,8 +977,8 @@
             document.getElementById(`tab-${t}`).classList.add('tab-active');
         }
 
-        function login() { currentUser = document.getElementById('userSelect').value; localStorage.setItem('ma_session_user', currentUser); updateSessionUI(); applyTempFilters(false); }
-        function logout() { currentUser = null; localStorage.removeItem('ma_session_user'); updateSessionUI(); applyTempFilters(false); }
+        function login() { currentUser = document.getElementById('userSelect').value; localStorage.setItem('ma_session_user', currentUser); updateSessionUI(); updateLaserPicDisplay(); applyTempFilters(false); renderLaserTable(); }
+        function logout() { currentUser = null; localStorage.removeItem('ma_session_user'); updateSessionUI(); updateLaserPicDisplay(); applyTempFilters(false); renderLaserTable(); }
         function updateSessionUI() { 
             const lv = document.getElementById('loginView'), av = document.getElementById('activeUserView');
             if (currentUser) { lv.classList.add('hidden'); av.classList.remove('hidden'); document.getElementById('displayUserName').innerText = currentUser; } 
@@ -541,13 +992,15 @@
             document.getElementById('filterContainer').appendChild(b);
         });
 
+        // FIX 3: Removed prefetchMachineImages() call — see note above
         window.onload = () => { 
-            prefetchMachineImages(); 
-            updateSessionUI(); 
+            updateSessionUI();
+            updateLaserPicDisplay();
             updateMachineImage(); 
             refreshTemplateLogs(); 
-            refreshLiveLogs(); 
-            setInterval(() => { refreshTemplateLogs(true); refreshLiveLogs(true); }, 60000); 
+            refreshLiveLogs();
+            refreshLaserData();
+            setInterval(() => { refreshTemplateLogs(true); refreshLiveLogs(true); refreshLaserData(true); }, 60000); 
         };
     </script>
 </body>
