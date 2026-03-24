@@ -59,6 +59,7 @@
                 </div>
                 <div id="activeUserView" class="hidden flex items-center justify-between gap-3">
                     <span class="text-sm font-bold text-slate-500 uppercase tracking-tight">Active: <span id="displayUserName" class="text-blue-600 ml-1">---</span></span>
+                    <a id="att-link" href="#attendance" onclick="setTimeout(openAttendance,50)" class="hidden text-[10px] font-bold text-slate-400 hover:text-blue-500 underline mr-1">Attendance</a>
                     <button onclick="logout()" class="text-xs font-bold text-red-500 border border-red-200 px-3 py-2 rounded-lg hover:bg-red-50">Logout</button>
                 </div>
             </div>
@@ -227,6 +228,90 @@
                     <div class="h-[300px]"><canvas id="volumeChart"></canvas></div>
                 </div>
             </div>
+
+            <!-- KPI: Template Delivery Performance by Section + PIC (moved below completion trend) -->
+            <div class="mb-4 flex items-center gap-3">
+                <div class="flex-1 border-t border-slate-200"></div>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2">Delivery KPI</span>
+                <div class="flex-1 border-t border-slate-200"></div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+                <!-- Sample Development KPI -->
+                <div id="kpi-sample-card" class="bg-white rounded-xl shadow-sm overflow-hidden border-l-4 transition-all" style="border-left-color:#10b981;border-top:1px solid #e2e8f0;border-right:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0">
+                    <div id="kpi-sample-header" class="px-5 py-4 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white border-b">
+                        <div>
+                            <p class="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">Sample Development</p>
+                            <h3 class="text-sm font-black text-slate-800 tracking-tight">Delivery KPI</h3>
+                        </div>
+                        <div class="text-right">
+                            <div id="kpi-sample-badge" class="text-3xl font-black leading-none" style="color:#10b981">—</div>
+                            <div class="text-[8px] font-bold text-slate-400 uppercase mt-0.5">On-Time Rate</div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 divide-x">
+                        <div class="p-4 text-center">
+                            <p class="text-[8px] font-bold text-slate-400 uppercase tracking-wide mb-1">Completed</p>
+                            <h2 id="kpi-sample-total" class="text-2xl font-black text-slate-800">0</h2>
+                        </div>
+                        <div class="p-4 text-center bg-emerald-50/60">
+                            <p class="text-[8px] font-bold text-emerald-600 uppercase tracking-wide mb-1">✓ On Time</p>
+                            <h2 id="kpi-sample-ontime" class="text-2xl font-black text-emerald-700">0</h2>
+                        </div>
+                        <div class="p-4 text-center bg-red-50/60">
+                            <p class="text-[8px] font-bold text-red-500 uppercase tracking-wide mb-1">⚠ Late</p>
+                            <h2 id="kpi-sample-late" class="text-2xl font-black text-red-600">0</h2>
+                        </div>
+                    </div>
+                    <div class="px-5 py-3 bg-slate-50/50 border-t">
+                        <div class="flex justify-between text-[9px] font-bold text-slate-400 mb-1.5">
+                            <span class="uppercase tracking-wider">On-Time Rate</span>
+                            <span id="kpi-sample-pct" class="font-black text-slate-700">0%</span>
+                        </div>
+                        <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+                            <div id="kpi-sample-bar" class="h-2.5 rounded-full transition-all duration-700 ease-out" style="width:0%;background:linear-gradient(90deg,#10b981,#34d399)"></div>
+                        </div>
+                    </div>
+                    <div id="kpi-sample-pic" class="px-5 pb-4 pt-2 space-y-1.5"></div>
+                </div>
+
+                <!-- Production KPI -->
+                <div id="kpi-prod-card" class="bg-white rounded-xl shadow-sm overflow-hidden border-l-4 transition-all" style="border-left-color:#10b981;border-top:1px solid #e2e8f0;border-right:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0">
+                    <div id="kpi-prod-header" class="px-5 py-4 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white border-b">
+                        <div>
+                            <p class="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">Production</p>
+                            <h3 class="text-sm font-black text-slate-800 tracking-tight">Delivery KPI</h3>
+                        </div>
+                        <div class="text-right">
+                            <div id="kpi-prod-badge" class="text-3xl font-black leading-none" style="color:#10b981">—</div>
+                            <div class="text-[8px] font-bold text-slate-400 uppercase mt-0.5">On-Time Rate</div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 divide-x">
+                        <div class="p-4 text-center">
+                            <p class="text-[8px] font-bold text-slate-400 uppercase tracking-wide mb-1">Completed</p>
+                            <h2 id="kpi-prod-total" class="text-2xl font-black text-slate-800">0</h2>
+                        </div>
+                        <div class="p-4 text-center bg-emerald-50/60">
+                            <p class="text-[8px] font-bold text-emerald-600 uppercase tracking-wide mb-1">✓ On Time</p>
+                            <h2 id="kpi-prod-ontime" class="text-2xl font-black text-emerald-700">0</h2>
+                        </div>
+                        <div class="p-4 text-center bg-red-50/60">
+                            <p class="text-[8px] font-bold text-red-500 uppercase tracking-wide mb-1">⚠ Late</p>
+                            <h2 id="kpi-prod-late" class="text-2xl font-black text-red-600">0</h2>
+                        </div>
+                    </div>
+                    <div class="px-5 py-3 bg-slate-50/50 border-t">
+                        <div class="flex justify-between text-[9px] font-bold text-slate-400 mb-1.5">
+                            <span class="uppercase tracking-wider">On-Time Rate</span>
+                            <span id="kpi-prod-pct" class="font-black text-slate-700">0%</span>
+                        </div>
+                        <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+                            <div id="kpi-prod-bar" class="h-2.5 rounded-full transition-all duration-700 ease-out" style="width:0%;background:linear-gradient(90deg,#10b981,#34d399)"></div>
+                        </div>
+                    </div>
+                    <div id="kpi-prod-pic" class="px-5 pb-4 pt-2 space-y-1.5"></div>
+                </div>
+            </div>
             <div class="bg-white p-6 rounded-xl border shadow-sm">
                 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">PIC Unfinished Work</h3>
                 <div class="overflow-x-auto rounded-lg border">
@@ -391,22 +476,25 @@
 
             <!-- Capacity Banner -->
             <div class="bg-white p-4 rounded-xl border shadow-sm mb-4 flex flex-wrap items-center gap-4">
-                <div class="flex items-center gap-2">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Working Days:</span>
-                    <input type="number" id="util-days" value="22" min="1" max="31"
-                        class="w-16 text-center font-bold text-blue-600 border rounded p-1 text-sm outline-none focus:ring-2 focus:ring-blue-400"
+                <div class="flex items-center gap-3 flex-wrap">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Capacity Source:</span>
+                    <div class="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5">
+                        <span class="text-[10px] font-bold text-blue-600 uppercase tracking-wider">📋 From Attendance</span>
+                        <span id="util-att-status" class="text-[9px] text-slate-400 italic">auto</span>
+                    </div>
+                    <span class="text-[10px] text-slate-400">or override:</span>
+                    <input type="number" id="util-days" value="" min="1" max="31" placeholder="days"
+                        class="w-16 text-center font-bold text-slate-500 border rounded p-1 text-sm outline-none focus:ring-2 focus:ring-blue-400"
                         oninput="renderUtilization()">
                     <span class="text-[10px] text-slate-400">days ×</span>
-                    <input type="number" id="util-hrs" value="9" min="1" max="24"
-                        class="w-14 text-center font-bold text-blue-600 border rounded p-1 text-sm outline-none focus:ring-2 focus:ring-blue-400"
+                    <input type="number" id="util-hrs" value="" min="1" max="24" placeholder="hrs/day"
+                        class="w-16 text-center font-bold text-slate-500 border rounded p-1 text-sm outline-none focus:ring-2 focus:ring-blue-400"
                         oninput="renderUtilization()">
-                    <span class="text-[10px] text-slate-400">hrs = </span>
-                    <span id="util-capacity" class="font-bold text-slate-700 text-sm">176 hrs capacity / PIC</span>
+                    <span id="util-capacity" class="font-bold text-blue-700 text-sm ml-1">— hrs capacity / PIC</span>
                 </div>
                 <div class="flex items-center gap-3 ml-auto text-[10px] text-slate-400">
                     <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-emerald-500 inline-block"></span> Laser hrs</span>
                     <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-blue-500 inline-block"></span> Support hrs</span>
-
                 </div>
             </div>
 
@@ -575,23 +663,275 @@
                             <th class="p-3">Complete Time</th>
                             <th class="p-3">Elapsed (hrs)</th>
                             <th class="p-3">M&A PIC</th>
+                            <th class="p-3 text-indigo-600">Complexity</th>
+                            <th class="p-3 text-teal-600">DFM</th>
                             <th class="p-3">Remark</th>
                         </tr>
                     </thead>
                     <tbody id="supportTable" class="text-slate-700">
-                        <tr><td colspan="14" class="p-6 text-center text-slate-400 italic text-xs">Loading support data...</td></tr>
+                        <tr><td colspan="16" class="p-6 text-center text-slate-400 italic text-xs">Loading support data...</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
+    <!-- ═══════════════════════════════════════════════════════
+         ATTENDANCE PAGE — hidden from nav, accessible via ?page=attendance
+         Editable only by Gavin and Joe
+    ════════════════════════════════════════════════════════════ -->
+    <div id="attendance-page" class="hidden max-w-[1400px] mx-auto">
+        <header class="mb-4 bg-white p-4 rounded-xl border shadow-sm flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <button onclick="closeAttendance()" class="text-slate-400 hover:text-slate-700 text-xl font-bold leading-none">←</button>
+                <div>
+                    <h1 class="text-lg font-bold text-slate-800">M&A Attendance</h1>
+                    <p class="text-slate-400 text-[10px] uppercase tracking-widest">Working Hours Tracker</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="prevAttendanceMonth()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold px-3 py-1.5 rounded text-xs">◀</button>
+                <span id="att-month-label" class="text-sm font-bold text-slate-700 min-w-[120px] text-center">—</span>
+                <button onclick="nextAttendanceMonth()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold px-3 py-1.5 rounded text-xs">▶</button>
+                <button onclick="saveAttendance()" id="att-save-btn" class="bg-blue-600 text-white text-xs font-bold px-4 py-1.5 rounded hover:bg-blue-700 ml-2">SAVE</button>
+            </div>
+        </header>
+
+
+
+        <!-- Quick-fill row -->
+        <div class="bg-white p-3 rounded-xl border shadow-sm mb-4 flex flex-wrap gap-2 items-center text-xs">
+            <span class="font-bold text-slate-500 uppercase tracking-wider text-[10px]">Quick Fill Selected Column:</span>
+            <button onclick="quickFill(9)"    class="bg-blue-100 text-blue-700 font-bold px-3 py-1 rounded hover:bg-blue-200">9h Normal</button>
+            <button onclick="quickFill(11)"   class="bg-amber-100 text-amber-700 font-bold px-3 py-1 rounded hover:bg-amber-200">11h OT</button>
+            <button onclick="quickFill(8.5)"  class="bg-purple-100 text-purple-700 font-bold px-3 py-1 rounded hover:bg-purple-200">8.5h Sat</button>
+            <button onclick="quickFill(0)"    class="bg-slate-100 text-slate-600 font-bold px-3 py-1 rounded hover:bg-slate-200">0 Off</button>
+            <span class="text-slate-300">|</span>
+            <span class="font-bold text-slate-500 text-[10px]">Custom:</span>
+            <input type="number" id="att-custom-val" step="0.5" min="0" max="24" value="" placeholder="hrs" class="w-16 border rounded p-1 text-center text-xs outline-none focus:ring-2 focus:ring-blue-400">
+            <button onclick="quickFill(parseFloat(document.getElementById('att-custom-val').value)||0)" class="bg-slate-700 text-white font-bold px-3 py-1 rounded hover:bg-slate-600">Fill</button>
+        </div>
+
+        <!-- Attendance Grid -->
+        <div class="bg-white rounded-xl shadow-sm border overflow-x-auto">
+            <table id="att-table" class="w-full text-left min-w-[800px]">
+                <thead id="att-thead" class="bg-slate-100 border-b text-[10px] uppercase tracking-wider text-slate-500 font-bold"></thead>
+                <tbody id="att-tbody"></tbody>
+            </table>
+        </div>
+
+        <div class="mt-4 text-[10px] text-slate-400 text-center">
+            Attendance data is stored locally in your browser. Changes saved with SAVE button persist across sessions.
+        </div>
+    </div>
+
+    <script>
+    // ── Attendance Page ──────────────────────────────────────────────────────
+    const ATT_MEMBERS = ['Phone','James','Ram','Keat','Viki','Mark','Joe','Gavin'];
+    const ATT_EDITORS = ['Gavin','Joe'];
+    let attYear  = new Date().getFullYear();
+    let attMonth = new Date().getMonth(); // 0-indexed
+    let attSelectedCol = null; // for quick-fill
+    let attData  = {}; // { 'YYYY-MM': { name: { day: hrs } } }
+
+    function attKey() { return `${attYear}-${String(attMonth+1).padStart(2,'0')}`; }
+
+    function openAttendance() {
+        document.getElementById('attendance-page').classList.remove('hidden');
+        document.querySelector('.max-w-\[1600px\]').classList.add('hidden');
+        loadAttData();
+        renderAttendance();
+    }
+
+    function closeAttendance() {
+        document.getElementById('attendance-page').classList.add('hidden');
+        document.querySelector('.max-w-\[1600px\]').classList.remove('hidden');
+    }
+
+    function loadAttData() {
+        try {
+            const saved = localStorage.getItem('ma_attendance');
+            attData = saved ? JSON.parse(saved) : {};
+        } catch(e) { attData = {}; }
+    }
+
+    async function saveAttendance() {
+        if (!ATT_EDITORS.includes(currentUser)) return alert('Only Gavin or Joe can save attendance.');
+        const key = attKey();
+        if (!attData[key]) attData[key] = {};
+        const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+        const dows   = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
+        const daysInMonth = new Date(attYear, attMonth+1, 0).getDate();
+        const monthLabel  = `${months[attMonth]}-${String(attYear).slice(2)}`;
+
+        // Build ONE row per person (not per day) — reduces Excel API calls from ~240 → 8
+        // Each person row has Day_1..Day_N columns + Total
+        // Power Automate loop does 8 "Add a row" calls instead of 240 — stays well within timeout
+        const rows = [];
+        ATT_MEMBERS.forEach(name => {
+            if (!attData[key][name]) attData[key][name] = {};
+            let total = 0;
+            const rowObj = { month: monthLabel, name };
+            for (let d = 1; d <= daysInMonth; d++) {
+                const el  = document.getElementById(`att-${name}-${d}`);
+                const val = el ? (el.value === '' ? 0 : parseFloat(el.value) || 0) : 0;
+                attData[key][name][d] = val;
+                total += val;
+                rowObj[`Day_${d}`] = val;
+            }
+            rowObj.total = parseFloat(total.toFixed(1));
+            rows.push(rowObj);
+        });
+
+        // Save to localStorage as backup
+        localStorage.setItem('ma_attendance', JSON.stringify(attData));
+
+        const btn = document.getElementById('att-save-btn');
+        btn.innerText = 'SAVING...'; btn.disabled = true;
+
+        // Fire-and-forget pattern: send request then don't wait for slow Excel loop
+        // Power Automate will still complete in background; portal shows SAVED immediately
+        // after confirming trigger was received (202 Accepted is enough)
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 30000);
+        try {
+            const res = await fetch(attendanceUpdateURL, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ month: monthLabel, rows }),
+                signal: controller.signal
+            });
+            clearTimeout(timer);
+            // Power Automate returns 202 Accepted immediately when async, or 200 when sync
+            if (res.ok || res.status === 202) {
+                btn.innerText = 'SAVED ✓'; btn.classList.add('bg-emerald-600');
+                setTimeout(() => { btn.innerText = 'SAVE'; btn.disabled = false; btn.classList.remove('bg-emerald-600'); }, 3000);
+            } else {
+                const txt = await res.text();
+                btn.innerText = 'LOCAL ONLY'; btn.disabled = false;
+                alert(`Saved locally but Flow failed (HTTP ${res.status}).\nCheck: Flow trigger is HTTP, Apply to each input = triggerBody()?['rows'], field mapping uses items() expressions.\n${txt.substring(0,200)}`);
+            }
+        } catch(e) {
+            clearTimeout(timer);
+            if (e.name === 'AbortError') {
+                // Timeout — but data was sent. Power Automate is still running in background.
+                // This is normal for large months — data is safe in localStorage.
+                btn.innerText = 'SENT ✓'; btn.classList.add('bg-amber-500');
+                setTimeout(() => { btn.innerText = 'SAVE'; btn.disabled = false; btn.classList.remove('bg-amber-500'); }, 3000);
+            } else {
+                btn.innerText = 'LOCAL ONLY'; btn.disabled = false;
+                alert('Network error — saved locally only. ' + e.message);
+            }
+        }
+    }
+
+    function prevAttendanceMonth() {
+        attMonth--;
+        if (attMonth < 0) { attMonth = 11; attYear--; }
+        renderAttendance();
+    }
+    function nextAttendanceMonth() {
+        attMonth++;
+        if (attMonth > 11) { attMonth = 0; attYear++; }
+        renderAttendance();
+    }
+
+    function quickFill(val) {
+        if (!ATT_EDITORS.includes(currentUser)) return alert('Only Gavin or Joe can edit attendance.');
+        if (attSelectedCol === null) return alert('Click a column header (day) first to select it.');
+        ATT_MEMBERS.forEach(name => {
+            const el = document.getElementById(`att-${name}-${attSelectedCol}`);
+            if (el && !el.disabled) el.value = val;
+        });
+    }
+
+    function renderAttendance() {
+        const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+        const dows   = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
+        const key    = attKey();
+        const data   = attData[key] || {};
+        const daysInMonth = new Date(attYear, attMonth+1, 0).getDate();
+        const canEdit = ATT_EDITORS.includes(currentUser);
+
+        document.getElementById('att-month-label').innerText = `${months[attMonth]} ${attYear}`;
+
+        // Build header
+        const thead = document.getElementById('att-thead');
+        let hRow = '<tr><th class="p-2 sticky left-0 bg-slate-100 z-10 min-w-[80px]">Name</th>';
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dow = new Date(attYear, attMonth, d).getDay();
+            const isWeekend = dow === 0 || dow === 6;
+            const isSat = dow === 6;
+            const colClass = isWeekend ? (isSat ? 'bg-purple-50' : 'bg-slate-50') : '';
+            hRow += `<th class="p-1 text-center cursor-pointer hover:bg-blue-100 transition-all ${colClass} ${attSelectedCol===d?'bg-blue-200 text-blue-800':''}"
+                onclick="attSelectedCol=${d}; renderAttendance()">
+                <div class="text-[9px]">${dows[dow]}</div>
+                <div class="text-[11px] font-black">${d}</div>
+            </th>`;
+        }
+        hRow += '<th class="p-2 text-right bg-slate-100">Total</th></tr>';
+        thead.innerHTML = hRow;
+
+        // Build body
+        const tbody = document.getElementById('att-tbody');
+        let rows = '';
+        ATT_MEMBERS.forEach(name => {
+            const memberData = data[name] || {};
+            let total = 0;
+            let cells = '';
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dow  = new Date(attYear, attMonth, d).getDay();
+                const isSat = dow === 6;
+                const isSun = dow === 0;
+                const val  = memberData[d] !== undefined ? memberData[d] : (isSun ? 0 : '');
+                const numVal = parseFloat(val) || 0;
+                total += numVal;
+                // Cell colour
+                let cellBg = '';
+                if (isSun)        cellBg = 'bg-slate-50';
+                else if (isSat)   cellBg = 'bg-purple-50';
+                else if (numVal === 0 && val !== '') cellBg = 'bg-slate-100';
+                else if (numVal >= 11) cellBg = 'bg-amber-50';
+                else if (numVal === 9) cellBg = 'bg-blue-50';
+                const inputClass = `w-10 text-center text-[11px] font-bold border-0 outline-none bg-transparent ${numVal>=11?'text-amber-700':numVal===9?'text-blue-700':numVal===0&&val!==''?'text-slate-400':'text-purple-700'} ${!canEdit?'cursor-default':''}`;
+                cells += `<td class="p-0.5 text-center ${cellBg} ${attSelectedCol===d?'ring-1 ring-blue-400':''}">
+                    <input id="att-${name}-${d}" type="number" step="0.5" min="0" max="24"
+                        value="${val}" ${canEdit?'':'disabled readonly'}
+                        class="${inputClass}"
+                        oninput="this.parentElement.className='p-0.5 text-center '+(parseFloat(this.value)>=11?'bg-amber-50':parseFloat(this.value)===9?'bg-blue-50':parseFloat(this.value)===0?'bg-slate-100':'bg-purple-50')+(${attSelectedCol===d}?' ring-1 ring-blue-400':'')" >
+                </td>`;
+            }
+            // Total
+            rows += `<tr class="border-b hover:bg-slate-50">
+                <td class="p-2 font-bold sticky left-0 bg-white z-10 text-sm">${name}</td>
+                ${cells}
+                <td class="p-2 font-black text-right text-blue-700">${total.toFixed(1)}</td>
+            </tr>`;
+        });
+        tbody.innerHTML = rows;
+    }
+
+    // Expose attendance via URL hash
+    function checkAttendanceRoute() {
+        if (window.location.hash === '#attendance') {
+            if (currentUser && ATT_EDITORS.includes(currentUser)) {
+                openAttendance();
+            } else {
+                alert('Please login first.');
+            }
+        }
+    }
+    window.addEventListener('hashchange', checkAttendanceRoute);
+    </script>
+
     <script>
         // --- API URL Constants ---
         const postURL = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/8467b362b45c4408a5c3b36138d34d8d/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=kYDfwYnTE9IU71pqIibsp0QU2WYzQ0zORaGj2bjaDAs";
         const fetchURL = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/47006a48f8764a49ab01dbb665617acf/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=2eqeoBWF-80BETYDfV2HdHZeqJW7-fDYjd3GXri1wNo";
         const templateFetchURL = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/81581050d13a4df09275905e9e05e2df/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=yWugYHV-OyqB2yVi3eSd94XXEA2CgOngdaCVf83xBtA";
-        const updateURL = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/a37c891f30994fef90aac14c55e2388e/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=6ostk6jCT6jb4Nx4lBi6fO_56axOeQPPm9Oo1_hcw7c";
+        const updateURL        = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/a37c891f30994fef90aac14c55e2388e/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=6ostk6jCT6jb4Nx4lBi6fO_56axOeQPPm9Oo1_hcw7c";
+        const supportUpdateURL = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/5caccabc64ae4738b3875a4635d3bd31/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=bh4SdKl4N38Yc4Ofnvo0Yez6gJciG6raPEmNzEgj6fg";
+        const attendanceUpdateURL = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/b0bdaebbf2104b669de00b09a78add75/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=5rXFrjS1WABIzdnSZrqhqsxfZqp0G1c7E-GzkSnkqBk";
         const supportFetchURL = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/cc862bcb25864cf3821934bb3954e426/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=sd0SSGGkna3TT74vR7V1jTT6E8qPxp-a4O1w0AlrqCY";
         const laserFetchURL  = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/f7fd69d7c4114bd2af5d8fffe467982a/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=hAWB_aTnAgdah1KM8cUx2fbYcjNNLN67GGAMOT3jeLI";
         const laserAddURL    = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/2a02949cf9a843cc820034dbbb755a78/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=N6f1qPIEpKL-Kyns7-9t1l2KTKpCD90gM--hO5AojvU";
@@ -812,6 +1152,74 @@
             document.getElementById('stat-pending').innerText = filteredByMonth.filter(t => t.status === 'PENDING').length;
             document.getElementById('stat-delayed').innerText = filteredByMonth.filter(t => t.status === 'DELAYED').length;
             document.getElementById('stat-completed').innerText = filteredByMonth.filter(t => t.status === 'COMPLETED').length;
+
+            // ── KPI: Delivery by Section + PIC ──────────────────────────────
+            // Late = Complete Date > Required Date (only for completed jobs)
+            function isLate(t) {
+                if (t.status !== 'COMPLETED') return false;
+                if (!t.completeDateDisplay || t.completeDateDisplay === '---') return false;
+                if (!t.requiredDate || t.requiredDate === '---') return false;
+                const req  = (() => { const p = t.requiredDate.split('/'); return p.length===3 ? new Date(parseInt(p[2]),parseInt(p[1])-1,parseInt(p[0])) : null; })();
+                const done = (() => { const p = t.completeDateDisplay.split(' ')[0].split('/'); return p.length===3 ? new Date(parseInt(p[2]),parseInt(p[1])-1,parseInt(p[0])) : null; })();
+                return req && done ? done > req : false;
+            }
+            ['sample','prod'].forEach(key => {
+                const sectionStr = key === 'sample' ? 'sample development' : 'production';
+                // Only count COMPLETED jobs for KPI (pending/delayed not yet deliverable)
+                const secJobs = filteredByMonth.filter(t =>
+                    t.status === 'COMPLETED' &&
+                    String(t.section).toLowerCase().includes(sectionStr)
+                );
+                const total  = secJobs.length;
+                const late   = secJobs.filter(t => isLate(t)).length;
+                const ontime = total - late;
+                const pct    = total ? Math.round(ontime/total*100) : 0;
+                const barColor = pct >= 90 ? '#10b981' : pct >= 70 ? '#f59e0b' : '#ef4444';
+                const barGradient = pct >= 90 ? 'linear-gradient(90deg,#10b981,#34d399)' : pct >= 70 ? 'linear-gradient(90deg,#f59e0b,#fbbf24)' : 'linear-gradient(90deg,#ef4444,#f87171)';
+                const el = id => document.getElementById(id);
+                if (el(`kpi-${key}-total`))  el(`kpi-${key}-total`).innerText = total;
+                if (el(`kpi-${key}-ontime`)) el(`kpi-${key}-ontime`).innerText = ontime;
+                if (el(`kpi-${key}-late`))   el(`kpi-${key}-late`).innerText = late;
+                if (el(`kpi-${key}-bar`))  { el(`kpi-${key}-bar`).style.width = pct+'%'; el(`kpi-${key}-bar`).style.background = barGradient; }
+                if (el(`kpi-${key}-pct`))  { el(`kpi-${key}-pct`).innerText = pct+'%'; el(`kpi-${key}-pct`).style.color = barColor; }
+                // Badge: large % with urgency colour
+                if (el(`kpi-${key}-badge`)) { el(`kpi-${key}-badge`).innerText = pct+'%'; el(`kpi-${key}-badge`).style.color = barColor; }
+                // Card border-left + header bg change based on urgency
+                const card = el(`kpi-${key}-card`); const hdr = el(`kpi-${key}-header`);
+                if (card) card.style.borderLeftColor = barColor;
+                if (hdr)  hdr.style.background   = pct>=90?'linear-gradient(90deg,#f0fdf4,#fff)':pct>=70?'linear-gradient(90deg,#fffbeb,#fff)':'linear-gradient(90deg,#fef2f2,#fff)';
+
+                // Per-PIC breakdown — urgency rows with late count alert
+                const picEl = el(`kpi-${key}-pic`);
+                if (picEl) {
+                    const picStats = {};
+                    secJobs.forEach(t => {
+                        if (!picStats[t.pic]) picStats[t.pic] = { total:0, late:0 };
+                        picStats[t.pic].total++;
+                        if (isLate(t)) picStats[t.pic].late++;
+                    });
+                    const picRows = Object.entries(picStats)
+                        .sort((a,b) => (b[1].late/Math.max(b[1].total,1)) - (a[1].late/Math.max(a[1].total,1))) // worst first
+                        .map(([name, s]) => {
+                            const p    = s.total ? Math.round((s.total-s.late)/s.total*100) : 0;
+                            const bc   = p >= 90 ? '#10b981' : p >= 70 ? '#f59e0b' : '#ef4444';
+                            const bgCl = p >= 90 ? '' : p >= 70 ? 'bg-amber-50' : 'bg-red-50';
+                            const lateTag = s.late > 0
+                                ? `<span class="ml-1 px-1.5 py-0.5 rounded text-[8px] font-black bg-red-100 text-red-700 animate-pulse">${s.late} LATE</span>`
+                                : `<span class="ml-1 px-1.5 py-0.5 rounded text-[8px] font-bold bg-emerald-100 text-emerald-700">✓ All on time</span>`;
+                            return `<div class="flex items-center gap-2 text-[10px] rounded-lg px-2 py-1.5 ${bgCl}">
+                                <span class="w-14 font-black text-slate-800 truncate">${name}</span>
+                                <div class="flex-1 bg-slate-100 rounded-full h-2 overflow-hidden">
+                                    <div class="h-2 rounded-full transition-all" style="width:${p}%;background:${bc}"></div>
+                                </div>
+                                <span class="font-black text-[11px] w-9 text-right" style="color:${bc}">${p}%</span>
+                                <span class="text-slate-400 text-[9px]">${s.total-s.late}/${s.total}</span>
+                                ${lateTag}
+                            </div>`;
+                        }).join('');
+                    picEl.innerHTML = picRows || '<p class="text-[10px] text-slate-400 italic py-2">No completed jobs this period.</p>';
+                }
+            });
             
             const picStats = {};
             allTemplates.forEach(t => {
@@ -922,14 +1330,7 @@
 
             // Build composite key: Season+Style+Category+ProtoStage+GarmentQty
             // Used to detect split jobs (2 rows for same job)
-            // Composite key for split-job detection — Season excluded intentionally
-            // because the same style can span two seasons (e.g. SU27 + SP27 same job)
-            const jobKey = r => [
-                getVal(r, ['Style Number','StyleNumber','Style']),
-                getVal(r, ['Category']),
-                getVal(r, ['Proto Stage','ProtoStage','Stage']),
-                getVal(r, ['Garment Quantity','GarmentQty','Garment Qty'])
-            ].map(v => String(v).trim().toLowerCase()).join('|');
+            // jobKey is defined at module scope below — used here and in markLaserNA
 
             // Build set of keys where ANY row in the group has Consumption Complete filled
             const doneJobKeys = new Set();
@@ -948,7 +1349,8 @@
                     && (!cs || cs === '---')
                     && isTrackedProtoStage(proto)
                     && !doneJobKeys.has(jobKey(r))  // exclude if a sibling row is already done
-                    && !naHiddenIds.has(rid);        // exclude if hidden this session via N/A
+                    && !naHiddenIds.has(rid)          // exclude if hidden by row ID
+                    && !naHiddenIds.has(jobKey(r));  // exclude if hidden by composite key (fallback)
             });
 
             // Done = Consumption End Date is filled
@@ -1257,10 +1659,27 @@
         // Gavin quick-action: ✓ mark consumption complete (fills Cons Start+End+PIC with today)
         // N/A: session-only hide — no Excel write, just removes from pending table for this session
         // Stores hidden row IDs in a Set; cleared on page refresh
-        const naHiddenIds = new Set();
+        // Load N/A hidden IDs from localStorage so they survive page refresh
+        const naHiddenIds = new Set(JSON.parse(localStorage.getItem('ma_na_hidden') || '[]'));
+
+        // Module-scope composite key for split-job detection (Season excluded — same style can span seasons)
+        const jobKey = r => [
+            getVal(r, ['Style Number','StyleNumber','Style']),
+            getVal(r, ['Category']),
+            getVal(r, ['Proto Stage','ProtoStage','Stage']),
+            getVal(r, ['Garment Quantity','GarmentQty','Garment Qty'])
+        ].map(v => String(v).trim().toLowerCase()).join('|');
+
+        function saveNaHidden() {
+            localStorage.setItem('ma_na_hidden', JSON.stringify(Array.from(naHiddenIds)));
+        }
 
         function markLaserNA(rid, event) {
             naHiddenIds.add(String(rid));
+            // Also store composite jobKey as fallback in case ID lookup differs after refresh
+            const row = allLaserRows.find(r => String(getVal(r, ['Id','ID','id'])) === String(rid));
+            if (row) naHiddenIds.add(jobKey(row));
+            saveNaHidden(); // persist so it survives page refresh
             renderLaserDashboard();
 
             // SLA chart rendered separately — needs visible canvas
@@ -1514,8 +1933,9 @@
 
             const btn = event.target; btn.innerText = "SAVING..."; btn.disabled = true;
 
+            // Key Column = Id (integer) — send record.id, NOT record.guid (GUID)
             const payload = {
-                recordID: String(record.guid),
+                recordID: String(record.id),
                 templateNo: String(tNo),
                 pic: String(tPic),
                 completionDate: String(tDateExcel),
@@ -1668,11 +2088,46 @@
         function renderUtilization() {
             const months  = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
             const sharedMonth = document.getElementById('monthFilter')?.value || 'ALL';
-            const days    = parseInt(document.getElementById('util-days')?.value) || 22;
-            const hrsDay  = parseInt(document.getElementById('util-hrs')?.value) || 9;
-            const capacity = days * hrsDay;
-            const capEl = document.getElementById('util-capacity');
+
+            // ── Capacity from Attendance data ────────────────────────────────
+            // Build a per-PIC capacity map from attData for the selected month
+            const attCapMap = {}; // { name: totalHrs }
+            let attAvgCapacity = 0;
+            let attSourceLabel = 'no attendance data';
+
+            if (sharedMonth !== 'ALL') {
+                // Convert "Mar-26" → attKey format "2026-03"
+                const [mStr, yStr] = sharedMonth.split('-');
+                const mIdx = months.indexOf(mStr);
+                const fullYear = mIdx >= 0 ? (parseInt(yStr) + 2000) : null;
+                if (fullYear !== null) {
+                    const attKeyStr = `${fullYear}-${String(mIdx+1).padStart(2,'0')}`;
+                    const attMonthData = attData[attKeyStr] || {};
+                    const daysInM = new Date(fullYear, mIdx+1, 0).getDate();
+                    ATT_MEMBERS.forEach(name => {
+                        const memberData = attMonthData[name] || {};
+                        let total = 0;
+                        for (let d = 1; d <= daysInM; d++) total += parseFloat(memberData[d] || 0);
+                        if (total > 0) attCapMap[name] = total;
+                    });
+                    const caps = Object.values(attCapMap);
+                    if (caps.length > 0) {
+                        attAvgCapacity = Math.round(caps.reduce((a,b)=>a+b,0) / caps.length);
+                        attSourceLabel = `avg ${attAvgCapacity} hrs/PIC from attendance`;
+                    }
+                }
+            }
+
+            // Manual override takes precedence if both fields filled
+            const overrideDays = parseInt(document.getElementById('util-days')?.value);
+            const overrideHrs  = parseInt(document.getElementById('util-hrs')?.value);
+            const useOverride  = !isNaN(overrideDays) && overrideDays > 0 && !isNaN(overrideHrs) && overrideHrs > 0;
+            const capacity     = useOverride ? (overrideDays * overrideHrs) : (attAvgCapacity || 176);
+
+            const capEl    = document.getElementById('util-capacity');
+            const statusEl = document.getElementById('util-att-status');
             if (capEl) capEl.innerText = `${capacity} hrs capacity / PIC`;
+            if (statusEl) statusEl.innerText = useOverride ? 'manual override' : attSourceLabel;
 
             // Helper: filter by selected month using a date field
             const inMonth = (dateVal) => {
@@ -1786,7 +2241,9 @@
                     const lHrs  = laserHrs[p]   || 0;
                     const sHrs  = supportHrs[p]  || 0;
                     const total = lHrs + sHrs;
-                    const pct   = capacity ? Math.round(total / capacity * 100) : 0;
+                    // Use individual PIC capacity from attendance if available, else group avg
+                    const picCap = attCapMap[p] || capacity;
+                    const pct   = picCap ? Math.round(total / picCap * 100) : 0;
                     const barColor = pct >= 90 ? 'bg-red-500' : pct >= 70 ? 'bg-amber-400' : 'bg-emerald-500';
                     return `<tr class="border-b hover:bg-slate-50">
                         <td class="p-3 font-bold">${p}</td>
@@ -1800,6 +2257,7 @@
                                 </div>
                                 <span class="text-[10px] font-bold ${pct>=90?'text-red-500':pct>=70?'text-amber-500':'text-emerald-600'} w-10 text-right">${pct}%</span>
                             </div>
+                            <div class="text-[9px] text-slate-400 mt-0.5">${picCap} hrs cap${attCapMap[p]?'':' (avg)'}</div>
                         </td>
                     </tr>`;
                 }).join('') : '<tr><td colspan="6" class="p-6 text-center italic text-slate-400">No utilization data for this month.</td></tr>';
@@ -1833,7 +2291,7 @@
                 .map(r => parseFloat(getVal(r, ['Job Elapsed Calendar Hrs','ElapsedHrs','Elapsed','Job Elapsed'])))
                 .filter(v => !isNaN(v) && v > 0);
             const avg = elapsedVals.length
-                ? (elapsedVals.reduce((a,b) => a+b, 0) / elapsedVals.length).toFixed(1) : '0';
+                ? (elapsedVals.reduce((a,b) => a+b, 0) / elapsedVals.length).toFixed(2) : '0.00';
 
             const el = id => document.getElementById(id);
             if (el('ds-total'))   el('ds-total').innerText   = total;
@@ -1948,8 +2406,16 @@
         function logout() { currentUser = null; localStorage.removeItem('ma_session_user'); updateSessionUI(); updateLaserPicDisplay(); applyTempFilters(false); renderLaserTable(); }
         function updateSessionUI() { 
             const lv = document.getElementById('loginView'), av = document.getElementById('activeUserView');
-            if (currentUser) { lv.classList.add('hidden'); av.classList.remove('hidden'); document.getElementById('displayUserName').innerText = currentUser; } 
-            else { lv.classList.remove('hidden'); av.classList.add('hidden'); }
+            if (currentUser) {
+                lv.classList.add('hidden'); av.classList.remove('hidden');
+                document.getElementById('displayUserName').innerText = currentUser;
+                const attLink = document.getElementById('att-link');
+                if (attLink) { if (['Gavin','Joe'].includes(currentUser)) attLink.classList.remove('hidden'); else attLink.classList.add('hidden'); }
+            } else {
+                lv.classList.remove('hidden'); av.classList.add('hidden');
+                const attLink = document.getElementById('att-link');
+                if (attLink) attLink.classList.add('hidden');
+            }
         }
 
         Object.keys(machineSpecs).forEach(m => { 
@@ -2000,7 +2466,7 @@
                 if (st) { st.innerText = 'LIVE: ' + new Date().toLocaleTimeString(); st.classList.remove('sync-active'); }
             } catch(e) {
                 const tbody = document.getElementById('supportTable');
-                if (tbody) tbody.innerHTML = `<tr><td colspan="14" class="p-6 text-center text-red-400 italic text-xs">Failed to load: ${e.message}<br><br>Check your Power Automate Flow has a Response action returning body/value.</td></tr>`;
+                if (tbody) tbody.innerHTML = `<tr><td colspan="16" class="p-6 text-center text-red-400 italic text-xs">Failed to load: ${e.message}<br><br>Check your Power Automate Flow has a Response action returning body/value.</td></tr>`;
                 if (st) st.innerText = 'Error';
             }
         }
@@ -2043,7 +2509,7 @@
             const repair  = rows.filter(r => String(getVal(r, ['Support Type','SupportType','Type'])).toLowerCase().includes('repair')).length;
             const done    = rows.filter(r => { const ct = getVal(r, ['Complete Time','CompleteTime']); return ct && ct !== '---' && String(ct).trim() !== ''; }).length;
             const elapsedVals = rows.map(r => parseFloat(getVal(r, ['Job Elapsed Calendar Hrs','ElapsedHrs','Elapsed']))).filter(v => !isNaN(v) && v > 0);
-            const avg = elapsedVals.length ? (elapsedVals.reduce((a,b) => a+b, 0) / elapsedVals.length).toFixed(1) : '0';
+            const avg = elapsedVals.length ? (elapsedVals.reduce((a,b) => a+b, 0) / elapsedVals.length).toFixed(2) : '0.00';
 
             const elTotal  = document.getElementById('sup-total');  if (elTotal)  elTotal.innerText  = total;
             const elRepair = document.getElementById('sup-repair'); if (elRepair) elRepair.innerText = repair;
@@ -2051,13 +2517,14 @@
             const elDone   = document.getElementById('sup-done');   if (elDone)   elDone.innerText   = done;
 
             if (!rows.length) {
-                tbody.innerHTML = `<tr><td colspan="14" class="p-6 text-center text-slate-400 italic text-xs">${supportSearchQuery ? 'No results found.' : 'No support records found.'}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="16" class="p-6 text-center text-slate-400 italic text-xs">${supportSearchQuery ? 'No results found.' : 'No support records found.'}</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = rows.map(i => {
                 const received    = convertExcelDate(getVal(i, ['Received Time','ReceivedTime']));
                 const requestID   = getVal(i, ['Request ID','RequestID','Id']);
+                const rawID       = i['__PowerAppsId__'] || i['Id'] || i['ID'] || requestID;
                 const name        = getVal(i, ['Name']);
                 const suppType    = getVal(i, ['Support Type','SupportType','Type']);
                 const section     = getVal(i, ['Section']);
@@ -2067,11 +2534,21 @@
                 const month       = getVal(i, ['Month']);
                 const startTime   = convertExcelDate(getVal(i, ['Start Time','StartTime']));
                 const completeTime= convertExcelDate(getVal(i, ['Complete Time','CompleteTime']));
-                const elapsed     = getVal(i, ['Job Elapsed Calendar Hrs','ElapsedHrs','Elapsed','Job Elapsed']);
+                // Compute elapsed live from start/complete times; fall back to Excel stored value
+                const startDateObj    = startTime && startTime !== '---' ? rawToLocalDate(getVal(i, ['Start Time','StartTime'])) : null;
+                const endDateObj      = completeTime && completeTime !== '---' ? rawToLocalDate(getVal(i, ['Complete Time','CompleteTime'])) : null;
+                const elapsedRaw      = getVal(i, ['Job Elapsed Calendar Hrs','ElapsedHrs','Elapsed','Job Elapsed']);
+                const elapsed         = (startDateObj && endDateObj && endDateObj > startDateObj)
+                                        ? ((endDateObj - startDateObj) / 3600000).toFixed(2)
+                                        : (elapsedRaw && elapsedRaw !== '---' ? parseFloat(elapsedRaw).toFixed(2) : '---');
                 const pic         = getMAPic(i);
                 const remark      = getVal(i, ['Remark','Remarks']);
+                const complexity  = getVal(i, ['Complexity Level','ComplexityLevel','Complexity']);
+                const dfm         = getVal(i, ['DFM']);
                 const isDone      = completeTime && completeTime !== '---';
-                // Risk type badge color
+                const canEdit     = !!currentUser; // any logged-in user can update their row
+                const isGavin     = currentUser === 'Gavin'; // Gavin-only fields
+                const sid         = String(rawID).replace(/['"]/g,'');
                 const riskColor   = riskType.toLowerCase().includes('quality') ? 'bg-red-100 text-red-600' :
                                     riskType.toLowerCase().includes('break') ? 'bg-orange-100 text-orange-600' :
                                     'bg-slate-100 text-slate-600';
@@ -2086,13 +2563,99 @@
                     <td class="p-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${riskColor}">${riskType}</span></td>
                     <td class="p-3 text-slate-500 italic text-[10px] max-w-[200px]">${desc}</td>
                     <td class="p-3 text-[10px]">${month}</td>
-                    <td class="p-3 text-slate-500 text-[10px]">${startTime}</td>
-                    <td class="p-3 ${isDone ? 'text-emerald-600 font-bold' : 'text-slate-400'} text-[10px]">${completeTime}</td>
+                    <td class="p-3 text-[10px]">${canEdit
+                        ? `<input id="sup-start-${sid}" class="manual-input admin-input" value="${startTime==='---'?'':startTime}" placeholder="m/d/yyyy hh:mm">`
+                        : startTime}</td>
+                    <td class="p-3 text-[10px]">${canEdit
+                        ? `<input id="sup-end-${sid}" class="manual-input admin-input" value="${completeTime==='---'?'':completeTime}" placeholder="m/d/yyyy hh:mm">`
+                        : `<span class="${isDone?'text-emerald-600 font-bold':'text-slate-400'}">${completeTime}</span>`}</td>
                     <td class="p-3 font-bold ${parseFloat(elapsed) > 8 ? 'text-red-500' : 'text-slate-700'}">${elapsed !== '---' ? elapsed + ' hrs' : '---'}</td>
-                    <td class="p-3 font-medium">${pic}</td>
-                    <td class="p-3 italic text-slate-400 text-[10px]">${remark}</td>
+                    <td class="p-3 font-bold ${(!pic || pic === '---') ? 'text-blue-600' : ''}">${(!pic || pic === '---') && canEdit ? `<span class="text-blue-600">${currentUser} <span class="text-[9px] text-slate-400">(will be saved)</span></span>` : pic}</td>
+                    <td class="p-3">${isGavin
+                        ? `<select id="sup-complexity-${sid}" class="manual-input admin-input" style="width:110px">
+                            <option value="">—</option>
+                            <option value="Low" ${complexity==='Low'?'selected':''}>Low</option>
+                            <option value="Medium" ${complexity==='Medium'?'selected':''}>Medium</option>
+                            <option value="High" ${complexity==='High'?'selected':''}>High</option>
+                            <option value="Critical" ${complexity==='Critical'?'selected':''}>Critical</option>
+                          </select>`
+                        : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${complexity==='Critical'?'bg-red-100 text-red-700':complexity==='High'?'bg-orange-100 text-orange-700':complexity==='Medium'?'bg-amber-100 text-amber-700':complexity==='Low'?'bg-emerald-100 text-emerald-700':'text-slate-400'}">${complexity!=='---'?complexity:'—'}</span>`
+                    }</td>
+                    <td class="p-3">${isGavin
+                        ? `<select id="sup-dfm-${sid}" class="manual-input admin-input" style="width:100px">
+                            <option value="">—</option>
+                            <option value="Yes" ${dfm==='Yes'?'selected':''}>Yes</option>
+                            <option value="No" ${dfm==='No'?'selected':''}>No</option>
+                            <option value="N/A" ${dfm==='N/A'?'selected':''}>N/A</option>
+                          </select>`
+                        : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${dfm==='Yes'?'bg-teal-100 text-teal-700':dfm==='No'?'bg-slate-100 text-slate-500':'text-slate-400'}">${dfm!=='---'?dfm:'—'}</span>`
+                    }</td>
+                    <td class="p-3">${canEdit
+                        ? `<div class="flex flex-col gap-1"><input id="sup-rem-${sid}" class="manual-input" value="${remark==='---'?'':remark}" placeholder="Remark"><button onclick="saveSupportRow('${sid}',event)" class="bg-blue-600 text-white text-[9px] font-bold py-1 rounded hover:bg-blue-700">SAVE</button></div>`
+                        : `<span class="italic text-slate-400 text-[10px]">${remark}</span>`}</td>
                 </tr>`;
             }).join('');
+        }
+
+        async function saveSupportRow(sid, event) {
+            if (!currentUser) return alert('Please login first.');
+            const btn = event.target; btn.innerText = 'SAVING...'; btn.disabled = true;
+            const startVal    = document.getElementById(`sup-start-${sid}`)?.value.trim() || '';
+            const endVal      = document.getElementById(`sup-end-${sid}`)?.value.trim() || '';
+            const remarkVal   = document.getElementById(`sup-rem-${sid}`)?.value.trim() || '';
+            // Calc elapsed if both filled
+            let elapsed = '';
+            const s = rawToLocalDate(startVal); const e = rawToLocalDate(endVal);
+            if (s && e && e > s) elapsed = ((e - s) / 3600000).toFixed(2);
+            // Find existing row to preserve PIC if already set
+            const existingRow = allSupportRows.find(r => {
+                const id = r['__PowerAppsId__'] || r['Id'] || r['ID'];
+                return String(id) === String(sid);
+            });
+            const existingPic = existingRow ? getMAPic(existingRow) : '---';
+            const picToSave   = (!existingPic || existingPic === '---') ? currentUser : existingPic;
+            const complexityVal = document.getElementById(`sup-complexity-${sid}`)?.value || '';
+            const dfmVal        = document.getElementById(`sup-dfm-${sid}`)?.value || '';
+            const payload = {
+                'Request ID':              sid,
+                recordID:                  sid,
+                'Start Time':              toExcelDateFormat(startVal),
+                startTime:                 toExcelDateFormat(startVal),
+                'Complete Time':           toExcelDateFormat(endVal),
+                completeTime:              toExcelDateFormat(endVal),
+                'Job Elapsed Calendar Hrs': elapsed,
+                elapsedHrs:                elapsed,
+                'M&A PIC':                 picToSave,
+                pic:                       picToSave,
+                'Complexity Level':        complexityVal,
+                complexityLevel:           complexityVal,
+                'DFM':                     dfmVal,
+                dfm:                       dfmVal,
+                'Remark':                  remarkVal,
+                remark:                    remarkVal
+            };
+            try {
+                const ctrl = new AbortController();
+                const t = setTimeout(() => ctrl.abort(), 20000);
+                const res = await fetch(supportUpdateURL, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload),
+                    signal: ctrl.signal
+                });
+                clearTimeout(t);
+                if (res.ok) {
+                    btn.innerText = 'SAVED ✓';
+                    setTimeout(() => { btn.innerText = 'SAVE'; btn.disabled = false; refreshSupportData(true); }, 1800);
+                } else {
+                    const txt = await res.text();
+                    btn.innerText = 'ERROR'; btn.disabled = false;
+                    alert(`Save failed HTTP ${res.status}: ${txt.substring(0,200)}`);
+                }
+            } catch(e) {
+                btn.innerText = 'ERROR'; btn.disabled = false;
+                alert(e.name === 'AbortError' ? 'Timed out — check Power Automate flow is running.' : e.message);
+            }
         }
 
         window.onload = () => { 
