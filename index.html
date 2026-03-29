@@ -66,9 +66,10 @@
         </header>
 
         <nav class="flex bg-white border-x border-b rounded-b-xl mb-4 shadow-sm overflow-x-auto scrollbar-none">
-            <button onclick="switchTab('template')" id="tab-template" class="flex-shrink-0 flex-1 min-w-[100px] py-3 text-[10px] md:text-sm uppercase tracking-wider font-bold text-slate-400 border-b-4 border-transparent hover:bg-slate-50 tab-active whitespace-nowrap px-2">Template</button>
+            <button onclick="switchTab('dashboard')" id="tab-dashboard" class="flex-shrink-0 flex-1 min-w-[100px] py-3 text-[10px] md:text-sm uppercase tracking-wider font-bold text-slate-400 border-b-4 border-transparent hover:bg-slate-50 tab-active whitespace-nowrap px-2">Dashboard</button>
+            <button onclick="switchTab('template')" id="tab-template" class="flex-shrink-0 flex-1 min-w-[100px] py-3 text-[10px] md:text-sm uppercase tracking-wider font-bold text-slate-400 border-b-4 border-transparent hover:bg-slate-50 whitespace-nowrap px-2">Template</button>
+            <button onclick="switchTab('patch')" id="tab-patch" class="flex-shrink-0 flex-1 min-w-[80px] py-3 text-[10px] md:text-sm uppercase tracking-wider font-bold text-slate-400 border-b-4 border-transparent hover:bg-slate-50 whitespace-nowrap px-2">Patch</button>
             <button onclick="switchTab('laser')" id="tab-laser" class="flex-shrink-0 flex-1 min-w-[90px] py-3 text-[10px] md:text-sm uppercase tracking-wider font-bold text-slate-400 border-b-4 border-transparent hover:bg-slate-50 whitespace-nowrap px-2">Laser</button>
-            <button onclick="switchTab('dashboard')" id="tab-dashboard" class="flex-shrink-0 flex-1 min-w-[100px] py-3 text-[10px] md:text-sm uppercase tracking-wider font-bold text-slate-400 border-b-4 border-transparent hover:bg-slate-50 whitespace-nowrap px-2">Dashboard</button>
             <button onclick="switchTab('setting')" id="tab-setting" class="flex-shrink-0 flex-1 min-w-[90px] py-3 text-[10px] md:text-sm uppercase tracking-wider font-bold text-slate-400 border-b-4 border-transparent hover:bg-slate-50 whitespace-nowrap px-2">Settings</button>
             <button onclick="switchTab('support')" id="tab-support" class="flex-shrink-0 flex-1 min-w-[90px] py-3 text-[10px] md:text-sm uppercase tracking-wider font-bold text-slate-400 border-b-4 border-transparent hover:bg-slate-50 whitespace-nowrap px-2">Support</button>
         </nav>
@@ -467,6 +468,55 @@
                 </div>
             </div>
 
+            <!-- Patch Tracking Section Divider -->
+            <div class="mt-8 mb-4 flex items-center gap-3">
+                <div class="flex-1 border-t border-slate-200"></div>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2">Patch Tracking</span>
+                <div class="flex-1 border-t border-slate-200"></div>
+            </div>
+            <!-- Patch Stat Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white p-5 rounded-xl border shadow-sm">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Patches</p>
+                    <h2 id="db-patch-total" class="text-3xl font-bold text-slate-800">0</h2>
+                </div>
+                <div class="bg-white p-5 rounded-xl border shadow-sm">
+                    <p class="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-1">Pending</p>
+                    <h2 id="db-patch-pending" class="text-3xl font-bold text-amber-600">0</h2>
+                </div>
+                <div class="bg-white p-5 rounded-xl border shadow-sm">
+                    <p class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1">Completed</p>
+                    <h2 id="db-patch-done" class="text-3xl font-bold text-emerald-600">0</h2>
+                </div>
+                <div class="bg-white p-5 rounded-xl border shadow-sm">
+                    <p class="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">Completion Rate</p>
+                    <h2 id="db-patch-rate" class="text-3xl font-bold text-blue-600">—</h2>
+                </div>
+            </div>
+            <!-- Patch Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <div class="bg-white p-6 rounded-xl border shadow-sm lg:col-span-2">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Patch Completion Volume (Daily)</h3>
+                    <div class="h-[260px]"><canvas id="patchMonthChart"></canvas></div>
+                </div>
+                <div class="bg-white p-6 rounded-xl border shadow-sm">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Patch by Season</h3>
+                    <div class="h-[260px]"><canvas id="patchSeasonChart"></canvas></div>
+                </div>
+            </div>
+            <!-- Patch PIC Workload -->
+            <div class="bg-white p-6 rounded-xl border shadow-sm mb-6">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Pending Patches by PIC</h3>
+                <div class="overflow-x-auto rounded-lg border">
+                    <table class="w-full text-left text-[11px]">
+                        <thead class="bg-slate-50 border-b font-bold text-slate-500">
+                            <tr><th class="p-3 w-28">M&A PIC</th><th class="p-3">Pending Items</th></tr>
+                        </thead>
+                        <tbody id="db-patch-pic-table"></tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- PIC Utilization Section Divider -->
             <div class="mt-8 mb-4 flex items-center gap-3">
                 <div class="flex-1 border-t border-slate-200"></div>
@@ -477,19 +527,11 @@
             <!-- Capacity Banner -->
             <div class="bg-white p-4 rounded-xl border shadow-sm mb-4 flex flex-wrap items-center gap-4">
                 <div class="flex items-center gap-3 flex-wrap">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Capacity Source:</span>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Capacity:</span>
                     <div class="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5">
                         <span class="text-[10px] font-bold text-blue-600 uppercase tracking-wider">📋 From Attendance</span>
-                        <span id="util-att-status" class="text-[9px] text-slate-400 italic">auto</span>
+                        <span id="util-att-status" class="text-[9px] text-slate-400 italic">loading...</span>
                     </div>
-                    <span class="text-[10px] text-slate-400">or override:</span>
-                    <input type="number" id="util-days" value="" min="1" max="31" placeholder="days"
-                        class="w-16 text-center font-bold text-slate-500 border rounded p-1 text-sm outline-none focus:ring-2 focus:ring-blue-400"
-                        oninput="renderUtilization()">
-                    <span class="text-[10px] text-slate-400">days ×</span>
-                    <input type="number" id="util-hrs" value="" min="1" max="24" placeholder="hrs/day"
-                        class="w-16 text-center font-bold text-slate-500 border rounded p-1 text-sm outline-none focus:ring-2 focus:ring-blue-400"
-                        oninput="renderUtilization()">
                     <span id="util-capacity" class="font-bold text-blue-700 text-sm ml-1">— hrs capacity / PIC</span>
                 </div>
                 <div class="flex items-center gap-3 ml-auto text-[10px] text-slate-400">
@@ -538,13 +580,26 @@
                 <table class="w-full text-left min-w-[1400px]">
                     <thead class="bg-slate-100 border-b text-[11px] uppercase tracking-wider text-slate-500 font-bold">
                         <tr>
-                            <th class="p-3">ID</th><th class="p-3">Start Time</th><th class="p-3">Section</th><th class="p-3">Requestor</th><th class="p-3">Style</th>
-                            <th class="p-3">Job No</th> 
+                            <th class="p-3">ID</th>
+                            <th class="p-3">Start Time</th>
+                            <th class="p-3">Requestor</th>
+                            <th class="p-3">Section</th>
+                            <th class="p-3">Style Number</th>
+                            <th class="p-3">Job No</th>
                             <th class="p-3 text-purple-600">Proto Stage</th>
+                            <th class="p-3 text-orange-600">Template Request Type</th>
+                            <th class="p-3 text-orange-400">Description of Template Type</th>
+                            <th class="p-3">Machine Type</th>
+                            <th class="p-3">Required Date</th>
+                            <th class="p-3 text-indigo-600">Complexity Level</th>
+                            <th class="p-3 text-teal-600">DFM</th>
+                            <th class="p-3 text-emerald-600">Complete Date</th>
+                            <th class="p-3 text-blue-600">Complete Qty</th>
                             <th class="p-3 text-blue-600">Template No.</th>
-                            <th class="p-3 text-orange-600">Template Type</th>
-                            <th class="p-3 text-orange-400">Description</th> <th class="p-3">Machine</th><th class="p-3">Required</th><th class="p-3">Status</th>
-                            <th class="p-3">M&A PIC</th><th class="p-3 text-blue-600">Qty</th><th class="p-3">Complete Time</th><th class="p-3">Remark</th>
+                            <th class="p-3">M&A PIC</th>
+                            <th class="p-3">Status</th>
+                            <th class="p-3">Remark</th>
+                            <th class="p-3">Action</th>
                         </tr>
                     </thead>
                     <tbody id="tempTable" class="text-slate-700"></tbody>
@@ -663,18 +718,78 @@
                             <th class="p-3">Complete Time</th>
                             <th class="p-3">Elapsed (hrs)</th>
                             <th class="p-3">M&A PIC</th>
-                            <th class="p-3 text-indigo-600">Complexity</th>
-                            <th class="p-3 text-teal-600">DFM</th>
                             <th class="p-3">Remark</th>
+                            <th class="p-3">Action</th>
                         </tr>
                     </thead>
                     <tbody id="supportTable" class="text-slate-700">
-                        <tr><td colspan="16" class="p-6 text-center text-slate-400 italic text-xs">Loading support data...</td></tr>
+                        <tr><td colspan="17" class="p-6 text-center text-slate-400 italic text-xs">Loading support data...</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
+
+        <!-- ═══════ PATCH PAGE ════════════════════════════════════ -->
+        <div id="content-patch" class="tab-content hidden">
+            <!-- Search + Sync -->
+            <div class="bg-white p-4 rounded-xl border shadow-sm mb-4 flex gap-2 items-center">
+                <input type="text" id="patchSearch" oninput="applyPatchFilter()" placeholder="Search Style, Template No, Machine, PIC..." class="flex-1 p-2.5 border rounded-lg bg-slate-50 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                <button onclick="clearPatchSearch()" class="bg-slate-200 text-slate-600 px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-300">CLEAR</button>
+                <span id="patchSyncStatus" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-2">Syncing...</span>
+            </div>
+
+            <!-- Stat Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                <div class="bg-white p-5 rounded-xl border shadow-sm">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Patches</p>
+                    <h2 id="patch-total" class="text-3xl font-bold text-slate-800">0</h2>
+                </div>
+                <div class="bg-white p-5 rounded-xl border shadow-sm">
+                    <p class="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-1">Pending</p>
+                    <h2 id="patch-pending" class="text-3xl font-bold text-amber-600">0</h2>
+                </div>
+                <div class="bg-white p-5 rounded-xl border shadow-sm">
+                    <p class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1">Completed</p>
+                    <h2 id="patch-done" class="text-3xl font-bold text-emerald-600">0</h2>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="bg-white rounded-xl shadow-sm border overflow-x-auto">
+                <table class="w-full text-left min-w-[3200px]">
+                    <thead class="bg-slate-100 border-b text-[10px] uppercase tracking-wider text-slate-500 font-bold">
+                        <tr>
+                            <th class="p-3">No.</th>
+                            <th class="p-3">Season</th>
+                            <th class="p-3">Style Number</th>
+                            <th class="p-3">Category</th>
+                            <th class="p-3">Job Number</th>
+                            <th class="p-3">BDD PIC</th>
+                            <th class="p-3">Patch Item</th>
+                            <th class="p-3">Patch Description</th>
+                            <th class="p-3">Fabric Item</th>
+                            <th class="p-3">Fabric Description</th>
+                            <th class="p-3">Thread Type</th>
+                            <th class="p-3">Thread Color</th>
+                            <th class="p-3">Type of Sample</th>
+                            <th class="p-3">Qty</th>
+                            <th class="p-3 text-amber-600">Patch & Fabric Receive Date</th>
+                            <th class="p-3 text-blue-600">Template No.</th>
+                            <th class="p-3">Machine No.</th>
+                            <th class="p-3">Month</th>
+                            <th class="p-3 text-emerald-600">Complete Date</th>
+                            <th class="p-3">M&A PIC</th>
+                            <th class="p-3">Remark</th>
+                            <th class="p-3">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="patchTable" class="text-slate-700">
+                        <tr><td colspan="22" class="p-6 text-center text-slate-400 italic text-xs">Loading patch data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
     <!-- ═══════════════════════════════════════════════════════
          ATTENDANCE PAGE — hidden from nav, accessible via ?page=attendance
@@ -741,6 +856,7 @@
         document.querySelector('.max-w-\[1600px\]').classList.add('hidden');
         loadAttData();
         renderAttendance();
+        fetchAttendanceFromCloud(); // sync from cloud in background
     }
 
     function closeAttendance() {
@@ -753,6 +869,47 @@
             const saved = localStorage.getItem('ma_attendance');
             attData = saved ? JSON.parse(saved) : {};
         } catch(e) { attData = {}; }
+    }
+
+    async function fetchAttendanceFromCloud() {
+        try {
+            const res = await fetch(attendanceFetchURL + "&cb=" + Date.now(), { method: 'POST', body: JSON.stringify({}) });
+            if (!res.ok) return;
+            const raw = await res.text();
+            let d; try { d = JSON.parse(raw); } catch(e) { return; }
+            let rows = [];
+            if (Array.isArray(d)) rows = d;
+            else if (d?.value && Array.isArray(d.value)) rows = d.value;
+            else if (d?.body?.value && Array.isArray(d.body.value)) rows = d.body.value;
+            else if (d?.body && Array.isArray(d.body)) rows = d.body;
+            else { for (const k of Object.keys(d||{})) { if (Array.isArray(d[k])) { rows = d[k]; break; } } }
+            if (!rows.length) return;
+            // Each row = { Month:"Mar-26", Name:"Phone", Day_1:9, Day_2:0, ..., Total:176 }
+            rows.forEach(row => {
+                const monthLabel = String(row.Month || row.month || '').trim();
+                if (!monthLabel) return;
+                // Convert "Mar-26" → attKey "2026-03"
+                const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+                const [mStr, yStr] = monthLabel.split('-');
+                const mIdx = months.indexOf(mStr);
+                if (mIdx < 0) return;
+                const fullYear = 2000 + parseInt(yStr);
+                const key = `${fullYear}-${String(mIdx+1).padStart(2,'0')}`;
+                const name = String(row.Name || row.name || '').trim();
+                if (!name) return;
+                if (!attData[key]) attData[key] = {};
+                if (!attData[key][name]) attData[key][name] = {};
+                const daysInM = new Date(fullYear, mIdx+1, 0).getDate();
+                for (let d = 1; d <= daysInM; d++) {
+                    const v = row[`Day_${d}`];
+                    if (v !== undefined && v !== null) attData[key][name][d] = parseFloat(v) || 0;
+                }
+            });
+            localStorage.setItem('ma_attendance', JSON.stringify(attData));
+            renderAttendance();
+            renderUtilization(); // refresh capacity now that cloud data is loaded
+            updateDashboard();   // refresh KPI charts too
+        } catch(e) { /* silent fail — localStorage data still usable */ }
     }
 
     async function saveAttendance() {
@@ -936,6 +1093,10 @@
         const laserFetchURL  = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/f7fd69d7c4114bd2af5d8fffe467982a/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=hAWB_aTnAgdah1KM8cUx2fbYcjNNLN67GGAMOT3jeLI";
         const laserAddURL    = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/2a02949cf9a843cc820034dbbb755a78/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=N6f1qPIEpKL-Kyns7-9t1l2KTKpCD90gM--hO5AojvU";
         const laserUpdateURL = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/b95ddd4d695844b296c4917272ae318e/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=dp4tjbo8kArWt-sSfRcj3nmBCxL_o42g1mAtqIcTE_c";
+        // Patch Update Flow — Key Column: No., Key Value: triggerBody()?['No.']
+        const patchUpdateURL = "PASTE_PATCH_UPDATE_FLOW_URL_HERE";
+        // Attendance Fetch Flow URL
+        const attendanceFetchURL = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/9f7d2b43fe80443ea830ec0ef1631183/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=0geeH4paQU60TyHlrF0_6_CGqXBmke3BEmk5IiwTxZ0";
 
         const machineSpecs = { 
             "AQM0001": { brand: "ZOJE", model: "ZJ-AM5770AH-750" }, 
@@ -1109,8 +1270,8 @@
                 const r = await fetch(templateFetchURL + "&cb=" + Date.now(), { method: 'POST', body: JSON.stringify({}) });
                 const d = await r.json();
                 allTemplates = d.map(i => {
-                    const doneRaw = getVal(i, ['Complete Date', 'Finish']);
-                    const reqDateFormatted = convertExcelDate(getVal(i, ['Required Date']), false);
+                    const doneRaw = getVal(i, ['Complete Date m/d/yyyy','Complete Date', 'Finish']);
+                    const reqDateFormatted = convertExcelDate(getVal(i, ['Required Date','RequiredDate']), false);
                     const isDone = (doneRaw && doneRaw !== '---' && String(doneRaw).trim() !== "");
                     let currentStatus = 'PENDING';
                     if (isDone) currentStatus = 'COMPLETED';
@@ -1123,13 +1284,22 @@
                     }
                     return {
                         guid: i['__PowerAppsId__'] || i['Id'] || i['ID'], id: getVal(i, ['Id', 'ID']),
-                        startTime: convertExcelDate(getVal(i, ['Start time'])), section: getVal(i, ['Section']),
-                        requestor: getVal(i, ['Requestor']), style: getVal(i, ['Style Number', 'Style']),
-                        templateNo: getVal(i, ['Template No', 'TempNo']), templateType: getVal(i, ['Template Type', 'Type']),
-                        protoStage: getVal(i, ['Proto Stage', 'Stage']), description: getVal(i, ['Description', 'Desc']),
-                        jobNo: getVal(i, ['Job Number', 'JobNo']), machine: getVal(i, ['Machine Type']),
-                        requiredDate: reqDateFormatted, completeDateDisplay: convertExcelDate(doneRaw),
-                        qty: getVal(i, ['Quantity', 'Complete Qty']), pic: getMAPic(i),
+                        startTime: convertExcelDate(getVal(i, ['Start time','Start Time'])),
+                        section: getVal(i, ['Section']),
+                        requestor: getVal(i, ['Requestor']),
+                        style: getVal(i, ['Style Number', 'Style']),
+                        templateNo: getVal(i, ['Template No.','Template No', 'TempNo']),
+                        templateType: getVal(i, ['Template Request Type','Template Type', 'Type']),
+                        protoStage: getVal(i, ['Proto Stage', 'Stage']),
+                        description: getVal(i, ['Description of Template Type','Description', 'Desc']),
+                        jobNo: getVal(i, ['Job Number', 'JobNo']),
+                        machine: getVal(i, ['Machine Type']),
+                        requiredDate: reqDateFormatted,
+                        completeDateDisplay: convertExcelDate(doneRaw),
+                        qty: getVal(i, ['Complete Quantity','Quantity', 'Complete Qty']),
+                        pic: getMAPic(i),
+                        complexity: getVal(i, ['Complexity Level','ComplexityLevel','Complexity']),
+                        dfm: getVal(i, ['DFM']),
                         remark: getVal(i, ['Remark']), status: currentStatus, raw: getVal(i, ['Start time'])
                     };
                 }).sort((a,b)=>b.raw - a.raw);
@@ -1163,11 +1333,22 @@
                 const done = (() => { const p = t.completeDateDisplay.split(' ')[0].split('/'); return p.length===3 ? new Date(parseInt(p[2]),parseInt(p[1])-1,parseInt(p[0])) : null; })();
                 return req && done ? done > req : false;
             }
+            // KPI filter: completed jobs where Complete Date falls in selected month
+            // This is separate from filteredByMonth (which uses startTime)
+            const kpiFiltered = allTemplates.filter(t => {
+                if (t.status !== 'COMPLETED') return false;
+                if (selectedMonthStr === 'ALL') return true;
+                if (!t.completeDateDisplay || t.completeDateDisplay === '---') return false;
+                const parts = t.completeDateDisplay.split(' ')[0].split('/');
+                // completeDateDisplay is d/m/yyyy from convertExcelDate (UTC)
+                if (parts.length !== 3) return false;
+                const mName = months[parseInt(parts[1])-1];
+                return `${mName}-${parts[2]}` === selectedMonthStr;
+            });
+
             ['sample','prod'].forEach(key => {
                 const sectionStr = key === 'sample' ? 'sample development' : 'production';
-                // Only count COMPLETED jobs for KPI (pending/delayed not yet deliverable)
-                const secJobs = filteredByMonth.filter(t =>
-                    t.status === 'COMPLETED' &&
+                const secJobs = kpiFiltered.filter(t =>
                     String(t.section).toLowerCase().includes(sectionStr)
                 );
                 const total  = secJobs.length;
@@ -1221,15 +1402,21 @@
                 }
             });
             
+            // PIC Unfinished Work — uses same month filter as stat cards (startTime-based)
+            // Shows jobs that are NOT completed in the selected period
             const picStats = {};
-            allTemplates.forEach(t => {
+            filteredByMonth.forEach(t => {
                 if (t.status === 'COMPLETED') return;
                 if (!picStats[t.pic]) picStats[t.pic] = [];
                 picStats[t.pic].push({ style: t.style, job: t.jobNo, status: t.status });
             });
+            // Fix stat-delayed to match filteredByMonth count
+            document.getElementById('stat-delayed').innerText = filteredByMonth.filter(t => t.status === 'DELAYED').length;
             document.getElementById('pic-workload-table').innerHTML = Object.entries(picStats).map(([name, tasks]) => `
                 <tr class="border-b hover:bg-blue-50 cursor-pointer transition-colors" onclick="drillDown('${name}')">
-                    <td class="p-4 font-bold border-r bg-slate-50/50">${name}</td>
+                    <td class="p-4 font-bold border-r bg-slate-50/50">${name}
+                        <div class="text-[9px] font-normal text-slate-400 mt-0.5">${tasks.filter(t=>t.status==='DELAYED').length} delayed · ${tasks.filter(t=>t.status==='PENDING').length} pending</div>
+                    </td>
                     <td class="p-3 flex flex-wrap gap-2">
                         ${tasks.map(task => `<div class="flex items-center gap-1.5 border rounded-lg px-2.5 py-1.5 bg-white shadow-sm"><span class="w-2 h-2 rounded-full ${task.status === 'DELAYED' ? 'bg-red-500 animate-pulse' : 'bg-amber-400'}"></span><span class="font-bold text-slate-800">${task.style}</span><span class="text-slate-500 text-[10px]">${task.job}</span></div>`).join('')}
                     </td>
@@ -1300,7 +1487,8 @@
 
         // Proto stages that qualify for pending consumption tracking
         const pendingProtoStages = ['p1','p2','p3','p4','p5','p6','concept','ggp',
-            'final sample','final','reference sample','reference','proto','sms','pp','tss'];
+            'final sample','final','reference sample','reference','proto','sms','pp','tss',
+            'wear test','buyer ref sample','buyer reference sample','buyer ref'];
 
         function isTrackedProtoStage(proto) {
             if (!proto || proto === '---') return false;
@@ -1461,6 +1649,9 @@
                 allLaserRows = rows;
                 renderLaserTable();
                 renderLaserDashboard();
+                // Render SLA chart if dashboard is visible (canvas must be in DOM and visible)
+                const dashVisible = !document.getElementById('content-dashboard')?.classList.contains('hidden');
+                if (dashVisible) requestAnimationFrame(() => renderLaserSLA());
                 if (st) { st.innerText = 'LIVE: ' + new Date().toLocaleTimeString(); st.classList.remove('sync-active'); }
             } catch(e) {
                 const tbody = document.getElementById('laserTable');
@@ -1541,7 +1732,7 @@
                         <td class="p-2"><input id="le-ironParts-${rid}" class="manual-input qty-input" value="${ironParts==='---'?'':ironParts}" type="number"></td>
                         <td class="p-2"><input id="le-trimParts-${rid}" class="manual-input qty-input" value="${trimParts==='---'?'':trimParts}" type="number"></td>
                         <td class="p-2"><input id="le-completeDate-${rid}" class="manual-input admin-input" value="${completeDate==='---'?'':completeDate}" placeholder="m/d/yyyy hh:mm"></td>
-                        <td class="p-2"><input id="le-maPic-${rid}" class="manual-input admin-input" value="${maPic==='---'?'':maPic}"></td>
+                        <td class="p-2"><input id="le-maPic-${rid}" class="manual-input bg-slate-100" value="${maPic==='---'?'':maPic}" readonly title="M&A PIC is set when row is created"></td>
                         <td class="p-2"><input id="le-consStart-${rid}" class="${consClass}" value="${consStart==='---'?'':consStart}" placeholder="m/d/yyyy"${consDisabled}></td>
                         <td class="p-2"><input id="le-consEnd-${rid}" class="${consClass}" value="${consEnd==='---'?'':consEnd}" placeholder="m/d/yyyy"${consDisabled}></td>
                         <td class="p-2"><input id="le-consPic-${rid}" class="${consClass}" value="${consPic==='---'?'':consPic}" placeholder="PIC"${consDisabled}></td>
@@ -1894,13 +2085,51 @@
                 filtered.sort((a, b) => weights[a.status] - weights[b.status]);
             }
             document.getElementById('tempTable').innerHTML = filtered.map(t => {
-                const done = t.status === 'COMPLETED', isMine = (currentUser === t.pic), canEdit = (isAdmin || isMine) && !done;
-                const templateNoCell = (isAdmin && !done) ? `<input type="text" id="edit-tno-${t.id}" class="manual-input admin-input" value="${t.templateNo === '---' ? '' : t.templateNo}" placeholder="Assign No.">` : `<span class="font-bold">${t.templateNo}</span>`;
+                const done = t.status === 'COMPLETED', isMine = (currentUser === t.pic);
+                const canEdit    = isAdmin || (isMine && !done); // structural edits (Gavin always, PIC only when pending)
+                const canEditPIC = isAdmin || isMine;            // remark/date/qty: PIC can always update even after completion
+                const templateNoCell = isAdmin ? `<input type="text" id="edit-tno-${t.id}" class="manual-input admin-input" value="${t.templateNo === '---' ? '' : t.templateNo}" placeholder="Assign No.">` : `<span class="font-bold">${t.templateNo}</span>`;
                 const picCell = (isAdmin && !done) ? `<select id="edit-pic-${t.id}" class="manual-input admin-input"><option value="">Select PIC</option>${picList.map(p => `<option value="${p}" ${p === t.pic ? 'selected' : ''}>${p}</option>`).join('')}</select>` : `<span>${t.pic}</span>`;
-                const webTime = formatWebDisplay(new Date()), dateInput = (isMine && !done) ? `<input type="text" id="date-${t.id}" class="manual-input" value="${webTime}">` : `<span>${done ? t.completeDateDisplay : '---'}</span>`, qtyInput = (isMine && !done) ? `<input type="number" id="qty-${t.id}" class="manual-input qty-input" placeholder="Qty">` : `<span>${done ? t.qty : '---'}</span>`;
+                const webTime = formatWebDisplay(new Date()), dateInput = canEditPIC ? `<input type="text" id="date-${t.id}" class="manual-input" value="${done ? t.completeDateDisplay : webTime}">` : `<span>${done ? t.completeDateDisplay : '---'}</span>`, qtyInput = canEditPIC ? `<input type="number" id="qty-${t.id}" class="manual-input qty-input" placeholder="Qty" value="${done?t.qty:''}">` : `<span>${done ? t.qty : '---'}</span>`;
                 return `<tr class="border-b hover:bg-slate-50">
-                    <td class="p-3 text-slate-400 font-mono">${t.id}</td><td class="p-3 text-slate-500">${t.startTime}</td><td class="p-3">${t.section}</td><td class="p-3">${t.requestor}</td><td class="p-3 font-bold">${t.style}</td><td class="p-3">${t.jobNo}</td><td class="p-3 font-semibold text-purple-700">${t.protoStage}</td><td class="p-3 text-blue-700">${templateNoCell}</td><td class="p-3 text-orange-700 font-bold">${t.templateType}</td><td class="p-3 text-slate-500 italic text-[10px]">${t.description}</td><td class="p-3">${t.machine}</td><td class="p-3">${t.requiredDate}</td><td class="p-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${done ? 'bg-emerald-100 text-emerald-600' : (t.status === 'DELAYED' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600')}">${t.status}</span></td><td class="p-3 font-medium">${picCell}</td><td class="p-3">${qtyInput}</td><td class="p-3">${dateInput}</td><td class="p-3"><div class="flex flex-col gap-1">${canEdit ?
-                `<input type="text" id="remark-${t.id}" class="manual-input" value="${t.remark === '---' ? '' : t.remark}" placeholder="Add remark..."><button onclick="adminUpdate('${t.id}', event)" class="bg-blue-600 text-white text-[9px] font-bold py-1 rounded">SAVE</button>` : `<span class="text-[10px]">${t.remark}</span>`}</div></td>
+                    <td class="p-3 text-slate-400 font-mono text-[10px]">${t.id}</td>
+                    <td class="p-3 text-slate-500 text-[10px]">${t.startTime}</td>
+                    <td class="p-3 text-[10px]">${t.requestor}</td>
+                    <td class="p-3 text-[10px]">${t.section}</td>
+                    <td class="p-3 font-bold">${t.style}</td>
+                    <td class="p-3 text-[10px]">${t.jobNo}</td>
+                    <td class="p-3 font-semibold text-purple-700 text-[10px]">${t.protoStage}</td>
+                    <td class="p-3 text-orange-700 font-bold text-[10px]">${t.templateType}</td>
+                    <td class="p-3">${isAdmin
+                        ? `<input type="text" id="desc-${t.id}" class="manual-input" style="width:130px" value="${t.description&&t.description!=='---'?t.description:''}" placeholder="Description">`
+                        : `<span class="text-slate-500 italic text-[10px]">${t.description}</span>`
+                    }</td>
+                    <td class="p-3 text-[10px]">${t.machine}</td>
+                    <td class="p-3 text-[10px]">${t.requiredDate}</td>
+                    <td class="p-3">${isAdmin
+                        ? `<select id="complexity-${t.id}" class="manual-input admin-input" style="width:80px">
+                            <option value="">—</option>
+                            ${[1,2,3,4,5].map(l=>`<option value="Level ${l}" ${t.complexity==='Level '+l?'selected':''}>Level ${l}</option>`).join('')}
+                           </select>`
+                        : `<span class="text-[10px] font-bold ${t.complexity&&t.complexity!=='---'?'text-indigo-600':''}">${t.complexity&&t.complexity!=='---'?t.complexity:'—'}</span>`
+                    }</td>
+                    <td class="p-3">${isAdmin
+                        ? `<input type="text" id="dfm-${t.id}" class="manual-input admin-input" style="width:90px" value="${t.dfm&&t.dfm!=='---'?t.dfm:''}" placeholder="Code / No">`
+                        : `<span class="text-[10px] font-bold ${t.dfm&&t.dfm!=='---'?'text-teal-600':''}">${t.dfm&&t.dfm!=='---'?t.dfm:'—'}</span>`
+                    }</td>
+                    <td class="p-3">${dateInput}</td>
+                    <td class="p-3">${qtyInput}</td>
+                    <td class="p-3 text-blue-700">${templateNoCell}</td>
+                    <td class="p-3 font-medium">${picCell}</td>
+                    <td class="p-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${done ? 'bg-emerald-100 text-emerald-600' : (t.status === 'DELAYED' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600')}">${t.status}</span></td>
+                    <td class="p-3">${canEditPIC
+                        ? `<input type="text" id="remark-${t.id}" class="manual-input" value="${t.remark === '---' ? '' : t.remark}" placeholder="Add remark...">`
+                        : `<span class="text-[10px]">${t.remark}</span>`
+                    }</td>
+                    <td class="p-3">${canEditPIC
+                        ? `<button onclick="adminUpdate('${t.id}', event)" class="bg-blue-600 text-white text-[9px] font-bold px-3 py-1 rounded hover:bg-blue-700 whitespace-nowrap">SAVE</button>`
+                        : ''
+                    }</td>
                 </tr>`;
             }).join('');
         }
@@ -1934,13 +2163,19 @@
             const btn = event.target; btn.innerText = "SAVING..."; btn.disabled = true;
 
             // Key Column = Id (integer) — send record.id, NOT record.guid (GUID)
+            const tComplexity = document.getElementById(`complexity-${simpleId}`)?.value || record.complexity || '';
+            const tDFM        = document.getElementById(`dfm-${simpleId}`)?.value.trim() || record.dfm || '';
+            const tDesc       = document.getElementById(`desc-${simpleId}`)?.value.trim() || record.description || '';
             const payload = {
-                recordID: String(record.id),
-                templateNo: String(tNo),
-                pic: String(tPic),
+                recordID:      String(record.id),
+                templateNo:    String(tNo),
+                pic:           String(tPic),
                 completionDate: String(tDateExcel),
-                completeQty: String(tQty),
-                remark: String(tRem)
+                completeQty:   String(tQty),
+                complexity:    String(tComplexity),
+                dfm:           String(tDFM),
+                description:   String(tDesc),
+                remark:        String(tRem)
             };
 
             try {
@@ -2006,7 +2241,9 @@
             slaOverRows = [];
             allLaserRows.forEach(r => {
                 const received  = rawToLocalDate(getVal(r, ['Received Time','ReceivedTime','Received']));
-                const completed = rawToLocalDate(getVal(r, ['Complete Date','CompleteDate']));
+                // Try multiple Complete Date field name variants
+                const cdRaw = getVal(r, ['Complete Date','CompleteDate','Complete Date m/d/yyyy']);
+                const completed = rawToLocalDate(cdRaw);
                 if (!received || !completed) return;
                 const cMonth = `${months[completed.getMonth()]}-${completed.getFullYear()}`;
                 if (sharedMonthVal !== 'ALL' && cMonth !== sharedMonthVal) return;
@@ -2083,6 +2320,93 @@
         }
 
         let supSectionChart = null, supVolumeChart = null, supTypeChart = null;
+        let patchMonthChart = null, patchSeasonChart = null;
+
+        function renderPatchDashboard() {
+            if (!allPatchRows.length) return;
+            const total   = allPatchRows.length;
+            const pending = allPatchRows.filter(r => { const cd = getVal(r,['Complete Date m/d/yyyy','Complete Date','CompleteDate']); return !cd||cd==='---'||String(cd).trim()===''; }).length;
+            const done    = total - pending;
+            const rate    = total ? Math.round(done/total*100)+'%' : '—';
+            const el = id => document.getElementById(id);
+            if (el('db-patch-total'))   el('db-patch-total').innerText   = total;
+            if (el('db-patch-pending')) el('db-patch-pending').innerText = pending;
+            if (el('db-patch-done'))    el('db-patch-done').innerText    = done;
+            if (el('db-patch-rate'))    el('db-patch-rate').innerText    = rate;
+
+            // Chart 1: Daily completion volume line chart (like template completion trend)
+            const dayCompletions = {};
+            allPatchRows.forEach(r => {
+                const cd = getVal(r,['Complete Date m/d/yyyy','Complete Date','CompleteDate']);
+                if (!cd || cd === '---' || String(cd).trim() === '') return;
+                const dateObj = rawToLocalDate(cd);
+                if (!dateObj) return;
+                const dayKey = `${dateObj.getMonth()+1}/${dateObj.getDate()}/${dateObj.getFullYear()}`;
+                dayCompletions[dayKey] = (dayCompletions[dayKey]||0) + 1;
+            });
+            const sortedDays = Object.keys(dayCompletions).sort((a,b) => {
+                const [ma,da,ya] = a.split('/'), [mb,db,yb] = b.split('/');
+                return new Date(parseInt(ya),parseInt(ma)-1,parseInt(da)) - new Date(parseInt(yb),parseInt(mb)-1,parseInt(db));
+            });
+            if (patchMonthChart) patchMonthChart.destroy();
+            const pmCtx = el('patchMonthChart');
+            if (pmCtx) patchMonthChart = new Chart(pmCtx, {
+                type: 'line',
+                data: {
+                    labels: sortedDays,
+                    datasets: [{
+                        label: 'Patches Completed',
+                        data: sortedDays.map(d => dayCompletions[d]),
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99,102,241,0.08)',
+                        tension: 0.35,
+                        fill: true,
+                        pointRadius: 3,
+                        pointHoverRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } }, x: { ticks: { maxTicksLimit: 12, font: { size: 9 } } } }
+                }
+            });
+
+            // Chart 2: By Season (doughnut)
+            const seasonCounts = {};
+            allPatchRows.forEach(r => {
+                const s = getVal(r,['Season'])||'Unknown';
+                seasonCounts[s] = (seasonCounts[s]||0)+1;
+            });
+            const sColors = ['#6366f1','#10b981','#f59e0b','#3b82f6','#ef4444','#8b5cf6','#14b8a6'];
+            if (patchSeasonChart) patchSeasonChart.destroy();
+            const psCtx = el('patchSeasonChart');
+            if (psCtx) patchSeasonChart = new Chart(psCtx, {
+                type: 'doughnut',
+                data: { labels: Object.keys(seasonCounts), datasets: [{ data: Object.values(seasonCounts), backgroundColor: sColors, borderWidth: 2 }] },
+                options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ font:{ size:10 }, boxWidth:10 } } } }
+            });
+
+            // Pending by PIC table
+            const picPend = {};
+            allPatchRows.forEach(r => {
+                const cd = getVal(r,['Complete Date m/d/yyyy','Complete Date','CompleteDate']);
+                if (cd && cd !== '---' && String(cd).trim() !== '') return;
+                const pic = getMAPic(r)||'Unassigned';
+                const style = getVal(r,['Style Number','StyleNumber']);
+                const tmpl  = getVal(r,['Template No.','Template No','TemplateNo']);
+                if (!picPend[pic]) picPend[pic] = [];
+                picPend[pic].push(`${style}${tmpl!=='---'?' ('+tmpl+')':''}`);
+            });
+            const picTbl = el('db-patch-pic-table');
+            if (picTbl) picTbl.innerHTML = Object.keys(picPend).length
+                ? Object.entries(picPend).map(([name,items]) => `
+                    <tr class="border-b hover:bg-indigo-50">
+                        <td class="p-3 font-bold border-r bg-slate-50/50">${name}</td>
+                        <td class="p-3 flex flex-wrap gap-2">${items.map(s=>`<span class="px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded">${s}</span>`).join('')}</td>
+                    </tr>`).join('')
+                : '<tr><td colspan="2" class="p-6 text-center italic text-slate-400">All patches completed!</td></tr>';
+        }
         let utilChart = null;
 
         function renderUtilization() {
@@ -2095,39 +2419,45 @@
             let attAvgCapacity = 0;
             let attSourceLabel = 'no attendance data';
 
+            // Determine which month key to read from attData
+            let attKeyStr = null;
             if (sharedMonth !== 'ALL') {
                 // Convert "Mar-26" → attKey format "2026-03"
                 const [mStr, yStr] = sharedMonth.split('-');
                 const mIdx = months.indexOf(mStr);
                 const fullYear = mIdx >= 0 ? (parseInt(yStr) + 2000) : null;
-                if (fullYear !== null) {
-                    const attKeyStr = `${fullYear}-${String(mIdx+1).padStart(2,'0')}`;
-                    const attMonthData = attData[attKeyStr] || {};
-                    const daysInM = new Date(fullYear, mIdx+1, 0).getDate();
-                    ATT_MEMBERS.forEach(name => {
-                        const memberData = attMonthData[name] || {};
-                        let total = 0;
-                        for (let d = 1; d <= daysInM; d++) total += parseFloat(memberData[d] || 0);
-                        if (total > 0) attCapMap[name] = total;
-                    });
-                    const caps = Object.values(attCapMap);
-                    if (caps.length > 0) {
-                        attAvgCapacity = Math.round(caps.reduce((a,b)=>a+b,0) / caps.length);
-                        attSourceLabel = `avg ${attAvgCapacity} hrs/PIC from attendance`;
-                    }
+                if (fullYear !== null) attKeyStr = `${fullYear}-${String(mIdx+1).padStart(2,'0')}`;
+            } else {
+                // ALL selected — use the most recent available month in attData
+                const keys = Object.keys(attData || {}).sort();
+                if (keys.length > 0) attKeyStr = keys[keys.length - 1];
+            }
+
+            if (attKeyStr) {
+                const attMonthData = attData[attKeyStr] || {};
+                // Parse key back to get daysInMonth
+                const [ky, km] = attKeyStr.split('-');
+                const daysInM = new Date(parseInt(ky), parseInt(km), 0).getDate();
+                ATT_MEMBERS.forEach(name => {
+                    const memberData = attMonthData[name] || {};
+                    let total = 0;
+                    for (let d = 1; d <= daysInM; d++) total += parseFloat(memberData[d] || 0);
+                    if (total > 0) attCapMap[name] = total;
+                });
+                const caps = Object.values(attCapMap);
+                if (caps.length > 0) {
+                    attAvgCapacity = Math.round(caps.reduce((a,b)=>a+b,0) / caps.length);
+                    const mLabel = sharedMonth !== 'ALL' ? sharedMonth : attKeyStr;
+                    attSourceLabel = `avg ${attAvgCapacity} hrs/PIC (${mLabel})`;
                 }
             }
 
-            // Manual override takes precedence if both fields filled
-            const overrideDays = parseInt(document.getElementById('util-days')?.value);
-            const overrideHrs  = parseInt(document.getElementById('util-hrs')?.value);
-            const useOverride  = !isNaN(overrideDays) && overrideDays > 0 && !isNaN(overrideHrs) && overrideHrs > 0;
-            const capacity     = useOverride ? (overrideDays * overrideHrs) : (attAvgCapacity || 176);
-
+            // Use attendance data only — no hardcoded fallback
+            const capacity = attAvgCapacity || 0;
             const capEl    = document.getElementById('util-capacity');
             const statusEl = document.getElementById('util-att-status');
-            if (capEl) capEl.innerText = `${capacity} hrs capacity / PIC`;
-            if (statusEl) statusEl.innerText = useOverride ? 'manual override' : attSourceLabel;
+            if (capEl) capEl.innerText = capacity ? `${capacity} hrs capacity / PIC` : '— (open Attendance to sync)';
+            if (statusEl) statusEl.innerText = attAvgCapacity ? attSourceLabel : 'no data';
 
             // Helper: filter by selected month using a date field
             const inMonth = (dateVal) => {
@@ -2138,7 +2468,7 @@
             };
 
             // Collect all known PICs across all sources
-            const allPICs = new Set([...picList]);
+            const allPICs = new Set([...ATT_MEMBERS, ...picList]); // seed from all known members
 
             // ── Laser hrs per PIC (Received Time → Complete Date) ─────────────
             const laserHrs = {};
@@ -2164,11 +2494,17 @@
                 const pic = getMAPic(r);
                 if (!pic || pic === '---') return;
                 allPICs.add(pic);
-                // Only count when both Start and Complete Time exist (in progress = 0 hrs)
-                const startDate   = rawToLocalDate(getVal(r, ['Start Time','StartTime']));
-                const endDate     = rawToLocalDate(getVal(r, ['Complete Time','CompleteTime']));
-                if (!startDate || !endDate || endDate <= startDate) return;
-                const hrs = (endDate - startDate) / 3600000;
+                // Primary: Start Time → Complete Time (actual elapsed)
+                // Fallback: Job Elapsed Calendar Hrs (from Excel — used when dates not parseable)
+                let hrs = 0;
+                const startDate = rawToLocalDate(getVal(r, ['Start Time','StartTime']));
+                const endDate   = rawToLocalDate(getVal(r, ['Complete Time','CompleteTime']));
+                if (startDate && endDate && endDate > startDate) {
+                    hrs = (endDate - startDate) / 3600000;
+                } else {
+                    const jobElapsed = parseFloat(getVal(r, ['Job Elapsed Calendar Hrs','ElapsedHrs','Elapsed','Job Elapsed']));
+                    if (!isNaN(jobElapsed) && jobElapsed > 0) hrs = jobElapsed;
+                }
                 if (hrs > 0) supportHrs[pic] = (supportHrs[pic] || 0) + hrs;
             });
 
@@ -2243,7 +2579,7 @@
                     const total = lHrs + sHrs;
                     // Use individual PIC capacity from attendance if available, else group avg
                     const picCap = attCapMap[p] || capacity;
-                    const pct   = picCap ? Math.round(total / picCap * 100) : 0;
+                    const pct   = (picCap && total) ? Math.round(total / picCap * 100) : 0;
                     const barColor = pct >= 90 ? 'bg-red-500' : pct >= 70 ? 'bg-amber-400' : 'bg-emerald-500';
                     return `<tr class="border-b hover:bg-slate-50">
                         <td class="p-3 font-bold">${p}</td>
@@ -2394,10 +2730,12 @@
             // Re-render laser dashboard + SLA chart when switching to it (canvas must be visible)
             if (t === 'dashboard' && allLaserRows.length) {
                 renderLaserDashboard();
-                requestAnimationFrame(() => renderLaserSLA());
+                // Use setTimeout to ensure canvas is fully painted before Chart.js renders
+                setTimeout(() => renderLaserSLA(), 50);
             }
             if (t === 'dashboard' && allSupportRows.length) renderSupportDashboard();
-            if (t === 'dashboard') renderUtilization();
+            if (t === 'dashboard' && allPatchRows.length) renderPatchDashboard();
+            if (t === 'dashboard') { loadAttData(); renderUtilization(); }
             // Refresh support data when switching to support tab
             if (t === 'support') refreshSupportData(true);
         }
@@ -2466,7 +2804,7 @@
                 if (st) { st.innerText = 'LIVE: ' + new Date().toLocaleTimeString(); st.classList.remove('sync-active'); }
             } catch(e) {
                 const tbody = document.getElementById('supportTable');
-                if (tbody) tbody.innerHTML = `<tr><td colspan="16" class="p-6 text-center text-red-400 italic text-xs">Failed to load: ${e.message}<br><br>Check your Power Automate Flow has a Response action returning body/value.</td></tr>`;
+                if (tbody) tbody.innerHTML = `<tr><td colspan="17" class="p-6 text-center text-red-400 italic text-xs">Failed to load: ${e.message}<br><br>Check your Power Automate Flow has a Response action returning body/value.</td></tr>`;
                 if (st) st.innerText = 'Error';
             }
         }
@@ -2517,7 +2855,7 @@
             const elDone   = document.getElementById('sup-done');   if (elDone)   elDone.innerText   = done;
 
             if (!rows.length) {
-                tbody.innerHTML = `<tr><td colspan="16" class="p-6 text-center text-slate-400 italic text-xs">${supportSearchQuery ? 'No results found.' : 'No support records found.'}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="14" class="p-6 text-center text-slate-400 italic text-xs">${supportSearchQuery ? 'No results found.' : 'No support records found.'}</td></tr>`;
                 return;
             }
 
@@ -2543,17 +2881,18 @@
                                         : (elapsedRaw && elapsedRaw !== '---' ? parseFloat(elapsedRaw).toFixed(2) : '---');
                 const pic         = getMAPic(i);
                 const remark      = getVal(i, ['Remark','Remarks']);
-                const complexity  = getVal(i, ['Complexity Level','ComplexityLevel','Complexity']);
-                const dfm         = getVal(i, ['DFM']);
+
                 const isDone      = completeTime && completeTime !== '---';
-                const canEdit     = !!currentUser; // any logged-in user can update their row
-                const isGavin     = currentUser === 'Gavin'; // Gavin-only fields
+                const isGavin     = currentUser === 'Gavin';
+                // PIC-restricted: Gavin edits all; others only edit rows where PIC matches them or PIC is blank
+                const rowPic      = pic && pic !== '---' ? pic : null;
+                const canEdit     = !!currentUser && (isGavin || !rowPic || rowPic === currentUser);
                 const sid         = String(rawID).replace(/['"]/g,'');
                 const riskColor   = riskType.toLowerCase().includes('quality') ? 'bg-red-100 text-red-600' :
                                     riskType.toLowerCase().includes('break') ? 'bg-orange-100 text-orange-600' :
                                     'bg-slate-100 text-slate-600';
                 const typeColor   = suppType.toLowerCase().includes('repair') ? 'bg-blue-100 text-blue-600' : 'bg-purple-100 text-purple-600';
-                return `<tr class="border-b hover:bg-slate-50">
+                return `<tr class="border-b hover:bg-slate-50${!canEdit&&!!currentUser?' opacity-60':''}">
                     <td class="p-3 text-slate-500 text-[10px]">${received}</td>
                     <td class="p-3 font-mono text-[10px] text-slate-400">${requestID}</td>
                     <td class="p-3 text-xs">${name}</td>
@@ -2564,37 +2903,40 @@
                     <td class="p-3 text-slate-500 italic text-[10px] max-w-[200px]">${desc}</td>
                     <td class="p-3 text-[10px]">${month}</td>
                     <td class="p-3 text-[10px]">${canEdit
-                        ? `<input id="sup-start-${sid}" class="manual-input admin-input" value="${startTime==='---'?'':startTime}" placeholder="m/d/yyyy hh:mm">`
+                        ? `<input id="sup-start-${sid}" class="manual-input admin-input" value="${startTime==='---'?'':startTime}" placeholder="m/d/yyyy hh:mm" oninput="updateElapsedDisplay('${sid}')">`
                         : startTime}</td>
                     <td class="p-3 text-[10px]">${canEdit
-                        ? `<input id="sup-end-${sid}" class="manual-input admin-input" value="${completeTime==='---'?'':completeTime}" placeholder="m/d/yyyy hh:mm">`
+                        ? `<input id="sup-end-${sid}" class="manual-input admin-input" value="${completeTime==='---'?'':completeTime}" placeholder="m/d/yyyy hh:mm" oninput="updateElapsedDisplay('${sid}')">`
                         : `<span class="${isDone?'text-emerald-600 font-bold':'text-slate-400'}">${completeTime}</span>`}</td>
-                    <td class="p-3 font-bold ${parseFloat(elapsed) > 8 ? 'text-red-500' : 'text-slate-700'}">${elapsed !== '---' ? elapsed + ' hrs' : '---'}</td>
+                    <td class="p-3 font-bold" id="sup-elapsed-display-${sid}" style="color:${parseFloat(elapsed)>8?'#ef4444':'#334155'}">${elapsed !== '---' ? elapsed + ' hrs' : '---'}</td>
                     <td class="p-3 font-bold ${(!pic || pic === '---') ? 'text-blue-600' : ''}">${(!pic || pic === '---') && canEdit ? `<span class="text-blue-600">${currentUser} <span class="text-[9px] text-slate-400">(will be saved)</span></span>` : pic}</td>
-                    <td class="p-3">${isGavin
-                        ? `<select id="sup-complexity-${sid}" class="manual-input admin-input" style="width:110px">
-                            <option value="">—</option>
-                            <option value="Low" ${complexity==='Low'?'selected':''}>Low</option>
-                            <option value="Medium" ${complexity==='Medium'?'selected':''}>Medium</option>
-                            <option value="High" ${complexity==='High'?'selected':''}>High</option>
-                            <option value="Critical" ${complexity==='Critical'?'selected':''}>Critical</option>
-                          </select>`
-                        : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${complexity==='Critical'?'bg-red-100 text-red-700':complexity==='High'?'bg-orange-100 text-orange-700':complexity==='Medium'?'bg-amber-100 text-amber-700':complexity==='Low'?'bg-emerald-100 text-emerald-700':'text-slate-400'}">${complexity!=='---'?complexity:'—'}</span>`
-                    }</td>
-                    <td class="p-3">${isGavin
-                        ? `<select id="sup-dfm-${sid}" class="manual-input admin-input" style="width:100px">
-                            <option value="">—</option>
-                            <option value="Yes" ${dfm==='Yes'?'selected':''}>Yes</option>
-                            <option value="No" ${dfm==='No'?'selected':''}>No</option>
-                            <option value="N/A" ${dfm==='N/A'?'selected':''}>N/A</option>
-                          </select>`
-                        : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${dfm==='Yes'?'bg-teal-100 text-teal-700':dfm==='No'?'bg-slate-100 text-slate-500':'text-slate-400'}">${dfm!=='---'?dfm:'—'}</span>`
+                    
+                    
+                    <td class="p-3">${canEdit
+                        ? `<input id="sup-rem-${sid}" class="manual-input" value="${remark==='---'?'':remark}" placeholder="Remark">`
+                        : `<span class="italic text-slate-400 text-[10px]">${remark}</span>`
                     }</td>
                     <td class="p-3">${canEdit
-                        ? `<div class="flex flex-col gap-1"><input id="sup-rem-${sid}" class="manual-input" value="${remark==='---'?'':remark}" placeholder="Remark"><button onclick="saveSupportRow('${sid}',event)" class="bg-blue-600 text-white text-[9px] font-bold py-1 rounded hover:bg-blue-700">SAVE</button></div>`
-                        : `<span class="italic text-slate-400 text-[10px]">${remark}</span>`}</td>
+                        ? `<button onclick="saveSupportRow('${sid}',event)" class="bg-blue-600 text-white text-[9px] font-bold px-3 py-1 rounded hover:bg-blue-700 whitespace-nowrap">SAVE</button>`
+                        : ''
+                    }</td>
                 </tr>`;
             }).join('');
+        }
+
+        function updateElapsedDisplay(sid) {
+            const sVal = document.getElementById(`sup-start-${sid}`)?.value.trim();
+            const eVal = document.getElementById(`sup-end-${sid}`)?.value.trim();
+            const el   = document.getElementById(`sup-elapsed-display-${sid}`);
+            if (!el) return;
+            const s = rawToLocalDate(sVal); const e = rawToLocalDate(eVal);
+            if (s && e && e > s) {
+                const hrs = ((e - s) / 3600000).toFixed(2);
+                el.innerText = hrs + ' hrs';
+                el.style.color = parseFloat(hrs) > 8 ? '#ef4444' : '#334155';
+            } else {
+                el.innerText = '---';
+            }
         }
 
         async function saveSupportRow(sid, event) {
@@ -2627,10 +2969,8 @@
                 elapsedHrs:                elapsed,
                 'M&A PIC':                 picToSave,
                 pic:                       picToSave,
-                'Complexity Level':        complexityVal,
-                complexityLevel:           complexityVal,
-                'DFM':                     dfmVal,
-                dfm:                       dfmVal,
+
+
                 'Remark':                  remarkVal,
                 remark:                    remarkVal
             };
@@ -2658,15 +2998,228 @@
             }
         }
 
+        // ── PATCH PAGE ──────────────────────────────────────────────────────────
+        const patchFetchURL = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/578c605e308e41e0a92bff040fbee0fd/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=3ACOFx4gywYqLicKRU56fVHlclF4aE1HNrdO21CgriQ";
+        let allPatchRows = [], patchSearchQuery = '';
+
+        async function refreshPatchData(isSilent = false) {
+            const st = document.getElementById('patchSyncStatus');
+            if (!isSilent && st) { st.innerText = 'Syncing...'; st.classList.add('sync-active'); }
+            try {
+                const r = await fetch(patchFetchURL + "&cb=" + Date.now(), { method: 'POST', body: JSON.stringify({}) });
+                const rawText = await r.text();
+                if (!r.ok) throw new Error(`HTTP ${r.status}: ${rawText.substring(0,200)}`);
+                if (!rawText || rawText.trim() === '') throw new Error('Flow returned empty response — check Response action body is set to the list value output');
+                const d = (() => { try { return JSON.parse(rawText); } catch(e) { throw new Error('Bad JSON: ' + rawText.substring(0,150)); } })();
+                let rows = [];
+                if (Array.isArray(d)) rows = d;
+                else if (d && Array.isArray(d.value)) rows = d.value;
+                else if (d && d.body && Array.isArray(d.body.value)) rows = d.body.value;
+                else { for (const k of Object.keys(d||{})) { if (Array.isArray(d[k])) { rows = d[k]; break; } } }
+                // Sort by receive date desc — newest first
+                rows.sort((a,b) => {
+                    const da = rawToLocalDate(getVal(a,['Patch & Fabric Receive Date','ReceiveDate','Receive Date']));
+                    const db = rawToLocalDate(getVal(b,['Patch & Fabric Receive Date','ReceiveDate','Receive Date']));
+                    return (db?db.getTime():0) - (da?da.getTime():0);
+                });
+                allPatchRows = rows;
+                renderPatchTable();
+                renderPatchDashboard();
+                if (st) { st.innerText = 'LIVE: ' + new Date().toLocaleTimeString(); st.classList.remove('sync-active'); }
+            } catch(e) {
+                const tbody = document.getElementById('patchTable');
+                if (tbody) tbody.innerHTML = `<tr><td colspan="22" class="p-6 text-center text-red-400 italic text-xs">Failed to load: ${e.message}</td></tr>`;
+                if (st) st.innerText = 'Error';
+            }
+        }
+
+        function applyPatchFilter() {
+            patchSearchQuery = document.getElementById('patchSearch')?.value.toLowerCase() || '';
+            renderPatchTable();
+        }
+        function clearPatchSearch() {
+            const el = document.getElementById('patchSearch'); if (el) el.value = '';
+            patchSearchQuery = ''; renderPatchTable();
+        }
+
+        function renderPatchTable() {
+            const tbody = document.getElementById('patchTable');
+            if (!tbody) return;
+            const rows = patchSearchQuery
+                ? allPatchRows.filter(r => {
+                    const vals = [
+                        getVal(r,['No.','No']),
+                        getVal(r,['Season']),
+                        getVal(r,['Style Number','StyleNumber']),
+                        getVal(r,['Category']),
+                        getVal(r,['Job Number','JobNo']),
+                        getVal(r,['BDD PIC','BDDPIC']),
+                        getVal(r,['Patch Item','PatchItem']),
+                        getVal(r,['Patch Description','PatchDescription']),
+                        getVal(r,['Template No.','TemplateNo','Template No']),
+                        getVal(r,['Machine No.','Machine No','MachineNo','Machine']),
+                        getMAPic(r),
+                        getVal(r,['Month']),
+                        getVal(r,['Remark','Remarks'])
+                    ];
+                    return vals.some(v => String(v).toLowerCase().includes(patchSearchQuery));
+                })
+                : allPatchRows;
+
+            // Stats
+            const total   = rows.length;
+            const pending = rows.filter(r => { const cd = getVal(r,['Complete Date','CompleteDate']); return !cd || cd==='---' || String(cd).trim()===''; }).length;
+            const done    = total - pending;
+            const el = id => document.getElementById(id);
+            if (el('patch-total'))   el('patch-total').innerText   = total;
+            if (el('patch-pending')) el('patch-pending').innerText = pending;
+            if (el('patch-done'))    el('patch-done').innerText    = done;
+
+            if (!rows.length) {
+                tbody.innerHTML = `<tr><td colspan="22" class="p-6 text-center text-slate-400 italic text-xs">${patchSearchQuery?'No results.':'No patch records found.'}</td></tr>`;
+                return;
+            }
+
+            const isGavinP = currentUser === 'Gavin';
+            tbody.innerHTML = rows.map(i => {
+                const rawID     = i['__PowerAppsId__'] || i['Id'] || i['ID'];
+                const sid       = String(rawID).replace(/['"]/g,'');
+                // Read-only fields
+                const noKey     = getVal(i,['No.','No']);
+                const season    = getVal(i,['Season']);
+                const style     = getVal(i,['Style Number','StyleNumber']);
+                const category  = getVal(i,['Category']);
+                const jobNo     = getVal(i,['Job Number','JobNo','Job No']);
+                const bddPic    = getVal(i,['BDD PIC','BDDPIC','BDD']);
+                const patchItem = getVal(i,['Patch Item','PatchItem']);
+                const patchDesc = getVal(i,['Patch Description','PatchDescription','Patch Desc']);
+                const fabItem   = getVal(i,['Fabric Item','FabricItem']);
+                const fabDesc   = getVal(i,['Fabric Description','FabricDescription','Fabric Desc']);
+                const threadType= getVal(i,['Thread Type','ThreadType']);
+                const threadColor=getVal(i,['Thread Color','ThreadColor']);
+                const sampleType= getVal(i,['Type Of Sample','TypeOfSample','Sample Type']);
+                const qty       = getVal(i,['Quantity','Qty']);
+                // Editable fields
+                const received  = convertExcelDate(getVal(i,['Patch & Fabric Receive Date & Time m/d/yyyy','Patch & Fabric Receive Date','ReceiveDate','Receive Date']));
+                const tmplNo    = getVal(i,['Template No.','TemplateNo','Template No']);
+                const machine   = getVal(i,['Machine No.','Machine No','MachineNo','Machine']);
+                const month     = getVal(i,['Month']);
+                const complete  = convertExcelDate(getVal(i,['Complete Date m/d/yyyy','Complete Date','CompleteDate']));
+                const pic       = getMAPic(i);
+                const remark    = getVal(i,['Remark','Remarks']);
+                const isDone    = complete && complete !== '---';
+                // PIC-restricted edit: Gavin edits all; others only edit their own row
+                const rowPic    = pic && pic !== '---' ? pic : null;
+                const canEdit   = !!currentUser && (isGavinP || !rowPic || rowPic === currentUser);
+                const picDisplay = (!pic||pic==='---') && canEdit ? currentUser : (pic||'---');
+
+                return `<tr class="border-b hover:bg-slate-50 ${isDone?'bg-emerald-50/30':''} ${!canEdit&&!!currentUser?'opacity-60':''}">
+                    <td class="p-3 font-mono text-slate-500 text-[10px]">${noKey}</td>
+                    <td class="p-3 text-[10px]">${season}</td>
+                    <td class="p-3 font-bold text-slate-800">${style}</td>
+                    <td class="p-3 text-[10px]">${category}</td>
+                    <td class="p-3 text-[10px]">${jobNo}</td>
+                    <td class="p-3 text-[10px]">${bddPic}</td>
+                    <td class="p-3 text-[10px]">${patchItem}</td>
+                    <td class="p-3 text-[10px]" style="min-width:200px;white-space:normal;word-break:break-word;">${patchDesc}</td>
+                    <td class="p-3 text-[10px]">${fabItem}</td>
+                    <td class="p-3 text-[10px]" style="min-width:200px;white-space:normal;word-break:break-word;">${fabDesc}</td>
+                    <td class="p-3 text-[10px]">${threadType}</td>
+                    <td class="p-3 text-[10px]">${threadColor}</td>
+                    <td class="p-3 text-[10px]">${sampleType}</td>
+                    <td class="p-3 font-bold text-center">${qty}</td>
+                    <td class="p-3 text-amber-700 text-[10px]">${canEdit
+                        ? `<input id="patch-received-${sid}" class="manual-input admin-input" value="${received==='---'?'':received}" placeholder="m/d/yyyy hh:mm">`
+                        : received}</td>
+                    <td class="p-3 font-bold text-blue-700">${canEdit
+                        ? `<input id="patch-tmplno-${sid}" class="manual-input admin-input" value="${tmplNo==='---'?'':tmplNo}" placeholder="e.g. S0019C">`
+                        : tmplNo}</td>
+                    <td class="p-3">${canEdit
+                        ? `<input id="patch-machine-${sid}" class="manual-input admin-input" value="${machine==='---'?'':machine}" placeholder="e.g. AQM0001">`
+                        : machine}</td>
+                    <td class="p-3 text-[10px]">${month}</td>
+                    <td class="p-3 ${isDone?'text-emerald-600 font-bold':'text-slate-400'}">${canEdit
+                        ? `<input id="patch-complete-${sid}" class="manual-input admin-input" value="${isDone?complete:''}" placeholder="m/d/yyyy hh:mm">`
+                        : (isDone?complete:'---')}</td>
+                    <td class="p-3 font-bold ${(!pic||pic==='---')?'text-blue-600':''}">${picDisplay}</td>
+                    <td class="p-3">${canEdit
+                        ? `<input id="patch-remark-${sid}" class="manual-input" value="${remark==='---'?'':remark}" placeholder="Remark">`
+                        : `<span class="italic text-slate-400 text-[10px]">${remark}</span>`}</td>
+                    <td class="p-3">${canEdit
+                        ? `<button onclick="savePatchRow('${sid}',event)" class="bg-blue-600 text-white text-[9px] font-bold px-3 py-1 rounded hover:bg-blue-700">SAVE</button>`
+                        : ''}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        async function savePatchRow(sid, event) {
+            if (!currentUser) return alert('Please login first.');
+            const btn = event.target; btn.innerText = 'SAVING...'; btn.disabled = true;
+            const completeVal = document.getElementById(`patch-complete-${sid}`)?.value.trim() || '';
+            const remarkVal   = document.getElementById(`patch-remark-${sid}`)?.value.trim() || '';
+            const receivedVal = document.getElementById(`patch-received-${sid}`)?.value.trim() || '';
+            const tmplNoVal   = document.getElementById(`patch-tmplno-${sid}`)?.value.trim() || '';
+            const machineVal  = document.getElementById(`patch-machine-${sid}`)?.value.trim() || '';
+            // Find existing row to preserve PIC and No. key
+            const existingRow = allPatchRows.find(r => String(r['__PowerAppsId__']||r['Id']||r['ID']) === String(sid));
+            const existingPic = existingRow ? getMAPic(existingRow) : '---';
+            const picToSave   = (!existingPic || existingPic === '---') ? currentUser : existingPic;
+            // Key field: "No." — read from existing row data (integer row key in Excel table)
+            const noKey = existingRow ? String(getVal(existingRow, ['No.','No','NUMBER']) || '').trim() : '';
+            if (!noKey) {
+                btn.innerText = 'ERROR'; btn.disabled = false;
+                alert('Could not find the row key (No.) — try refreshing the page.');
+                return;
+            }
+            const payload = {
+                'No.':        noKey,
+                recordID:     noKey,
+                'Patch & Fabric Receive Date & Time m/d/yyyy': toExcelDateFormat(receivedVal),
+                'Template No.': tmplNoVal,
+                'Machine No.':  machineVal,
+                'Complete Date m/d/yyyy': toExcelDateFormat(completeVal),
+                completeDate: toExcelDateFormat(completeVal),
+                'M&A PIC':    picToSave,
+                pic:          picToSave,
+                'Remark':     remarkVal,
+                remark:       remarkVal
+            };
+            try {
+                const ctrl = new AbortController();
+                const t = setTimeout(() => ctrl.abort(), 20000);
+                const res = await fetch(patchUpdateURL, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload),
+                    signal: ctrl.signal
+                });
+                clearTimeout(t);
+                if (res.ok) {
+                    btn.innerText = 'SAVED ✓';
+                    setTimeout(() => { btn.innerText = 'SAVE'; btn.disabled = false; refreshPatchData(true); }, 1800);
+                } else {
+                    const txt = await res.text();
+                    btn.innerText = 'ERROR'; btn.disabled = false;
+                    alert(`Save failed HTTP ${res.status}: ${txt.substring(0,200)}`);
+                }
+            } catch(e) {
+                btn.innerText = 'ERROR'; btn.disabled = false;
+                alert(e.name === 'AbortError' ? 'Timed out — check Power Automate flow.' : e.message);
+            }
+        }
+
         window.onload = () => { 
             updateSessionUI();
             updateLaserPicDisplay();
-            updateMachineImage(); 
+            updateMachineImage();
+            loadAttData(); // load localStorage attendance so utilization works on first render
+            switchTab('dashboard'); // always start on dashboard
             refreshTemplateLogs(); 
             refreshLiveLogs();
             refreshLaserData();
             refreshSupportData();
-            setInterval(() => { refreshTemplateLogs(true); refreshLiveLogs(true); refreshLaserData(true); refreshSupportData(true); }, 60000); 
+            refreshPatchData();
+            setInterval(() => { refreshTemplateLogs(true); refreshLiveLogs(true); refreshLaserData(true); refreshSupportData(true); refreshPatchData(true); }, 60000); 
         };
     </script>
 </body>
