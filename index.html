@@ -155,8 +155,11 @@
             </div>
 
             <!-- Laser Search Bar -->
-            <div class="bg-white p-4 rounded-xl border shadow-sm mb-4 flex gap-2 items-center">
-                <input type="text" id="laserSearch" oninput="applyLaserFilter()" placeholder="Search Style, Season, Section, PIC, Category..." class="flex-1 p-2.5 border rounded-lg bg-slate-50 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            <div class="bg-white p-4 rounded-xl border shadow-sm mb-4 flex flex-wrap gap-2 items-center">
+                <input type="text" id="laserSearch" oninput="applyLaserFilter()" placeholder="Search Style, Season, Section, PIC, Category..." class="flex-1 p-2.5 border rounded-lg bg-slate-50 text-sm focus:ring-2 focus:ring-blue-500 outline-none min-w-[200px]">
+                <select id="laserMonthFilter" onchange="applyLaserFilter()" class="p-2.5 border rounded-lg bg-slate-50 text-xs font-bold text-blue-600 outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">All Months</option>
+                </select>
                 <button onclick="clearLaserSearch()" class="bg-slate-200 text-slate-600 px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-300">CLEAR</button>
             </div>
 
@@ -569,12 +572,10 @@
         <div id="content-template" class="tab-content">
             <div class="bg-white p-6 rounded-xl border shadow-sm mb-4">
                 <div class="flex justify-between items-center gap-4">
-                    <div class="flex-1 flex flex-wrap gap-2">
-                        <select id="tempMonthFilter" onchange="applyTempFilters(false)" class="text-xs font-bold border rounded-lg px-2 py-2 bg-white outline-none focus:ring-2 focus:ring-blue-400 text-blue-600">
-                            <option value="ALL">All Months</option>
-                        </select>
+                    <div class="flex-1 flex gap-2">
                         <input type="text" id="tempSearch" oninput="applyTempFilters(false)" placeholder="Search Style, PIC, Section, Month..." class="flex-1 p-2.5 border rounded-lg bg-slate-50 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                        <button onclick="clearTempSearch()" class="bg-slate-200 text-slate-600 px-4 rounded-lg text-xs font-bold hover:bg-slate-300">CLEAR</button>
+                        <select id="tempMonthFilter" onchange="applyTempFilters(false)" class="p-2.5 border rounded-lg bg-slate-50 text-xs font-bold text-blue-600 outline-none focus:ring-2 focus:ring-blue-500 shrink-0"><option value="">All Months</option></select>
+                        <button onclick="clearTempSearch()" class="bg-slate-200 text-slate-600 px-4 rounded-lg text-xs font-bold hover:bg-slate-300 shrink-0">CLEAR</button>
                     </div>
                     <div id="tempSyncStatus" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Syncing...</div>
                 </div>
@@ -679,13 +680,13 @@
         <!-- M&A Support Tab -->
         <div id="content-support" class="tab-content hidden">
             <!-- Search bar -->
-            <div class="bg-white p-4 rounded-xl border shadow-sm mb-4 flex gap-2 items-center">
-                <select id="supportMonthFilter" onchange="applySupport()" class="text-xs font-bold border rounded-lg px-2 py-2 bg-white outline-none focus:ring-2 focus:ring-blue-400 text-blue-600">
-                    <option value="ALL">All Months</option>
+            <div class="bg-white p-4 rounded-xl border shadow-sm mb-4 flex flex-wrap gap-2 items-center">
+                <input type="text" id="supportSearch" oninput="applySupport()" placeholder="Search Name, Machine, Type, PIC, Month..." class="flex-1 p-2.5 border rounded-lg bg-slate-50 text-sm focus:ring-2 focus:ring-blue-500 outline-none min-w-[200px]">
+                <select id="supportMonthFilter" onchange="applySupport()" class="p-2.5 border rounded-lg bg-slate-50 text-xs font-bold text-blue-600 outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">All Months</option>
                 </select>
-                <input type="text" id="supportSearch" oninput="applySupport()" placeholder="Search Name, Machine, Type, PIC..." class="flex-1 p-2.5 border rounded-lg bg-slate-50 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                 <button onclick="clearSupportSearch()" class="bg-slate-200 text-slate-600 px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-300">CLEAR</button>
-                <span id="supportSyncStatus" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-2">Syncing...</span>
+                <span id="supportSyncStatus" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Syncing...</span>
             </div>
             <!-- Stats -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
@@ -739,13 +740,13 @@
         <!-- ═══════ PATCH PAGE ════════════════════════════════════ -->
         <div id="content-patch" class="tab-content hidden">
             <!-- Search + Sync -->
-            <div class="bg-white p-4 rounded-xl border shadow-sm mb-4 flex gap-2 items-center">
-                <select id="patchMonthFilter" onchange="applyPatchFilter()" class="text-xs font-bold border rounded-lg px-2 py-2 bg-white outline-none focus:ring-2 focus:ring-blue-400 text-blue-600">
-                    <option value="ALL">All Months</option>
+            <div class="bg-white p-4 rounded-xl border shadow-sm mb-4 flex flex-wrap gap-2 items-center">
+                <input type="text" id="patchSearch" oninput="applyPatchFilter()" placeholder="Search Style, Season, Template No, Machine, PIC, Month..." class="flex-1 p-2.5 border rounded-lg bg-slate-50 text-sm focus:ring-2 focus:ring-blue-500 outline-none min-w-[200px]">
+                <select id="patchMonthFilter" onchange="applyPatchFilter()" class="p-2.5 border rounded-lg bg-slate-50 text-xs font-bold text-blue-600 outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">All Months</option>
                 </select>
-                <input type="text" id="patchSearch" oninput="applyPatchFilter()" placeholder="Search Style, Template No, Machine, PIC..." class="flex-1 p-2.5 border rounded-lg bg-slate-50 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                 <button onclick="clearPatchSearch()" class="bg-slate-200 text-slate-600 px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-300">CLEAR</button>
-                <span id="patchSyncStatus" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-2">Syncing...</span>
+                <span id="patchSyncStatus" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Syncing...</span>
             </div>
 
             <!-- Stat Cards -->
@@ -882,7 +883,8 @@
 
     async function fetchAttendanceFromCloud() {
         try {
-            const res = await fetch(attendanceFetchURL + "&cb=" + Date.now(), { method: 'POST', body: JSON.stringify({}) });
+            const _ctrl_a = new AbortController(); const _t_a = setTimeout(() => _ctrl_a.abort(), 20000);
+            const res = await fetch(attendanceFetchURL + "&cb=" + Date.now(), { method: 'POST', body: JSON.stringify({}), signal: _ctrl_a.signal }); clearTimeout(_t_a);
             if (!res.ok) return;
             const raw = await res.text();
             let d; try { d = JSON.parse(raw); } catch(e) { return; }
@@ -892,13 +894,15 @@
             else if (d?.body?.value && Array.isArray(d.body.value)) rows = d.body.value;
             else if (d?.body && Array.isArray(d.body)) rows = d.body;
             else { for (const k of Object.keys(d||{})) { if (Array.isArray(d[k])) { rows = d[k]; break; } } }
-            if (!rows.length) return;
-            // Each row = { Month:"Mar-26", Name:"Phone", Day_1:9, Day_2:0, ..., Total:176 }
+            if (!rows.length) { console.log('[ATT] No rows returned from attendance fetch'); return; }
+            console.log('[ATT] Processing', rows.length, 'attendance rows from cloud');
+            const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
             rows.forEach(row => {
+                // Support multiple formats:
+                // Format A (summary): { Month:"Mar-26", Name:"Phone", Day_1:9, ..., Total:176 }
+                // Format B (daily):   { Month:"Mar-26", Name:"Phone", Day:5, Hours:9 }
                 const monthLabel = String(row.Month || row.month || '').trim();
                 if (!monthLabel) return;
-                // Convert "Mar-26" → attKey "2026-03"
-                const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
                 const [mStr, yStr] = monthLabel.split('-');
                 const mIdx = months.indexOf(mStr);
                 if (mIdx < 0) return;
@@ -909,11 +913,27 @@
                 if (!attData[key]) attData[key] = {};
                 if (!attData[key][name]) attData[key][name] = {};
                 const daysInM = new Date(fullYear, mIdx+1, 0).getDate();
+                // Format B: single day row
+                if (row.Day !== undefined && row.Hours !== undefined) {
+                    const d = parseInt(row.Day || row.day);
+                    if (d >= 1 && d <= 31) attData[key][name][d] = parseFloat(row.Hours || row.hours) || 0;
+                    return;
+                }
+                // Format A: summary row with Day_1..Day_N
+                let hasDayCols = false;
                 for (let d = 1; d <= daysInM; d++) {
                     const v = row[`Day_${d}`];
-                    if (v !== undefined && v !== null) attData[key][name][d] = parseFloat(v) || 0;
+                    if (v !== undefined && v !== null) { attData[key][name][d] = parseFloat(v) || 0; hasDayCols = true; }
+                }
+                // If no Day_ columns but has Total, distribute evenly across working days as estimate
+                if (!hasDayCols && (row.Total || row.total)) {
+                    const total = parseFloat(row.Total || row.total) || 0;
+                    // Store total in day 1 as sentinel — renderUtilization sums all days anyway
+                    // Better: store total directly in a special key so we can use it
+                    attData[key][name]['__total__'] = total;
                 }
             });
+            console.log('[ATT] attData after cloud fetch:', JSON.stringify(Object.keys(attData)));
             localStorage.setItem('ma_attendance', JSON.stringify(attData));
             renderAttendance();
             renderUtilization(); // refresh capacity now that cloud data is loaded
@@ -1276,7 +1296,8 @@
             const st = document.getElementById('tempSyncStatus');
             if(!isSilent && st) st.classList.add('sync-active');
             try {
-                const r = await fetch(templateFetchURL + "&cb=" + Date.now(), { method: 'POST', body: JSON.stringify({}) });
+                const _ctrl_t = new AbortController(); const _t_t = setTimeout(() => _ctrl_t.abort(), 25000);
+                const r = await fetch(templateFetchURL + "&cb=" + Date.now(), { method: 'POST', body: JSON.stringify({}), signal: _ctrl_t.signal }); clearTimeout(_t_t);
                 const d = await r.json();
                 allTemplates = d.map(i => {
                     const doneRaw = getVal(i, ['Complete Date m/d/yyyy','Complete Date', 'Finish']);
@@ -1312,7 +1333,7 @@
                         remark: getVal(i, ['Remark']), status: currentStatus, raw: getVal(i, ['Start time'])
                     };
                 }).sort((a,b)=>b.raw - a.raw);
-                generateMonthOptions(); populatePageMonthFilters(); updateDashboard(); applyTempFilters(false); renderUtilization();
+                generateMonthOptions(); updateDashboard(); applyTempFilters(false); renderUtilization(); populateTabMonthFilters();
                 if(st) { st.innerText = "LIVE: " + new Date().toLocaleTimeString(); st.classList.remove('sync-active'); }
             } catch (e) { if(st) st.innerText = "Error"; }
         }
@@ -1469,12 +1490,13 @@
         let allLaserRows = [];
         let laserSearchQuery = '';
         let allSupportRows = [];
-        let supportSearchQuery = '', supportMonthQuery = 'ALL';
+        let supportSearchQuery = '';
 
         function applyLaserFilter() {
             laserSearchQuery = document.getElementById('laserSearch')?.value.toLowerCase() || '';
             renderLaserTable();
         }
+        function getLaserMonthFilter() { return document.getElementById('laserMonthFilter')?.value || ''; }
 
         function clearLaserSearch() {
             const el = document.getElementById('laserSearch');
@@ -1533,7 +1555,9 @@
             const doneJobKeys = new Set();
             allLaserRows.forEach(r => {
                 const ce = convertExcelDate(getVal(r, ['Consumption Complete Date','ConsumptionCompleteDate','Cons End']));
-                if (ce && ce !== '---') doneJobKeys.add(jobKey(r));
+                // Check multiple possible field names for Consumption End/Complete date
+                const ceVal = getVal(r, ['Consumption Complete Date','ConsumptionCompleteDate','Cons End','ConsEnd','Consumption End']);
+                if (ceVal && ceVal !== '---' && String(ceVal).trim() !== '') doneJobKeys.add(jobKey(r));
             });
 
             // Pending = Complete Date filled + tracked proto stage + not done + not hidden this session
@@ -1541,14 +1565,16 @@
                 const cd    = convertExcelDate(getVal(r, ['Complete Date','CompleteDate']));
                 const cs    = convertExcelDate(getVal(r, ['Consumption Start Date','ConsumptionStartDate','Cons Start']));
                 const proto = getVal(r, ['Proto Stage','ProtoStage','Stage']);
-                const rid   = String(parseInt(getVal(r, ['Id','ID','id'])) || getVal(r, ['Id','ID','id']));
+                const rid   = String(getVal(r, ['Id','ID','id']));
+                const stylePro = `${getVal(r,['Style Number','StyleNumber','Style'])}|${proto}`;
                 return cd && cd !== '---'
                     && (!cs || cs === '---')
                     && isTrackedProtoStage(proto)
-                    && !doneJobKeys.has(jobKey(r))  // exclude if a sibling row is already done
-                    && !naHiddenIds.has(rid)          // exclude if hidden by row ID
-                    && !naHiddenIds.has(String(getVal(r, ['Id','ID','id']))) // raw string fallback
-                    && !naHiddenIds.has(jobKey(r));  // exclude if hidden by composite key (fallback)
+                    && !doneJobKeys.has(jobKey(r))
+                    && !naHiddenIds.has(rid)
+                    && !naHiddenIds.has(jobKey(r))
+                    && !naHiddenIds.has(stylePro)   // style|proto composite check
+                    && !naHiddenIds.has(String(r['__PowerAppsId__'] || ''));
             });
 
             // Done = Consumption End Date is filled
@@ -1633,7 +1659,8 @@
             const st = document.getElementById('laserSyncStatus');
             if (!isSilent && st) { st.innerText = 'Syncing...'; st.classList.add('sync-active'); }
             try {
-                const r = await fetch(laserFetchURL + "&cb=" + Date.now(), { method: 'POST', body: JSON.stringify({}) });
+                const _ctrl_l = new AbortController(); const _t_l = setTimeout(() => _ctrl_l.abort(), 25000);
+                const r = await fetch(laserFetchURL + "&cb=" + Date.now(), { method: 'POST', body: JSON.stringify({}), signal: _ctrl_l.signal }); clearTimeout(_t_l);
                 const d = await r.json();
                 let rows = [];
                 if (Array.isArray(d)) {
@@ -1659,6 +1686,7 @@
                 allLaserRows = rows;
                 renderLaserTable();
                 renderLaserDashboard();
+                populateTabMonthFilters();
                 // Render SLA chart if dashboard is visible (canvas must be in DOM and visible)
                 const dashVisible = !document.getElementById('content-dashboard')?.classList.contains('hidden');
                 if (dashVisible) requestAnimationFrame(() => renderLaserSLA());
@@ -1678,21 +1706,27 @@
                 tbody.innerHTML = '<tr><td colspan="18" class="p-6 text-center text-slate-400 italic text-xs">No laser records found.</td></tr>';
                 return;
             }
-            const laserRowsToShow = laserSearchQuery
-                ? allLaserRows.filter(i => {
-                    const vals = [
-                        getVal(i, ['Style Number','StyleNumber','Style']),
-                        getVal(i, ['Season']),
-                        getVal(i, ['Section']),
-                        getVal(i, ['Category']),
-                        getMAPic(i),
-                        getVal(i, ['Consumption PIC','ConsumptionPIC','Cons PIC']),
-                        getVal(i, ['Proto Stage','ProtoStage','Stage']),
-                        getVal(i, ['Remark','Remarks'])
-                    ];
-                    return vals.some(v => String(v).toLowerCase().includes(laserSearchQuery));
-                })
-                : allLaserRows;
+            const laserMF = getLaserMonthFilter();
+            const months_arr = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+            const laserRowsToShow = allLaserRows.filter(i => {
+                // Month filter
+                if (laserMF) {
+                    const cd = rawToLocalDate(getVal(i,['Complete Date','CompleteDate']));
+                    if (!cd) return false;
+                    const cdL = `${months_arr[cd.getMonth()]}-${cd.getFullYear()}`;
+                    if (cdL !== laserMF) return false;
+                }
+                if (!laserSearchQuery) return true;
+                const vals = [
+                    getVal(i, ['Style Number','StyleNumber','Style']),
+                    getVal(i, ['Season']), getVal(i, ['Section']),
+                    getVal(i, ['Category']), getMAPic(i),
+                    getVal(i, ['Consumption PIC','ConsumptionPIC','Cons PIC']),
+                    getVal(i, ['Proto Stage','ProtoStage','Stage']),
+                    getVal(i, ['Remark','Remarks'])
+                ];
+                return vals.some(v => String(v).toLowerCase().includes(laserSearchQuery));
+            });
             if (!laserRowsToShow.length) {
                 tbody.innerHTML = `<tr><td colspan="18" class="p-6 text-center text-slate-400 italic text-xs">No results for "${laserSearchQuery}".</td></tr>`;
                 return;
@@ -1877,19 +1911,24 @@
 
         function markLaserNA(rid, event) {
             const ridStr = String(rid);
-            const ridInt = String(parseInt(rid) || rid); // normalized integer string
+            const ridInt = String(parseInt(rid) || rid);
             naHiddenIds.add(ridStr);
             naHiddenIds.add(ridInt);
-            // Also store composite jobKey as fallback
+            // Find row by multiple ID fields and store all variants
             const row = allLaserRows.find(r => {
                 const rowId = String(getVal(r, ['Id','ID','id']));
-                return rowId === ridStr || rowId === ridInt || String(parseInt(rowId)||rowId) === ridInt;
+                return rowId === ridStr || rowId === ridInt ||
+                       String(r['__PowerAppsId__'] || '') === ridStr;
             });
-            if (row) naHiddenIds.add(jobKey(row));
-            saveNaHidden(); // persist so it survives page refresh
+            if (row) {
+                naHiddenIds.add(jobKey(row));
+                if (row['__PowerAppsId__']) naHiddenIds.add(String(row['__PowerAppsId__']));
+                const style = getVal(row, ['Style Number','StyleNumber','Style']);
+                const proto = getVal(row, ['Proto Stage','ProtoStage','Stage']);
+                if (style && style !== '---') naHiddenIds.add(`${style}|${proto}`);
+            }
+            saveNaHidden();
             renderLaserDashboard();
-
-            // SLA chart rendered separately — needs visible canvas
             renderLaserSLA();
         }
 
@@ -1921,7 +1960,7 @@
             };
             try {
                 const res = await fetch(laserUpdateURL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-                if (res.ok) { setTimeout(() => refreshLaserData(true), 1500); }
+                if (res.ok) { btn.innerText = '✓ Done'; setTimeout(() => { btn.innerText = '✓'; btn.disabled = false; refreshLaserData(true); }, 4000); }
                 else { btn.innerText = '✓'; btn.disabled = false; alert('Save failed.'); }
             } catch(e) { btn.innerText = '✓'; btn.disabled = false; }
         }
@@ -1953,7 +1992,7 @@
             };
             try {
                 const res = await fetch(laserUpdateURL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-                if (res.ok) { setTimeout(() => refreshLaserData(true), 1500); }
+                if (res.ok) { btn.innerText = '✗ Done'; setTimeout(() => { btn.innerText = '✗'; btn.disabled = false; refreshLaserData(true); }, 4000); }
                 else { btn.innerText = '✗'; btn.disabled = false; alert('Save failed.'); }
             } catch(e) { btn.innerText = '✗'; btn.disabled = false; }
         }
@@ -2036,7 +2075,8 @@
             const st = document.getElementById('syncStatus');
             if(!isSilent && st) st.classList.add('sync-active');
             try { 
-                const r = await fetch(fetchURL + "&cb=" + Date.now(), { method: 'POST', body: JSON.stringify({}) });
+                const _ctrl_ll = new AbortController(); const _t_ll = setTimeout(() => _ctrl_ll.abort(), 20000);
+                const r = await fetch(fetchURL + "&cb=" + Date.now(), { method: 'POST', body: JSON.stringify({}), signal: _ctrl_ll.signal }); clearTimeout(_t_ll);
                 const d = await r.json();
                 allRecords = d.map(i => ({ timestamp: convertExcelDate(getVal(i, ['Timestamp'])), machine: getVal(i, ['Machine']), pic: getVal(i, ['PIC']), type: getVal(i, ['Type']), file: getVal(i, ['FileName']), time: getVal(i, ['Time']), raw: getVal(i, ['Timestamp']) })).sort((a,b)=>b.raw - a.raw);
                 if(st) { st.innerText = "LIVE: " + new Date().toLocaleTimeString(); st.classList.remove('sync-active'); }
@@ -2081,30 +2121,39 @@
         }
 
         function drillDown(query) { switchTab('template'); document.getElementById('tempSearch').value = query; applyTempFilters(true); }
+        function drillDownPatch(picName) {
+            switchTab('patch');
+            const search = document.getElementById('patchSearch');
+            if (search) { search.value = picName; applyPatchFilter(); }
+        }
 
         function applyTempFilters(prioritySort = false) {
             const sv = document.getElementById('tempSearch').value.toLowerCase(), isAdmin = (currentUser === "Gavin");
-            const tmplMonth = document.getElementById('tempMonthFilter')?.value || 'ALL';
-            const months_t  = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+            const selMonth = document.getElementById('tempMonthFilter')?.value || '';
+            const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
             let filtered = allTemplates.filter(t => {
-                // Month filter — by start time month
-                if (tmplMonth !== 'ALL') {
-                    const dp = t.startTime.split(' ')[0].split('/');
-                    if (dp.length !== 3) return false;
-                    if (`${months_t[parseInt(dp[1])-1]}-${dp[2]}` !== tmplMonth) return false;
+                // Month filter by Complete Date
+                if (selMonth) {
+                    if (!t.completeDateDisplay || t.completeDateDisplay === '---') return false;
+                    const d = rawToLocalDate(t.completeDateDisplay.split(' ')[0]);
+                    if (!d) return false;
+                    const mLabel = `${months[d.getMonth()]}-${d.getFullYear()}`;
+                    if (mLabel !== selMonth) return false;
                 }
-                if (!sv) return true;
-                return t.style.toLowerCase().includes(sv) ||
-                    t.pic.toLowerCase().includes(sv) ||
-                    t.status.toLowerCase().includes(sv) ||
-                    String(t.jobNo).toLowerCase().includes(sv) ||
-                    String(t.templateNo).toLowerCase().includes(sv) ||
-                    String(t.templateType).toLowerCase().includes(sv) ||
-                    String(t.description).toLowerCase().includes(sv) ||
-                    String(t.section).toLowerCase().includes(sv) ||
-                    String(t.requestor).toLowerCase().includes(sv) ||
-                    String(t.protoStage).toLowerCase().includes(sv);
+                return true;
             });
+            filtered = filtered.filter(t =>
+                t.style.toLowerCase().includes(sv) ||
+                t.pic.toLowerCase().includes(sv) ||
+                t.status.toLowerCase().includes(sv) ||
+                String(t.jobNo).toLowerCase().includes(sv) ||
+                String(t.templateNo).toLowerCase().includes(sv) ||
+                String(t.templateType).toLowerCase().includes(sv) ||
+                String(t.description).toLowerCase().includes(sv) ||
+                String(t.section).toLowerCase().includes(sv) ||
+                String(t.requestor).toLowerCase().includes(sv) ||
+                String(t.protoStage).toLowerCase().includes(sv)
+            );
             if (prioritySort) {
                 const weights = { 'DELAYED': 0, 'PENDING': 1, 'COMPLETED': 2 };
                 filtered.sort((a, b) => weights[a.status] - weights[b.status]);
@@ -2226,40 +2275,6 @@
             }
         }
 
-        function populatePageMonthFilters() {
-            // Populate per-page month dropdowns from allTemplates + allSupportRows + allPatchRows
-            const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-            const sets = {
-                tempMonthFilter:  new Set(),
-                supMonthFilter:   new Set(),
-                patchMonthFilter: new Set()
-            };
-            allTemplates.forEach(t => {
-                const dp = t.startTime.split(' ')[0].split('/');
-                if (dp.length === 3) sets.tempMonthFilter.add(`${months[parseInt(dp[1])-1]}-${dp[2]}`);
-            });
-            allSupportRows.forEach(r => {
-                const d = rawToLocalDate(getVal(r,['Received Time','ReceivedTime']));
-                if (d) sets.supMonthFilter.add(`${months[d.getMonth()]}-${d.getFullYear()}`);
-            });
-            allPatchRows.forEach(r => {
-                const d = rawToLocalDate(getVal(r,['Patch & Fabric Receive Date & Time m/d/yyyy','ReceiveDate']));
-                if (d) sets.patchMonthFilter.add(`${months[d.getMonth()]}-${d.getFullYear()}`);
-            });
-            Object.entries(sets).forEach(([id, monthSet]) => {
-                const sel = document.getElementById(id);
-                if (!sel) return;
-                const cur = sel.value;
-                sel.innerHTML = '<option value="ALL">All Months</option>';
-                Array.from(monthSet).sort((a,b) => {
-                    const [ma,ya] = a.split('-'), [mb,yb] = b.split('-');
-                    return new Date(`1 ${ma} ${ya}`) - new Date(`1 ${mb} ${yb}`);
-                }).reverse().forEach(m => {
-                    sel.innerHTML += `<option value="${m}" ${m===cur?'selected':''}>${m}</option>`;
-                });
-            });
-        }
-
         function generateMonthOptions() {
             const select = document.getElementById('monthFilter');
             const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -2288,7 +2303,58 @@
             }
         }
 
-        function clearTempSearch() { document.getElementById('tempSearch').value = ""; applyTempFilters(false); }
+        function clearTempSearch() { 
+            document.getElementById('tempSearch').value = '';
+            const mf = document.getElementById('tempMonthFilter'); if (mf) mf.value = '';
+            applyTempFilters(false); 
+        }
+
+        // Populate per-tab month dropdowns from loaded data
+        function populateTabMonthFilters() {
+            const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+            const fmt = d => { if (!d) return null; return `${months[d.getMonth()]}-${d.getFullYear()}`; };
+
+            const buildOptions = (selectId, labels) => {
+                const sel = document.getElementById(selectId);
+                if (!sel) return;
+                const cur = sel.value;
+                sel.innerHTML = '<option value="">All Months</option>';
+                Array.from(new Set(labels)).filter(Boolean).sort((a,b) => {
+                    const [ma,ya] = a.split('-'), [mb,yb] = b.split('-');
+                    return new Date(`1 ${ma} ${ya}`) - new Date(`1 ${mb} ${yb}`);
+                }).forEach(m => { sel.innerHTML += `<option value="${m}">${m}</option>`; });
+                if (cur && sel.querySelector(`option[value="${cur}"]`)) sel.value = cur;
+            };
+
+            // Template: Complete Date month
+            buildOptions('tempMonthFilter', allTemplates.map(t => {
+                if (!t.completeDateDisplay || t.completeDateDisplay === '---') return null;
+                const d = rawToLocalDate(t.completeDateDisplay.split(' ')[0]);
+                return fmt(d);
+            }));
+
+            // Laser: Complete Date month
+            buildOptions('laserMonthFilter', allLaserRows.map(r => {
+                const d = rawToLocalDate(getVal(r, ['Complete Date','CompleteDate']));
+                return fmt(d);
+            }));
+
+            // Support: Complete Time month
+            buildOptions('supportMonthFilter', allSupportRows.map(r => {
+                const ct = getVal(r, ['Complete Time','CompleteTime']);
+                if (!ct || ct === '---' || String(ct).trim() === '') return null;
+                const d = rawToLocalDate(ct);
+                return fmt(d);
+            }));
+
+            // Patch: Complete Date month
+            buildOptions('patchMonthFilter', allPatchRows.map(r => {
+                const cd = getVal(r, ['Complete Date m/d/yyyy','Complete Date','CompleteDate']);
+                if (!cd || cd === '---' || String(cd).trim() === '') return null;
+                const d = rawToLocalDate(cd);
+                return fmt(d);
+            }));
+        }
         
         // Store over-6hr rows for modal drill-down
         let slaOverRows = [];
@@ -2460,9 +2526,11 @@
             const picTbl = el('db-patch-pic-table');
             if (picTbl) picTbl.innerHTML = Object.keys(picPend).length
                 ? Object.entries(picPend).map(([name,items]) => `
-                    <tr class="border-b hover:bg-indigo-50">
-                        <td class="p-3 font-bold border-r bg-slate-50/50">${name}</td>
-                        <td class="p-3 flex flex-wrap gap-2">${items.map(s=>`<span class="px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded">${s}</span>`).join('')}</td>
+                    <tr class="border-b hover:bg-indigo-50 cursor-pointer" onclick="drillDownPatch('${name}')">
+                        <td class="p-3 font-bold border-r bg-slate-50/50 text-indigo-700">${name}
+                            <div class="text-[9px] font-normal text-slate-400 mt-0.5">${items.length} pending</div>
+                        </td>
+                        <td class="p-3 flex flex-wrap gap-2">${items.map(s=>`<span class="px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded cursor-pointer hover:bg-amber-200">${s}</span>`).join('')}</td>
                     </tr>`).join('')
                 : '<tr><td colspan="2" class="p-6 text-center italic text-slate-400">All patches completed!</td></tr>';
         }
@@ -2500,7 +2568,11 @@
                 ATT_MEMBERS.forEach(name => {
                     const memberData = attMonthData[name] || {};
                     let total = 0;
-                    for (let d = 1; d <= daysInM; d++) total += parseFloat(memberData[d] || 0);
+                    if (memberData['__total__'] !== undefined) {
+                        total = parseFloat(memberData['__total__']) || 0;
+                    } else {
+                        for (let d = 1; d <= daysInM; d++) total += parseFloat(memberData[d] || 0);
+                    }
                     if (total > 0) attCapMap[name] = total;
                 });
                 const caps = Object.values(attCapMap);
@@ -2827,7 +2899,8 @@
             const st = document.getElementById('supportSyncStatus');
             if (!isSilent && st) { st.innerText = 'Syncing...'; st.classList.add('sync-active'); }
             try {
-                const r = await fetch(supportFetchURL + "&cb=" + Date.now(), { method: 'POST', body: JSON.stringify({}) });
+                const _ctrl_s = new AbortController(); const _t_s = setTimeout(() => _ctrl_s.abort(), 25000);
+                const r = await fetch(supportFetchURL + "&cb=" + Date.now(), { method: 'POST', body: JSON.stringify({}), signal: _ctrl_s.signal }); clearTimeout(_t_s);
                 const rawText = await r.text();
                 if (!r.ok) {
                     throw new Error(`HTTP ${r.status}: ${rawText.substring(0, 200)}`);
@@ -2858,7 +2931,6 @@
                     return (rb ? rb.getTime() : 0) - (ra ? ra.getTime() : 0);
                 });
                 allSupportRows = rows;
-                populatePageMonthFilters();
                 renderSupportTable();
                 renderSupportDashboard();
                 if (st) { st.innerText = 'LIVE: ' + new Date().toLocaleTimeString(); st.classList.remove('sync-active'); }
@@ -2871,9 +2943,9 @@
 
         function applySupport() {
             supportSearchQuery = document.getElementById('supportSearch')?.value.toLowerCase() || '';
-            supportMonthQuery  = document.getElementById('supMonthFilter')?.value || 'ALL';
             renderSupportTable();
         }
+        function getSupportMonthFilter() { return document.getElementById('supportMonthFilter')?.value || ''; }
 
         function clearSupportSearch() {
             const el = document.getElementById('supportSearch');
@@ -2886,24 +2958,28 @@
             const tbody = document.getElementById('supportTable');
             if (!tbody) return;
 
-            const months_s = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+            const supMF = getSupportMonthFilter();
             const rows = allSupportRows.filter(r => {
-                if (supportMonthQuery !== 'ALL') {
-                    const d = rawToLocalDate(getVal(r,['Received Time','ReceivedTime']));
+                if (supMF) {
+                    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+                    const ct = getVal(r,['Complete Time','CompleteTime']);
+                    if (!ct || ct === '---' || String(ct).trim() === '') return false;
+                    const d = rawToLocalDate(ct);
                     if (!d) return false;
-                    if (`${months_s[d.getMonth()]}-${d.getFullYear()}` !== supportMonthQuery) return false;
+                    const ctLabel = `${months[d.getMonth()]}-${d.getFullYear()}`;
+                    if (ctLabel !== supMF) return false;
                 }
                 if (!supportSearchQuery) return true;
                 const vals = [
-                    getVal(r,['Name']),
-                    getVal(r,['Machine No','MachineNo','Machine']),
-                    getVal(r,['Support Type','SupportType','Type']),
-                    getVal(r,['Risk Type','RiskType']),
-                    getVal(r,['Section']),
-                    getVal(r,['M&A PIC','PIC']),
-                    getVal(r,['Description','Desc']),
-                    getVal(r,['Request ID','RequestID']),
-                    getVal(r,['Month'])
+                    getVal(r, ['Style Number','StyleNumber','Style','Name']),
+                    getVal(r, ['Name']),
+                    getVal(r, ['Machine No','MachineNo','Machine']),
+                    getVal(r, ['Support Type','SupportType','Type']),
+                    getVal(r, ['Risk Type','RiskType']),
+                    getVal(r, ['Section']),
+                    getVal(r, ['M&A PIC','PIC']),
+                    getVal(r, ['Description','Desc']),
+                    getVal(r, ['Request ID','RequestID'])
                 ];
                 return vals.some(v => String(v).toLowerCase().includes(supportSearchQuery));
             });
@@ -3066,13 +3142,14 @@
 
         // ── PATCH PAGE ──────────────────────────────────────────────────────────
         const patchFetchURL = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/578c605e308e41e0a92bff040fbee0fd/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=3ACOFx4gywYqLicKRU56fVHlclF4aE1HNrdO21CgriQ";
-        let allPatchRows = [], patchSearchQuery = '', patchMonthQuery = 'ALL';
+        let allPatchRows = [], patchSearchQuery = '';
 
         async function refreshPatchData(isSilent = false) {
             const st = document.getElementById('patchSyncStatus');
             if (!isSilent && st) { st.innerText = 'Syncing...'; st.classList.add('sync-active'); }
             try {
-                const r = await fetch(patchFetchURL + "&cb=" + Date.now(), { method: 'POST', body: JSON.stringify({}) });
+                const _ctrl_p = new AbortController(); const _t_p = setTimeout(() => _ctrl_p.abort(), 25000);
+                const r = await fetch(patchFetchURL + "&cb=" + Date.now(), { method: 'POST', body: JSON.stringify({}), signal: _ctrl_p.signal }); clearTimeout(_t_p);
                 const rawText = await r.text();
                 if (!r.ok) throw new Error(`HTTP ${r.status}: ${rawText.substring(0,200)}`);
                 if (!rawText || rawText.trim() === '') throw new Error('Flow returned empty response — check Response action body is set to the list value output');
@@ -3089,9 +3166,9 @@
                     return (db?db.getTime():0) - (da?da.getTime():0);
                 });
                 allPatchRows = rows;
-                populatePageMonthFilters();
                 renderPatchTable();
                 renderPatchDashboard();
+                populateTabMonthFilters();
                 if (st) { st.innerText = 'LIVE: ' + new Date().toLocaleTimeString(); st.classList.remove('sync-active'); }
             } catch(e) {
                 const tbody = document.getElementById('patchTable');
@@ -3101,10 +3178,10 @@
         }
 
         function applyPatchFilter() {
-            patchSearchQuery  = document.getElementById('patchSearch')?.value.toLowerCase() || '';
-            patchMonthQuery   = document.getElementById('patchMonthFilter')?.value || 'ALL';
+            patchSearchQuery = document.getElementById('patchSearch')?.value.toLowerCase() || '';
             renderPatchTable();
         }
+        function getPatchMonthFilter() { return document.getElementById('patchMonthFilter')?.value || ''; }
         function clearPatchSearch() {
             const el = document.getElementById('patchSearch'); if (el) el.value = '';
             patchSearchQuery = ''; renderPatchTable();
@@ -3113,25 +3190,25 @@
         function renderPatchTable() {
             const tbody = document.getElementById('patchTable');
             if (!tbody) return;
+            const patchMF = getPatchMonthFilter();
             const months_p = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
             const rows = allPatchRows.filter(r => {
-                if (patchMonthQuery !== 'ALL') {
-                    const d = rawToLocalDate(getVal(r,['Patch & Fabric Receive Date & Time m/d/yyyy','ReceiveDate','Receive Date']));
+                if (patchMF) {
+                    const cd = getVal(r,['Complete Date m/d/yyyy','Complete Date','CompleteDate']);
+                    if (!cd || cd === '---' || String(cd).trim() === '') return false;
+                    const d = rawToLocalDate(cd);
                     if (!d) return false;
-                    if (`${months_p[d.getMonth()]}-${d.getFullYear()}` !== patchMonthQuery) return false;
+                    if (`${months_p[d.getMonth()]}-${d.getFullYear()}` !== patchMF) return false;
                 }
-                if (!patchSearchQuery) return true;
+                if (!patchSearchQuery) return true;;
                 const vals = [
-                    getVal(r,['Style Number','StyleNumber']),
-                    getVal(r,['Season']),
-                    getVal(r,['Template No.','TemplateNo']),
-                    getVal(r,['Machine No.','Machine No','MachineNo']),
-                    getMAPic(r),
-                    getVal(r,['Month']),
-                    getVal(r,['Remark','Remarks']),
-                    getVal(r,['BDD PIC','BDDPIC']),
-                    getVal(r,['Patch Item','PatchItem']),
-                    getVal(r,['Category'])
+                    getVal(r,['No.','No']), getVal(r,['Season']),
+                    getVal(r,['Style Number','StyleNumber']), getVal(r,['Category']),
+                    getVal(r,['Job Number','JobNo']), getVal(r,['BDD PIC','BDDPIC']),
+                    getVal(r,['Patch Item','PatchItem']), getVal(r,['Patch Description','PatchDescription']),
+                    getVal(r,['Template No.','TemplateNo','Template No']),
+                    getVal(r,['Machine No.','Machine No','MachineNo','Machine']),
+                    getMAPic(r), getVal(r,['Month']), getVal(r,['Remark','Remarks'])
                 ];
                 return vals.some(v => String(v).toLowerCase().includes(patchSearchQuery));
             });
@@ -3154,7 +3231,6 @@
             tbody.innerHTML = rows.map(i => {
                 const rawID     = i['__PowerAppsId__'] || i['Id'] || i['ID'];
                 const sid       = String(rawID).replace(/['"]/g,'');
-                // Read-only fields
                 const noKey     = getVal(i,['No.','No']);
                 const season    = getVal(i,['Season']);
                 const style     = getVal(i,['Style Number','StyleNumber']);
@@ -3169,7 +3245,6 @@
                 const threadColor=getVal(i,['Thread Color','ThreadColor']);
                 const sampleType= getVal(i,['Type Of Sample','TypeOfSample','Sample Type']);
                 const qty       = getVal(i,['Quantity','Qty']);
-                // Editable fields
                 const received  = convertExcelDate(getVal(i,['Patch & Fabric Receive Date & Time m/d/yyyy','Patch & Fabric Receive Date','ReceiveDate','Receive Date']));
                 const tmplNo    = getVal(i,['Template No.','TemplateNo','Template No']);
                 const machine   = getVal(i,['Machine No.','Machine No','MachineNo','Machine']);
@@ -3178,72 +3253,34 @@
                 const pic       = getMAPic(i);
                 const remark    = getVal(i,['Remark','Remarks']);
                 const isDone    = complete && complete !== '---';
-                // PIC-restricted edit: Gavin edits all; others only edit their own row
+                const isGavinP  = currentUser === 'Gavin';
                 const rowPic    = pic && pic !== '---' ? pic : null;
                 const canEdit   = !!currentUser && (isGavinP || !rowPic || rowPic === currentUser);
                 const picDisplay = (!pic||pic==='---') && canEdit ? currentUser : (pic||'---');
 
                 return `<tr class="border-b hover:bg-slate-50 ${isDone?'bg-emerald-50/30':''} ${!canEdit&&!!currentUser?'opacity-60':''}">
                     <td class="p-3 font-mono text-slate-500 text-[10px]">${noKey}</td>
-                    <td class="p-3">${isGavinP
-                        ? `<input id="patch-season-${sid}" class="manual-input" style="width:70px" value="${season!=='---'?season:''}" placeholder="Season">`
-                        : `<span class="text-[10px]">${season}</span>`}</td>
-                    <td class="p-3 font-bold">${isGavinP
-                        ? `<input id="patch-style-${sid}" class="manual-input" style="width:90px" value="${style!=='---'?style:''}" placeholder="Style No.">`
-                        : `<span class="text-slate-800">${style}</span>`}</td>
-                    <td class="p-3">${isGavinP
-                        ? `<input id="patch-category-${sid}" class="manual-input" style="width:80px" value="${category!=='---'?category:''}" placeholder="Category">`
-                        : `<span class="text-[10px]">${category}</span>`}</td>
-                    <td class="p-3">${isGavinP
-                        ? `<input id="patch-jobno-${sid}" class="manual-input" style="width:80px" value="${jobNo!=='---'?jobNo:''}" placeholder="Job No.">`
-                        : `<span class="text-[10px]">${jobNo}</span>`}</td>
-                    <td class="p-3">${isGavinP
-                        ? `<input id="patch-bddpic-${sid}" class="manual-input" style="width:70px" value="${bddPic!=='---'?bddPic:''}" placeholder="BDD PIC">`
-                        : `<span class="text-[10px]">${bddPic}</span>`}</td>
-                    <td class="p-3">${isGavinP
-                        ? `<input id="patch-patchitem-${sid}" class="manual-input" style="width:100px" value="${patchItem!=='---'?patchItem:''}" placeholder="Patch Item">`
-                        : `<span class="text-[10px]">${patchItem}</span>`}</td>
-                    <td class="p-3" style="min-width:200px">${isGavinP
-                        ? `<input id="patch-patchdesc-${sid}" class="manual-input" style="width:180px" value="${patchDesc!=='---'?patchDesc:''}" placeholder="Patch Description">`
-                        : `<span class="text-[10px] whitespace-normal break-words">${patchDesc}</span>`}</td>
-                    <td class="p-3">${isGavinP
-                        ? `<input id="patch-fabitem-${sid}" class="manual-input" style="width:100px" value="${fabItem!=='---'?fabItem:''}" placeholder="Fabric Item">`
-                        : `<span class="text-[10px]">${fabItem}</span>`}</td>
-                    <td class="p-3" style="min-width:180px">${isGavinP
-                        ? `<input id="patch-fabdesc-${sid}" class="manual-input" style="width:160px" value="${fabDesc!=='---'?fabDesc:''}" placeholder="Fabric Desc">`
-                        : `<span class="text-[10px] whitespace-normal break-words">${fabDesc}</span>`}</td>
-                    <td class="p-3">${isGavinP
-                        ? `<input id="patch-threadtype-${sid}" class="manual-input" style="width:80px" value="${threadType!=='---'?threadType:''}" placeholder="Thread Type">`
-                        : `<span class="text-[10px]">${threadType}</span>`}</td>
-                    <td class="p-3">${isGavinP
-                        ? `<input id="patch-threadcolor-${sid}" class="manual-input" style="width:80px" value="${threadColor!=='---'?threadColor:''}" placeholder="Thread Color">`
-                        : `<span class="text-[10px]">${threadColor}</span>`}</td>
-                    <td class="p-3">${isGavinP
-                        ? `<input id="patch-sampletype-${sid}" class="manual-input" style="width:90px" value="${sampleType!=='---'?sampleType:''}" placeholder="Sample Type">`
-                        : `<span class="text-[10px]">${sampleType}</span>`}</td>
-                    <td class="p-3 text-center">${isGavinP
-                        ? `<input id="patch-qty-${sid}" class="manual-input qty-input" style="width:55px" value="${qty!=='---'?qty:''}" placeholder="Qty">`
-                        : `<span class="font-bold">${qty}</span>`}</td>
-                    <td class="p-3 text-amber-700 text-[10px]">${canEdit
-                        ? `<input id="patch-received-${sid}" class="manual-input admin-input" value="${received==='---'?'':received}" placeholder="m/d/yyyy hh:mm">`
-                        : received}</td>
-                    <td class="p-3 font-bold text-blue-700">${canEdit
-                        ? `<input id="patch-tmplno-${sid}" class="manual-input admin-input" value="${tmplNo==='---'?'':tmplNo}" placeholder="e.g. S0019C">`
-                        : tmplNo}</td>
-                    <td class="p-3">${canEdit
-                        ? `<input id="patch-machine-${sid}" class="manual-input admin-input" value="${machine==='---'?'':machine}" placeholder="e.g. AQM0001">`
-                        : machine}</td>
+                    <td class="p-3">${isGavinP ? `<input id="patch-season-${sid}" class="manual-input" style="width:70px" value="${season!=='---'?season:''}" placeholder="Season">` : `<span class="text-[10px]">${season}</span>`}</td>
+                    <td class="p-3 font-bold">${isGavinP ? `<input id="patch-style-${sid}" class="manual-input" style="width:90px" value="${style!=='---'?style:''}" placeholder="Style No.">` : `<span class="text-slate-800">${style}</span>`}</td>
+                    <td class="p-3">${isGavinP ? `<input id="patch-category-${sid}" class="manual-input" style="width:80px" value="${category!=='---'?category:''}" placeholder="Category">` : `<span class="text-[10px]">${category}</span>`}</td>
+                    <td class="p-3">${isGavinP ? `<input id="patch-jobno-${sid}" class="manual-input" style="width:80px" value="${jobNo!=='---'?jobNo:''}" placeholder="Job No.">` : `<span class="text-[10px]">${jobNo}</span>`}</td>
+                    <td class="p-3">${isGavinP ? `<input id="patch-bddpic-${sid}" class="manual-input" style="width:70px" value="${bddPic!=='---'?bddPic:''}" placeholder="BDD PIC">` : `<span class="text-[10px]">${bddPic}</span>`}</td>
+                    <td class="p-3">${isGavinP ? `<input id="patch-patchitem-${sid}" class="manual-input" style="width:100px" value="${patchItem!=='---'?patchItem:''}" placeholder="Patch Item">` : `<span class="text-[10px]">${patchItem}</span>`}</td>
+                    <td class="p-3" style="min-width:200px">${isGavinP ? `<input id="patch-patchdesc-${sid}" class="manual-input" style="width:180px" value="${patchDesc!=='---'?patchDesc:''}" placeholder="Patch Description">` : `<span class="text-[10px] whitespace-normal break-words">${patchDesc}</span>`}</td>
+                    <td class="p-3">${isGavinP ? `<input id="patch-fabitem-${sid}" class="manual-input" style="width:100px" value="${fabItem!=='---'?fabItem:''}" placeholder="Fabric Item">` : `<span class="text-[10px]">${fabItem}</span>`}</td>
+                    <td class="p-3" style="min-width:180px">${isGavinP ? `<input id="patch-fabdesc-${sid}" class="manual-input" style="width:160px" value="${fabDesc!=='---'?fabDesc:''}" placeholder="Fabric Desc">` : `<span class="text-[10px] whitespace-normal break-words">${fabDesc}</span>`}</td>
+                    <td class="p-3">${isGavinP ? `<input id="patch-threadtype-${sid}" class="manual-input" style="width:80px" value="${threadType!=='---'?threadType:''}" placeholder="Thread Type">` : `<span class="text-[10px]">${threadType}</span>`}</td>
+                    <td class="p-3">${isGavinP ? `<input id="patch-threadcolor-${sid}" class="manual-input" style="width:80px" value="${threadColor!=='---'?threadColor:''}" placeholder="Thread Color">` : `<span class="text-[10px]">${threadColor}</span>`}</td>
+                    <td class="p-3">${isGavinP ? `<input id="patch-sampletype-${sid}" class="manual-input" style="width:90px" value="${sampleType!=='---'?sampleType:''}" placeholder="Sample Type">` : `<span class="text-[10px]">${sampleType}</span>`}</td>
+                    <td class="p-3 text-center">${isGavinP ? `<input id="patch-qty-${sid}" class="manual-input qty-input" style="width:55px" value="${qty!=='---'?qty:''}" placeholder="Qty">` : `<span class="font-bold">${qty}</span>`}</td>
+                    <td class="p-3 text-amber-700 text-[10px]">${canEdit ? `<input id="patch-received-${sid}" class="manual-input admin-input" value="${received==='---'?'':received}" placeholder="m/d/yyyy hh:mm">` : received}</td>
+                    <td class="p-3 font-bold text-blue-700">${canEdit ? `<input id="patch-tmplno-${sid}" class="manual-input admin-input" value="${tmplNo==='---'?'':tmplNo}" placeholder="e.g. S0019C">` : tmplNo}</td>
+                    <td class="p-3">${canEdit ? `<input id="patch-machine-${sid}" class="manual-input admin-input" value="${machine==='---'?'':machine}" placeholder="e.g. AQM0001">` : machine}</td>
                     <td class="p-3 text-[10px]">${month}</td>
-                    <td class="p-3 ${isDone?'text-emerald-600 font-bold':'text-slate-400'}">${canEdit
-                        ? `<input id="patch-complete-${sid}" class="manual-input admin-input" value="${isDone?complete:''}" placeholder="m/d/yyyy hh:mm">`
-                        : (isDone?complete:'---')}</td>
+                    <td class="p-3 ${isDone?'text-emerald-600 font-bold':'text-slate-400'}">${canEdit ? `<input id="patch-complete-${sid}" class="manual-input admin-input" value="${isDone?complete:''}" placeholder="m/d/yyyy hh:mm">` : (isDone?complete:'---')}</td>
                     <td class="p-3 font-bold ${(!pic||pic==='---')?'text-blue-600':''}">${picDisplay}</td>
-                    <td class="p-3">${canEdit
-                        ? `<input id="patch-remark-${sid}" class="manual-input" value="${remark==='---'?'':remark}" placeholder="Remark">`
-                        : `<span class="italic text-slate-400 text-[10px]">${remark}</span>`}</td>
-                    <td class="p-3">${canEdit
-                        ? `<button onclick="savePatchRow('${sid}',event)" class="bg-blue-600 text-white text-[9px] font-bold px-3 py-1 rounded hover:bg-blue-700">SAVE</button>`
-                        : ''}</td>
+                    <td class="p-3">${canEdit ? `<input id="patch-remark-${sid}" class="manual-input" value="${remark==='---'?'':remark}" placeholder="Remark">` : `<span class="italic text-slate-400 text-[10px]">${remark}</span>`}</td>
+                    <td class="p-3">${canEdit ? `<button onclick="savePatchRow('${sid}',event)" class="bg-blue-600 text-white text-[9px] font-bold px-3 py-1 rounded hover:bg-blue-700">SAVE</button>` : ''}</td>
                 </tr>`;
             }).join('');
         }
@@ -3251,11 +3288,25 @@
         async function savePatchRow(sid, event) {
             if (!currentUser) return alert('Please login first.');
             const btn = event.target; btn.innerText = 'SAVING...'; btn.disabled = true;
-            const completeVal = document.getElementById(`patch-complete-${sid}`)?.value.trim() || '';
-            const remarkVal   = document.getElementById(`patch-remark-${sid}`)?.value.trim() || '';
-            const receivedVal = document.getElementById(`patch-received-${sid}`)?.value.trim() || '';
-            const tmplNoVal   = document.getElementById(`patch-tmplno-${sid}`)?.value.trim() || '';
-            const machineVal  = document.getElementById(`patch-machine-${sid}`)?.value.trim() || '';
+            const completeVal  = document.getElementById(`patch-complete-${sid}`)?.value.trim() || '';
+            const remarkVal    = document.getElementById(`patch-remark-${sid}`)?.value.trim() || '';
+            const receivedVal  = document.getElementById(`patch-received-${sid}`)?.value.trim() || '';
+            const tmplNoVal    = document.getElementById(`patch-tmplno-${sid}`)?.value.trim() || '';
+            const machineVal   = document.getElementById(`patch-machine-${sid}`)?.value.trim() || '';
+            // Gavin-only editable fields
+            const seasonVal    = document.getElementById(`pi-season-${sid}`)?.value.trim() || '';
+            const styleVal     = document.getElementById(`pi-style-${sid}`)?.value.trim() || '';
+            const categoryVal  = document.getElementById(`pi-category-${sid}`)?.value.trim() || '';
+            const jobNoVal     = document.getElementById(`pi-jobno-${sid}`)?.value.trim() || '';
+            const bddPicVal    = document.getElementById(`pi-bddpic-${sid}`)?.value.trim() || '';
+            const patchItemVal = document.getElementById(`pi-patchitem-${sid}`)?.value.trim() || '';
+            const patchDescVal = document.getElementById(`pi-patchdesc-${sid}`)?.value.trim() || '';
+            const fabItemVal   = document.getElementById(`pi-fabitem-${sid}`)?.value.trim() || '';
+            const fabDescVal   = document.getElementById(`pi-fabdesc-${sid}`)?.value.trim() || '';
+            const threadTypeV  = document.getElementById(`pi-threadtype-${sid}`)?.value.trim() || '';
+            const threadColorV = document.getElementById(`pi-threadcolor-${sid}`)?.value.trim() || '';
+            const sampleTypeV  = document.getElementById(`pi-sampletype-${sid}`)?.value.trim() || '';
+            const qtyVal       = document.getElementById(`pi-qty-${sid}`)?.value.trim() || '';
             // Find existing row to preserve PIC and No. key
             const existingRow = allPatchRows.find(r => String(r['__PowerAppsId__']||r['Id']||r['ID']) === String(sid));
             const existingPic = existingRow ? getMAPic(existingRow) : '---';
@@ -3267,46 +3318,33 @@
                 alert('Could not find the row key (No.) — try refreshing the page.');
                 return;
             }
-            // Read all editable fields
-            const seasonVal      = document.getElementById(`patch-season-${sid}`)?.value.trim()      || getVal(existingRow||{},['Season']) || '';
-            const styleVal       = document.getElementById(`patch-style-${sid}`)?.value.trim()       || getVal(existingRow||{},['Style Number','StyleNumber']) || '';
-            const categoryVal    = document.getElementById(`patch-category-${sid}`)?.value.trim()    || getVal(existingRow||{},['Category']) || '';
-            const jobNoVal       = document.getElementById(`patch-jobno-${sid}`)?.value.trim()       || getVal(existingRow||{},['Job Number','JobNo']) || '';
-            const bddPicVal      = document.getElementById(`patch-bddpic-${sid}`)?.value.trim()      || getVal(existingRow||{},['BDD PIC','BDDPIC']) || '';
-            const patchItemVal   = document.getElementById(`patch-patchitem-${sid}`)?.value.trim()   || getVal(existingRow||{},['Patch Item','PatchItem']) || '';
-            const patchDescVal   = document.getElementById(`patch-patchdesc-${sid}`)?.value.trim()   || getVal(existingRow||{},['Patch Description','PatchDescription']) || '';
-            const fabItemVal     = document.getElementById(`patch-fabitem-${sid}`)?.value.trim()     || getVal(existingRow||{},['Fabric Item','FabricItem']) || '';
-            const fabDescVal     = document.getElementById(`patch-fabdesc-${sid}`)?.value.trim()     || getVal(existingRow||{},['Fabric Description','FabricDescription']) || '';
-            const threadTypeVal  = document.getElementById(`patch-threadtype-${sid}`)?.value.trim()  || getVal(existingRow||{},['Thread Type','ThreadType']) || '';
-            const threadColorVal = document.getElementById(`patch-threadcolor-${sid}`)?.value.trim() || getVal(existingRow||{},['Thread Color','ThreadColor']) || '';
-            const sampleTypeVal  = document.getElementById(`patch-sampletype-${sid}`)?.value.trim()  || getVal(existingRow||{},['Type Of Sample','TypeOfSample']) || '';
-            const qtyVal         = document.getElementById(`patch-qty-${sid}`)?.value.trim()         || getVal(existingRow||{},['Quantity','Qty']) || '';
-
             const payload = {
-                'No.':          noKey,
-                recordID:       noKey,
-                'Season':       seasonVal,
-                'Style Number': styleVal,
-                'Category':     categoryVal,
-                'Job Number':   jobNoVal,
-                'BDD PIC':      bddPicVal,
-                'Patch Item':   patchItemVal,
-                'Patch Description': patchDescVal,
-                'Fabric Item':  fabItemVal,
-                'Fabric Description': fabDescVal,
-                'Thread Type':  threadTypeVal,
-                'Thread Color': threadColorVal,
-                'Type Of Sample': sampleTypeVal,
-                'Quantity':     qtyVal,
+                'No.':        noKey,
+                recordID:     noKey,
+                // Gavin-only: editable master data fields
+                'Season':                    seasonVal    || getVal(existingRow, ['Season'])    || '',
+                'Style Number':              styleVal     || getVal(existingRow, ['Style Number','StyleNumber']) || '',
+                'Category':                  categoryVal  || getVal(existingRow, ['Category'])  || '',
+                'Job Number':                jobNoVal     || getVal(existingRow, ['Job Number','JobNo']) || '',
+                'BDD PIC':                   bddPicVal    || getVal(existingRow, ['BDD PIC','BDDPIC']) || '',
+                'Patch Item':                patchItemVal || getVal(existingRow, ['Patch Item','PatchItem']) || '',
+                'Patch Description':         patchDescVal || getVal(existingRow, ['Patch Description','PatchDescription']) || '',
+                'Fabric Item':               fabItemVal   || getVal(existingRow, ['Fabric Item','FabricItem']) || '',
+                'Fabric Description':        fabDescVal   || getVal(existingRow, ['Fabric Description','FabricDescription']) || '',
+                'Thread Type':               threadTypeV  || getVal(existingRow, ['Thread Type','ThreadType']) || '',
+                'Thread Color':              threadColorV || getVal(existingRow, ['Thread Color','ThreadColor']) || '',
+                'Type Of Sample':            sampleTypeV  || getVal(existingRow, ['Type Of Sample','TypeOfSample']) || '',
+                'Quantity':                  qtyVal       || getVal(existingRow, ['Quantity','Qty']) || '',
+                // Operational fields (editable by PIC)
                 'Patch & Fabric Receive Date & Time m/d/yyyy': toExcelDateFormat(receivedVal),
                 'Template No.': tmplNoVal,
                 'Machine No.':  machineVal,
                 'Complete Date m/d/yyyy': toExcelDateFormat(completeVal),
-                completeDate:   toExcelDateFormat(completeVal),
-                'M&A PIC':      picToSave,
-                pic:            picToSave,
-                'Remark':       remarkVal,
-                remark:         remarkVal
+                completeDate: toExcelDateFormat(completeVal),
+                'M&A PIC':    picToSave,
+                pic:          picToSave,
+                'Remark':     remarkVal,
+                remark:       remarkVal
             };
             try {
                 const ctrl = new AbortController();
@@ -3337,14 +3375,26 @@
             updateLaserPicDisplay();
             updateMachineImage();
             loadAttData(); // load localStorage attendance so utilization works on first render
-            fetchAttendanceFromCloud(); // sync attendance from Power Automate on load
             switchTab('dashboard'); // always start on dashboard
-            refreshTemplateLogs(); 
-            refreshLiveLogs();
-            refreshLaserData();
-            refreshSupportData();
-            refreshPatchData();
-            setInterval(() => { refreshTemplateLogs(true); refreshLiveLogs(true); refreshLaserData(true); refreshSupportData(true); refreshPatchData(true); }, 60000); 
+
+            // Fire primary data fetches in parallel — don't await each other
+            Promise.all([
+                refreshTemplateLogs(),
+                refreshLaserData(),
+                refreshSupportData(),
+                refreshPatchData()
+            ]).catch(() => {}); // errors handled inside each function
+
+            // Defer secondary fetches so primary data renders first
+            setTimeout(() => { refreshLiveLogs(); }, 1500);
+            setTimeout(() => { fetchAttendanceFromCloud(); }, 3000);
+
+            // Stagger auto-refresh intervals so not all hit Power Automate at once
+            setInterval(() => refreshTemplateLogs(true), 60000);
+            setInterval(() => refreshLaserData(true),    63000);
+            setInterval(() => refreshSupportData(true),  66000);
+            setInterval(() => refreshPatchData(true),    69000);
+            setInterval(() => refreshLiveLogs(true),     72000);
         };
     </script>
 </body>
