@@ -69,8 +69,8 @@
             <button onclick="switchTab('dashboard')" id="tab-dashboard" class="flex-shrink-0 flex-1 min-w-[100px] py-3 text-[10px] md:text-sm uppercase tracking-wider font-bold text-slate-400 border-b-4 border-transparent hover:bg-slate-50 tab-active whitespace-nowrap px-2">Dashboard</button>
             <button onclick="switchTab('template')" id="tab-template" class="flex-shrink-0 flex-1 min-w-[100px] py-3 text-[10px] md:text-sm uppercase tracking-wider font-bold text-slate-400 border-b-4 border-transparent hover:bg-slate-50 whitespace-nowrap px-2">Template</button>
             <button onclick="switchTab('patch')" id="tab-patch" class="flex-shrink-0 flex-1 min-w-[80px] py-3 text-[10px] md:text-sm uppercase tracking-wider font-bold text-slate-400 border-b-4 border-transparent hover:bg-slate-50 whitespace-nowrap px-2">Patch</button>
-            <button onclick="switchTab('laser')" id="tab-laser" class="flex-shrink-0 flex-1 min-w-[90px] py-3 text-[10px] md:text-sm uppercase tracking-wider font-bold text-slate-400 border-b-4 border-transparent hover:bg-slate-50 whitespace-nowrap px-2">Laser</button>
             <button onclick="switchTab('setting')" id="tab-setting" class="flex-shrink-0 flex-1 min-w-[90px] py-3 text-[10px] md:text-sm uppercase tracking-wider font-bold text-slate-400 border-b-4 border-transparent hover:bg-slate-50 whitespace-nowrap px-2">Settings</button>
+            <button onclick="switchTab('laser')" id="tab-laser" class="flex-shrink-0 flex-1 min-w-[90px] py-3 text-[10px] md:text-sm uppercase tracking-wider font-bold text-slate-400 border-b-4 border-transparent hover:bg-slate-50 whitespace-nowrap px-2">Laser</button>
             <button onclick="switchTab('consumption')" id="tab-consumption" class="flex-shrink-0 flex-1 min-w-[100px] py-3 text-[10px] md:text-sm uppercase tracking-wider font-bold text-slate-400 border-b-4 border-transparent hover:bg-slate-50 whitespace-nowrap px-2">Consumption</button>
             <button onclick="switchTab('support')" id="tab-support" class="flex-shrink-0 flex-1 min-w-[90px] py-3 text-[10px] md:text-sm uppercase tracking-wider font-bold text-slate-400 border-b-4 border-transparent hover:bg-slate-50 whitespace-nowrap px-2">Support</button>
         </nav>
@@ -360,7 +360,7 @@
                     <div class="h-[300px]"><canvas id="laserTrendChart"></canvas></div>
                 </div>
                 <div class="bg-white p-6 rounded-xl border shadow-sm">
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Completion Rate (Received → Complete, 6hr SLA)</h3>
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Sample Dev — Completion Rate (6hr SLA)</h3>
                     <div class="h-[300px]"><canvas id="laserSLAChart"></canvas></div>
                 </div>
             </div>
@@ -518,6 +518,45 @@
                         </thead>
                         <tbody id="db-patch-pic-table"></tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- Consumption Section Divider -->
+            <div class="mt-8 mb-4 flex items-center gap-3">
+                <div class="flex-1 border-t border-slate-200"></div>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2">Consumption</span>
+                <div class="flex-1 border-t border-slate-200"></div>
+            </div>
+
+            <!-- Consumption Stat Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white p-5 rounded-xl border shadow-sm">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total (Month)</p>
+                    <h2 id="cd-total" class="text-3xl font-bold text-slate-800">0</h2>
+                </div>
+                <div class="bg-white p-5 rounded-xl border shadow-sm">
+                    <p class="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-1">In Progress</p>
+                    <h2 id="cd-pending" class="text-3xl font-bold text-amber-600">0</h2>
+                </div>
+                <div class="bg-white p-5 rounded-xl border shadow-sm">
+                    <p class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1">Completed</p>
+                    <h2 id="cd-done" class="text-3xl font-bold text-emerald-600">0</h2>
+                </div>
+                <div class="bg-white p-5 rounded-xl border shadow-sm">
+                    <p class="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">Avg Turnaround (hrs)</p>
+                    <h2 id="cd-avg" class="text-3xl font-bold text-blue-600">—</h2>
+                </div>
+            </div>
+
+            <!-- Consumption Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white p-6 rounded-xl border shadow-sm">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Volume Trend (Daily)</h3>
+                    <div class="h-[240px]"><canvas id="conVolumeChart"></canvas></div>
+                </div>
+                <div class="bg-white p-6 rounded-xl border shadow-sm">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Requests by Proto Stage</h3>
+                    <div class="h-[240px]"><canvas id="conProtoChart"></canvas></div>
                 </div>
             </div>
 
@@ -2330,53 +2369,61 @@
                 return `<tr class="border-b hover:bg-slate-50">
                     <td class="p-3 text-slate-400 font-mono text-[10px]">${t.id}</td>
                     <td class="p-3 text-[10px] text-slate-500">${t.startTime}</td>
-                    <td class="p-3 text-[11px]">${t.requestor}</td>
-                    <td class="p-3 text-[11px]">${t.section}</td>
-                    <td class="p-3 font-bold">${t.style}</td>
-                    <td class="p-3 text-[11px]">${t.jobNo}</td>
-                    <td class="p-3 font-semibold text-purple-700">${t.protoStage}</td>
-                    <td class="p-3 text-orange-700 font-bold text-[10px]">${t.templateType}</td>
+                    <td class="p-3">${isAdmin
+                        ? `<input id="requestor-${t.id}" class="manual-input" style="width:110px" value="${t.requestor!=='---'?t.requestor:''}">`
+                        : `<span class="text-[11px]">${t.requestor}</span>`}</td>
+                    <td class="p-3">${isAdmin
+                        ? `<input id="section-${t.id}" class="manual-input" style="width:100px" value="${t.section!=='---'?t.section:''}">`
+                        : `<span class="text-[11px]">${t.section}</span>`}</td>
+                    <td class="p-3">${isAdmin
+                        ? `<input id="style-${t.id}" class="manual-input admin-input" style="width:90px" value="${t.style!=='---'?t.style:''}">`
+                        : `<span class="font-bold">${t.style}</span>`}</td>
+                    <td class="p-3">${isAdmin
+                        ? `<input id="jobno-${t.id}" class="manual-input" style="width:100px" value="${t.jobNo!=='---'?t.jobNo:''}">`
+                        : `<span class="text-[11px]">${t.jobNo}</span>`}</td>
+                    <td class="p-3">${isAdmin
+                        ? `<input id="proto-${t.id}" class="manual-input admin-input" style="width:90px" value="${t.protoStage!=='---'?t.protoStage:''}">`
+                        : `<span class="font-semibold text-purple-700">${t.protoStage}</span>`}</td>
+                    <td class="p-3">${isAdmin
+                        ? `<input id="templatetype-${t.id}" class="manual-input admin-input" style="width:120px" value="${t.templateType!=='---'?t.templateType:''}">`
+                        : `<span class="text-orange-700 font-bold text-[10px]">${t.templateType}</span>`}</td>
                     <td class="p-3 max-w-[180px]">${isAdmin
-                        ? `<input type="text" id="desc-${t.id}" class="manual-input admin-input" style="width:160px" value="${t.description && t.description !== '---' ? t.description : ''}" placeholder="Description">`
-                        : `<span class="text-slate-500 italic text-[10px] whitespace-normal">${t.description}</span>`
-                    }</td>
-                    <td class="p-3 text-[11px]">${t.machine}</td>
-                    <td class="p-3 text-[11px]">${t.requiredDate}</td>
+                        ? `<input type="text" id="desc-${t.id}" class="manual-input admin-input" style="width:160px" value="${t.description&&t.description!=='---'?t.description:''}" placeholder="Description">`
+                        : `<span class="text-slate-500 italic text-[10px] whitespace-normal">${t.description}</span>`}</td>
+                    <td class="p-3">${isAdmin
+                        ? `<input id="machine-${t.id}" class="manual-input" style="width:80px" value="${t.machine!=='---'?t.machine:''}">`
+                        : `<span class="text-[11px]">${t.machine}</span>`}</td>
+                    <td class="p-3">${isAdmin
+                        ? `<input id="reqdate-${t.id}" class="manual-input" style="width:90px" value="${t.requiredDate!=='---'?t.requiredDate:''}" placeholder="d/m/yyyy">`
+                        : `<span class="text-[11px]">${t.requiredDate}</span>`}</td>
                     <td class="p-3">${isAdmin
                         ? `<select id="complexity-${t.id}" class="manual-input admin-input" style="width:80px">
                             <option value="">—</option>
-                            ${[1,2,3,4,5].map(l => `<option value="Level ${l}" ${t.complexity === 'Level ' + l ? 'selected' : ''}>Level ${l}</option>`).join('')}
+                            ${[1,2,3,4,5].map(l=>`<option value="Level ${l}" ${t.complexity==='Level '+l?'selected':''}>Level ${l}</option>`).join('')}
                            </select>`
-                        : `<span class="text-[10px] font-bold ${t.complexity && t.complexity !== '---' ? 'text-indigo-600' : ''}">${t.complexity && t.complexity !== '---' ? t.complexity : '—'}</span>`
-                    }</td>
+                        : `<span class="text-[10px] font-bold ${t.complexity&&t.complexity!=='---'?'text-indigo-600':''}">${t.complexity&&t.complexity!=='---'?t.complexity:'—'}</span>`}</td>
                     <td class="p-3">${isAdmin
-                        ? `<input type="text" id="dfm-${t.id}" class="manual-input admin-input" style="width:80px" value="${t.dfm && t.dfm !== '---' ? t.dfm : ''}" placeholder="Code/No">`
-                        : `<span class="text-[10px] font-bold ${t.dfm && t.dfm !== '---' ? 'text-teal-600' : ''}">${t.dfm && t.dfm !== '---' ? t.dfm : '—'}</span>`
-                    }</td>
+                        ? `<input type="text" id="dfm-${t.id}" class="manual-input admin-input" style="width:70px" value="${t.dfm&&t.dfm!=='---'?t.dfm:''}" placeholder="Code/No">`
+                        : `<span class="text-[10px] font-bold ${t.dfm&&t.dfm!=='---'?'text-teal-600':''}">${t.dfm&&t.dfm!=='---'?t.dfm:'—'}</span>`}</td>
                     <td class="p-3">${canEdit
-                        ? `<input type="text" id="date-${t.id}" class="manual-input${isAdmin ? ' admin-input' : ''}" value="${done ? t.completeDateDisplay : ''}" placeholder="m/d/yyyy">`
-                        : `<span class="${done ? 'text-emerald-600 font-bold' : 'text-slate-400'} text-[10px]">${done ? t.completeDateDisplay : '---'}</span>`
-                    }</td>
+                        ? `<input type="text" id="date-${t.id}" class="manual-input${isAdmin?' admin-input':''}" value="${done?t.completeDateDisplay:''}" placeholder="m/d/yyyy">`
+                        : `<span class="${done?'text-emerald-600 font-bold':'text-slate-400'} text-[10px]">${done?t.completeDateDisplay:'---'}</span>`}</td>
                     <td class="p-3">${canEdit
-                        ? `<input type="number" id="qty-${t.id}" class="manual-input qty-input" placeholder="Qty" value="${done ? t.qty : ''}">`
-                        : `<span>${done ? t.qty : '---'}</span>`
-                    }</td>
+                        ? `<input type="number" id="qty-${t.id}" class="manual-input qty-input" placeholder="Qty" value="${done?t.qty:''}">`
+                        : `<span>${done?t.qty:'---'}</span>`}</td>
                     <td class="p-3 text-blue-700">${canEdit
-                        ? `<input type="text" id="edit-tno-${t.id}" class="manual-input admin-input" value="${t.templateNo !== '---' ? t.templateNo : ''}" placeholder="Assign No.">`
-                        : `<span class="font-bold">${t.templateNo}</span>`
-                    }</td>
-                    <td class="p-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${done ? 'bg-emerald-100 text-emerald-600' : t.status === 'DELAYED' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'}">${t.status}</span></td>
+                        ? `<input type="text" id="edit-tno-${t.id}" class="manual-input admin-input" value="${t.templateNo!=='---'?t.templateNo:''}" placeholder="Assign No.">`
+                        : `<span class="font-bold">${t.templateNo}</span>`}</td>
+                    <td class="p-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${done?'bg-emerald-100 text-emerald-600':t.status==='DELAYED'?'bg-red-100 text-red-600':'bg-amber-100 text-amber-600'}">${t.status}</span></td>
                     <td class="p-3 font-medium">${picCell}</td>
                     <td class="p-3">${canEdit
-                        ? `<input type="text" id="remark-${t.id}" class="manual-input" value="${t.remark !== '---' ? t.remark : ''}" placeholder="Add remark...">`
-                        : `<span class="text-[10px]">${t.remark}</span>`
-                    }</td>
+                        ? `<input type="text" id="remark-${t.id}" class="manual-input" value="${t.remark!=='---'?t.remark:''}" placeholder="Add remark...">`
+                        : `<span class="text-[10px]">${t.remark}</span>`}</td>
                     <td class="p-3">${canEdit
                         ? `<button onclick="adminUpdate('${t.id}', event)" class="bg-blue-600 text-white text-[9px] font-bold px-3 py-1 rounded hover:bg-blue-700 whitespace-nowrap">SAVE</button>`
-                        : ''
-                    }</td>
+                        : ''}</td>
                 </tr>`;
-            }).join('');;
+            }).join('');;;
         }
 
         async function adminUpdate(simpleId, event) {
@@ -2407,20 +2454,29 @@
 
             const btn = event.target; btn.innerText = "SAVING..."; btn.disabled = true;
 
-            // Key Column = Id (integer) — send record.id, NOT record.guid (GUID)
-            const tComplexity = document.getElementById(`complexity-${simpleId}`)?.value || record.complexity || '';
-            const tDFM        = document.getElementById(`dfm-${simpleId}`)?.value.trim() || record.dfm || '';
-            const tDesc       = document.getElementById(`desc-${simpleId}`)?.value.trim() || record.description || '';
+            // Key Column = Id (integer) — send ALL editable fields for Gavin
+            const g = (id, fb) => document.getElementById(`${id}-${simpleId}`)?.value.trim() || fb || '';
+            const tComplexity  = document.getElementById(`complexity-${simpleId}`)?.value || record.complexity || '';
+            const tDFM         = document.getElementById(`dfm-${simpleId}`)?.value.trim() || record.dfm || '';
+            const tDesc        = document.getElementById(`desc-${simpleId}`)?.value.trim() || record.description || '';
             const payload = {
-                recordID:      String(record.id),
-                templateNo:    String(tNo),
-                pic:           String(tPic),
-                completionDate: String(tDateExcel),
-                completeQty:   String(tQty),
-                complexity:    String(tComplexity),
-                dfm:           String(tDFM),
-                description:   String(tDesc),
-                remark:        String(tRem)
+                recordID:           String(record.id),
+                requestor:          g('requestor',   record.requestor),
+                section:            g('section',     record.section),
+                styleNumber:        g('style',       record.style),
+                jobNumber:          g('jobno',       record.jobNo),
+                protoStage:         g('proto',       record.protoStage),
+                templateRequestType:g('templatetype',record.templateType),
+                description:        tDesc,
+                machineType:        g('machine',     record.machine),
+                requiredDate:       g('reqdate',     record.requiredDate),
+                templateNo:         String(tNo),
+                pic:                String(tPic),
+                completionDate:     String(tDateExcel),
+                completeQty:        String(tQty),
+                complexity:         String(tComplexity),
+                dfm:                String(tDFM),
+                remark:             String(tRem)
             };
 
             try {
@@ -2560,6 +2616,9 @@
                 const cdRaw = getVal(r, ['Complete Date','CompleteDate','Complete Date m/d/yyyy']);
                 const completed = rawToLocalDate(cdRaw);
                 if (!received || !completed) return;
+                // SLA applies to Sample Development section only
+                const sec = String(getVal(r, ['Section'])).toLowerCase();
+                if (!sec.includes('sample')) return;
                 const cMonth = `${months[completed.getMonth()]}-${completed.getFullYear()}`;
                 if (sharedMonthVal !== 'ALL' && cMonth !== sharedMonthVal) return;
                 const hrs = (completed - received) / 3600000;
@@ -2636,6 +2695,61 @@
 
         let supSectionChart = null, supVolumeChart = null, supTypeChart = null;
         let patchMonthChart = null, patchSeasonChart = null;
+
+                let conVolumeChart = null, conProtoChart = null;
+
+        function renderConsumptionDashboard() {
+            if (!allConsumptionRows.length) return;
+            const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+            const sharedMonth = document.getElementById('monthFilter')?.value || 'ALL';
+            const filtered = allConsumptionRows.filter(r => {
+                if (sharedMonth === 'ALL') return true;
+                const d = rawToLocalDate(getVal(r, ['Received Time m/d/yyyy','Received Time','ReceivedTime']));
+                if (!d) return false;
+                return `${months[d.getMonth()]}-${d.getFullYear()}` === sharedMonth;
+            });
+            const total   = filtered.length;
+            const done    = filtered.filter(r => { const cd = getVal(r,['Complete Date m/d/yyyy','Complete Date','CompleteDate']); return cd&&cd!=='---'&&String(cd).trim()!==''; }).length;
+            const pending = total - done;
+            const turnarounds = filtered.map(r => {
+                const s = rawToLocalDate(getVal(r,['Start Date m/d/yyyy','Start Date','StartDate']));
+                const e = rawToLocalDate(getVal(r,['Complete Date m/d/yyyy','Complete Date','CompleteDate']));
+                if (!s||!e||e<=s) return null;
+                return (e-s)/3600000;
+            }).filter(v=>v!==null);
+            const avg = turnarounds.length ? (turnarounds.reduce((a,b)=>a+b,0)/turnarounds.length).toFixed(1) : '—';
+            const el = id => document.getElementById(id);
+            if (el('cd-total'))   el('cd-total').innerText   = total;
+            if (el('cd-pending')) el('cd-pending').innerText = pending;
+            if (el('cd-done'))    el('cd-done').innerText    = done;
+            if (el('cd-avg'))     el('cd-avg').innerText     = avg;
+            const dayMap = {};
+            filtered.forEach(r => {
+                const d = rawToLocalDate(getVal(r,['Received Time m/d/yyyy','Received Time','ReceivedTime']));
+                if (!d) return;
+                const k = `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`;
+                dayMap[k] = (dayMap[k]||0)+1;
+            });
+            const sortedDays = Object.keys(dayMap).sort((a,b)=>{
+                const [ma,da,ya]=a.split('/'), [mb,db,yb]=b.split('/');
+                return new Date(+ya,+ma-1,+da)-new Date(+yb,+mb-1,+db);
+            });
+            if (conVolumeChart) conVolumeChart.destroy();
+            const cvc = document.getElementById('conVolumeChart');
+            if (cvc) conVolumeChart = new Chart(cvc, {
+                type:'line', data:{labels:sortedDays, datasets:[{label:'Requests', data:sortedDays.map(d=>dayMap[d]), borderColor:'#6366f1', backgroundColor:'rgba(99,102,241,0.07)', tension:0.3, fill:true}]},
+                options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}}
+            });
+            const protoMap = {};
+            filtered.forEach(r => { const p=getVal(r,['Proto Stage','ProtoStage'])||'—'; protoMap[p]=(protoMap[p]||0)+1; });
+            const sortedProto = Object.entries(protoMap).sort((a,b)=>b[1]-a[1]);
+            if (conProtoChart) conProtoChart.destroy();
+            const cpc = document.getElementById('conProtoChart');
+            if (cpc) conProtoChart = new Chart(cpc, {
+                type:'bar', data:{labels:sortedProto.map(e=>e[0]), datasets:[{label:'Requests', data:sortedProto.map(e=>e[1]), backgroundColor:'#818cf8', borderRadius:4}]},
+                options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{stepSize:1}}}}
+            });
+        }
 
         function renderPatchDashboard() {
             if (!allPatchRows.length) return;
@@ -3056,6 +3170,7 @@
             }
             if (t === 'dashboard' && allSupportRows.length) renderSupportDashboard();
             if (t === 'dashboard' && allPatchRows.length) renderPatchDashboard();
+            if (t === 'dashboard' && allConsumptionRows.length) renderConsumptionDashboard();
             if (t === 'dashboard') {
                 fetchAttendanceFromCloud(); // refresh capacity on every dashboard visit
                 loadAttData(); renderUtilization();
@@ -3615,8 +3730,17 @@
                     method: 'POST', body: JSON.stringify({}), signal: _ctrl.signal
                 }); clearTimeout(_t);
                 const rawText = await r.text();
-                if (!r.ok) throw new Error(`HTTP ${r.status}`);
-                const d = JSON.parse(rawText);
+                if (!r.ok) throw new Error(`HTTP ${r.status}: ${rawText.substring(0,150)}`);
+                if (!rawText || rawText.trim() === '' || rawText.trim() === '{}') {
+                    // Flow returned empty — likely fetch-only flow returns no rows on first call
+                    allConsumptionRows = [];
+                    renderConsumptionTable();
+                    if (st) { st.innerText = 'No data yet'; st.classList.remove('sync-active'); }
+                    return;
+                }
+                let d;
+                try { d = JSON.parse(rawText); }
+                catch(pe) { throw new Error(`Bad JSON (${rawText.substring(0,100)})`); }
                 let rows = [];
                 if (Array.isArray(d)) rows = d;
                 else if (d?.value && Array.isArray(d.value)) rows = d.value;
@@ -3627,6 +3751,7 @@
                 allConsumptionRows = rows;
                 renderConsumptionTable();
                 populateConsumptionMonthFilter();
+                renderConsumptionDashboard();
                 if (st) { st.innerText = 'LIVE: ' + new Date().toLocaleTimeString(); st.classList.remove('sync-active'); }
             } catch(e) {
                 const tbody = document.getElementById('consumptionTable');
@@ -3753,7 +3878,8 @@
             const btn = document.getElementById('consumptionAddBtn');
             btn.innerText = 'Saving...'; btn.disabled = true;
             try {
-                const res = await fetch(consumptionFetchURL, {
+                // Note: if you have a separate Add flow URL, replace consumptionFetchURL here
+                const res = await fetch(consumptionFetchURL + '&cb=' + Date.now(), {
                     method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
                 });
                 if (res.ok) {
