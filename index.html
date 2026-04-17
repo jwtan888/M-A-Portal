@@ -60,6 +60,7 @@
                 <div id="activeUserView" class="hidden flex items-center justify-between gap-3">
                     <span class="text-sm font-bold text-slate-500 uppercase tracking-tight">Active: <span id="displayUserName" class="text-blue-600 ml-1">---</span></span>
                     <a id="att-link" href="#attendance" onclick="setTimeout(openAttendance,50)" class="hidden text-[10px] font-bold text-slate-400 hover:text-blue-500 underline mr-1">Attendance</a>
+                        <a href="MASkills.html" target="_blank" class="text-[10px] font-bold text-indigo-500 hover:text-indigo-700 border border-indigo-200 rounded-full px-2 py-0.5 hover:bg-indigo-50 transition-colors">⚡ Skills</a>
                     <button onclick="logout()" class="text-xs font-bold text-red-500 border border-red-200 px-3 py-2 rounded-lg hover:bg-red-50">Logout</button>
                 </div>
             </div>
@@ -74,6 +75,8 @@
             <button onclick="switchTab('consumption')" id="tab-consumption" class="flex-shrink-0 flex-1 min-w-[100px] py-3 text-[10px] md:text-sm uppercase tracking-wider font-bold text-slate-400 border-b-4 border-transparent hover:bg-slate-50 whitespace-nowrap px-2">Consumption</button>
             <button onclick="switchTab('support')" id="tab-support" class="flex-shrink-0 flex-1 min-w-[90px] py-3 text-[10px] md:text-sm uppercase tracking-wider font-bold text-slate-400 border-b-4 border-transparent hover:bg-slate-50 whitespace-nowrap px-2">Support</button>
         </nav>
+
+        
 
         <div id="content-laser" class="tab-content hidden">
 
@@ -166,7 +169,7 @@
 
             <!-- Laser Table -->
             <div id="laserTableWrapper" class="bg-white rounded-xl shadow-sm border overflow-x-auto">
-                <table class="w-full text-left min-w-[2200px]">
+                <table class="w-full text-left min-w-[2400px]">
                     <thead class="bg-slate-100 border-b text-[10px] uppercase tracking-wider text-slate-500 font-bold">
                         <tr>
                             <th class="p-3">ID</th>
@@ -187,11 +190,10 @@
                             <th class="p-3">Cons. PIC</th>
                             <th class="p-3">Remark</th>
                             <th class="p-3">Consumption Complete Status</th>
-                            <th class="p-3">Action</th>
                         </tr>
                     </thead>
                     <tbody id="laserTable" class="text-slate-700">
-                        <tr><td colspan="18" class="p-6 text-center text-slate-400 italic text-xs">Loading laser data...</td></tr>
+                        <tr><td colspan="19" class="p-6 text-center text-slate-400 italic text-xs">Loading laser data...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -202,7 +204,7 @@
                 <div class="flex items-center gap-2 bg-white p-2 px-4 rounded-lg border shadow-sm">
                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Select Month (Template &amp; Laser):</span>
                     <select id="monthFilter" onchange="updateDashboard()" class="text-xs font-bold border-none outline-none bg-transparent text-blue-600 cursor-pointer">
-                        <option value="ALL">All History</option>
+                        <option value="ALL">All Months</option>
                     </select>
                 </div>
             </div>
@@ -241,6 +243,15 @@
                 <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2">Delivery KPI</span>
                 <div class="flex-1 border-t border-slate-200"></div>
             </div>
+            <!-- Template KPI Header -->
+            <div class="mt-2 mb-3 flex items-center gap-3">
+                <div class="flex-1 border-t border-slate-200"></div>
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-2 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>Template Delivery KPI
+                </span>
+                <div class="flex-1 border-t border-slate-200"></div>
+            </div>
+
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
                 <!-- Sample Development KPI -->
                 <div id="kpi-sample-card" class="bg-white rounded-xl shadow-sm overflow-hidden border-l-4 transition-all" style="border-left-color:#10b981;border-top:1px solid #e2e8f0;border-right:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0">
@@ -669,7 +680,14 @@
                         <option value="AQM0005">AQM0005 (JUITA)</option><option value="AQM0006">AQM0006 (JACK)</option>
                         <option value="AQM0007">AQM0007 (JUITA)</option><option value="AQM0008">AQM0008 (JUITA)</option>
                         <option value="AQM0009">AQM0009 (JUITA)</option>
+                        <option value="CCCM0009">CCCM0009 (AMS)</option>
+                        <option value="CCCM0010">CCCM0010 (AMS)</option>
+                        <option value="CCCM0011">CCCM0011 (AMS)</option>
+                        <option value="CCCM0012">CCCM0012 (AMS)</option>
+                        <option value="CCCM0013">CCCM0013 (AMS)</option>
+                        <option value="CCCM0014">CCCM0014 (AMS)</option>
                     </select>
+                    <p id="machineModelLabel" class="text-[11px] text-slate-500 font-mono mt-1 mb-1 col-span-full"></p>
                     <input type="text" id="fName" placeholder="File Name / Style" class="p-2 border rounded text-sm">
                     <input type="number" id="sTime" placeholder="Time (min)" class="p-2 border rounded text-sm">
                     <button onclick="addEntry()" id="submitBtn" class="bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700 shadow-md active:scale-95 transition-all">SAVE LOG</button>
@@ -1296,19 +1314,45 @@
             "AQM0006": { brand: "JACK", model: "M9-SS-F13-X" }, 
             "AQM0007": { brand: "JUITA", model: "JTK8T-8037AJS" }, 
             "AQM0008": { brand: "JUITA", model: "JTK8T-8037AJS" },
-            "AQM0009": { brand: "Juita", model: "JT G20-T140M-J" }
+            "AQM0009": { brand: "Juita", model: "JT G20-T140M-J" },
+            "CCCM0009": { brand: "AMS", model: "AMS221ENHS25165" },
+            "CCCM0010": { brand: "AMS", model: "AMS221ENHS25165" },
+            "CCCM0011": { brand: "AMS", model: "AMS221ENHS25165" },
+            "CCCM0012": { brand: "AMS", model: "AMS221ENHS25165" },
+            "CCCM0013": { brand: "AMS", model: "AMS221ENHS25165" },
+            "CCCM0014": { brand: "AMS", model: "AMS221ENHS3020S" }
         };
 
         const machineImages = {
             "AQM0001": "Zoje1.png", "AQM0002": "Zoje2.png", "AQM0003": "Zoje2.png", "AQM0004": "Zoje2.png",
             "AQM0005": "Juita2.png", "AQM0006": "Jack.png", "AQM0007": "Juita2.png", "AQM0008": "Juita2.png",
-            "AQM0009": "Juita1.png"
+            "AQM0009": "Juita1.png",
+            "CCCM0009": null, "CCCM0010": null, "CCCM0011": null,
+            "CCCM0012": null, "CCCM0013": null, "CCCM0014": null
+        };
+
+        const machineModels = {
+            "AQM0001": { brand: "ZOJE",  model: "ZJ-AH-RK900" },
+            "AQM0002": { brand: "ZOJE",  model: "ZJ-AH-RK900" },
+            "AQM0003": { brand: "ZOJE",  model: "ZJ-M5-S900H-SF" },
+            "AQM0004": { brand: "ZOJE",  model: "ZJ-M5-S900H-SF" },
+            "AQM0005": { brand: "JUITA", model: "JTK8T-8037AJS" },
+            "AQM0006": { brand: "JACK",  model: "M9-SS-F13-X" },
+            "AQM0007": { brand: "JUITA", model: "JTK8T-8037AJS" },
+            "AQM0008": { brand: "JUITA", model: "JTK8T-8037AJS" },
+            "AQM0009": { brand: "JUITA", model: "JT G20-T140M-J" },
+            "CCCM0009": { brand: "AMS", model: "AMS221ENHS25165" },
+            "CCCM0010": { brand: "AMS", model: "AMS221ENHS25165" },
+            "CCCM0011": { brand: "AMS", model: "AMS221ENHS25165" },
+            "CCCM0012": { brand: "AMS", model: "AMS221ENHS25165" },
+            "CCCM0013": { brand: "AMS", model: "AMS221ENHS25165" },
+            "CCCM0014": { brand: "AMS", model: "AMS221ENHS3020S" }
         };
 
         // picList MUST exactly match the Data Validation list in Excel column Q (M&A PIC).
         // If you add/remove names here, also update the Excel Data Validation list to match.
         const picList = ["Keat", "Viki", "Ram", "James", "Mark"];
-        let allRecords = [], allTemplates = [], currentUser = localStorage.getItem('ma_session_user') || null;
+        let allRecords = [], allTemplates = [], currentUser = sessionStorage.getItem('ma_session_user') || null;
         let sectionChart = null, volumeChart = null;
 
         // FIX 3: Removed prefetchMachineImages entirely — it caused the img onload to fire on the
@@ -1438,16 +1482,30 @@
             const mID = document.getElementById('mID').value;
             const imgEl = document.getElementById('machineImg');
             const fallback = document.getElementById('imgFallback');
+            const fallbackText = document.getElementById('imgFallbackText');
+            // Use machineModels first, fall back to machineSpecs
+            const modelInfo = (typeof machineModels !== 'undefined' && machineModels[mID])
+                ? machineModels[mID]
+                : (machineSpecs?.[mID] || null);
+            // Update model label
+            const modelLabel = document.getElementById('machineModelLabel');
+            if (modelLabel) modelLabel.innerText = modelInfo ? `Brand: ${modelInfo.brand}  |  Model: ${modelInfo.model}` : '';
+            // No photo (CCCM machines or unknown) — show blank
+            if (!(mID in machineImages) || machineImages[mID] === null) {
+                if (imgEl)  { imgEl.style.display = 'none'; imgEl.src = ''; }
+                if (fallback) fallback.style.display = 'none';
+                if (fallbackText) fallbackText.innerText = '';
+                return;
+            }
             const targetSrc = machineImages[mID];
-            document.getElementById('imgFallbackText').innerText = "Missing file: " + targetSrc;
+            if (fallbackText) fallbackText.innerText = 'Missing file: ' + targetSrc;
             if (imgEl && targetSrc) {
                 imgEl.style.display = 'none';
-                fallback.style.display = 'none';
+                if (fallback) fallback.style.display = 'none';
                 imgEl.src = targetSrc;
-                // If image already cached, onload may not re-fire — force it
                 if (imgEl.complete && imgEl.naturalWidth > 0) {
                     imgEl.style.display = 'block';
-                    fallback.style.display = 'none';
+                    if (fallback) fallback.style.display = 'none';
                 }
             }
         }
@@ -1457,9 +1515,10 @@
             if(!isSilent && st) st.classList.add('sync-active');
             try {
                 const _ctrl_t = new AbortController(); const _t_t = setTimeout(() => _ctrl_t.abort(), 25000);
-                const r = await fetch(templateFetchURL + "&cb=" + Date.now(), { method: 'POST', body: JSON.stringify({}), signal: _ctrl_t.signal }); clearTimeout(_t_t);
-                const d = await r.json();
-                allTemplates = d.map(i => {
+                const r_t = await fetch(templateFetchURL + "&cb=" + Date.now(), { method: 'POST', body: JSON.stringify({}), signal: _ctrl_t.signal }); clearTimeout(_t_t);
+                if (!r_t.ok) throw new Error(`HTTP ${r_t.status}`);
+                const rows = extractRows(await r_t.json());
+                allTemplates = rows.map(i => {
                     const doneRaw = getVal(i, ['Complete Date m/d/yyyy','Complete Date', 'Finish']);
                     const reqDateFormatted = convertExcelDate(getVal(i, ['Required Date','RequiredDate']), false);
                     const isDone = (doneRaw && doneRaw !== '---' && String(doneRaw).trim() !== "");
@@ -1492,9 +1551,15 @@
                         dfm: getVal(i, ['DFM']),
                         remark: getVal(i, ['Remark']), status: currentStatus, raw: getVal(i, ['Start time'])
                     };
-                }).sort((a,b)=>b.raw - a.raw);
+                })
+                // Filter out cancelled jobs — any date field filled with "-" means job is cancelled
+                .filter(t => {
+                    const cancelIndicators = [t.startTime, t.completeDateDisplay, t.requiredDate];
+                    return !cancelIndicators.some(v => String(v).trim() === '-');
+                })
+                .sort((a,b)=>b.raw - a.raw);
                 generateMonthOptions(); updateDashboard(); applyTempFilters(false); renderUtilization(); populateTabMonthFilters();
-                if(st) { st.innerText = "LIVE: " + new Date().toLocaleTimeString(); st.classList.remove('sync-active'); }
+                if(st) { st.innerText = "LIVE: " + new Date().toLocaleTimeString() + ` (${allTemplates.length} rows)`; st.classList.remove('sync-active'); }
             } catch (e) { if(st) st.innerText = "Error"; }
         }
 
@@ -1503,10 +1568,29 @@
             const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
             const filteredByMonth = allTemplates.filter(t => {
                 if (selectedMonthStr === "ALL") return true;
-                const dateParts = t.startTime.split(' ')[0].split('/');
-                if (dateParts.length !== 3) return false;
-                const monthName = months[parseInt(dateParts[1]) - 1];
-                return `${monthName}-${dateParts[2]}` === selectedMonthStr;
+                const [selMon, selYr] = selectedMonthStr.split('-');
+                const selMonIdx = months.indexOf(selMon);
+                const selYear   = parseInt(selYr);
+                if (selMonIdx < 0 || !selYear) return false;
+                const endOfMonth = new Date(selYear, selMonIdx + 1, 0, 23, 59, 59);
+
+                if (t.status === 'COMPLETED') {
+                    // COMPLETED: only in the month its Complete Date falls in
+                    if (!t.completeDateDisplay || t.completeDateDisplay === '---') return false;
+                    const cp = t.completeDateDisplay.split(' ')[0].split('/');
+                    if (cp.length !== 3) return false;
+                    const [cd, cm, cy] = cp.map(Number); // d/m/yyyy
+                    return (cm - 1) === selMonIdx && cy === selYear;
+                } else {
+                    // PENDING / DELAYED: show in every month from start month onwards
+                    // A Mar job still pending in Apr shows in BOTH Mar-2026 and Apr-2026
+                    const dp = t.startTime.split(' ')[0].split('/');
+                    if (dp.length !== 3) return true;
+                    const [da, mo, yr] = dp.map(Number); // d/m/yyyy from convertExcelDate
+                    if (!da || !mo || !yr || mo < 1 || mo > 12) return true;
+                    const startDate = new Date(yr, mo - 1, da);
+                    return !isNaN(startDate.getTime()) && startDate <= endOfMonth;
+                }
             });
             document.getElementById('stat-total').innerText = filteredByMonth.length;
             document.getElementById('stat-pending').innerText = filteredByMonth.filter(t => t.status === 'PENDING').length;
@@ -1642,6 +1726,8 @@
             requestAnimationFrame(() => renderLaserSLA());
             // Render support dashboard section
             renderSupportDashboard();
+            renderPatchDashboard();
+            renderConsumptionDashboard();
             // Render PIC utilization
             renderUtilization();
         }
@@ -1688,7 +1774,8 @@
         // Proto stages that qualify for pending consumption tracking
         const pendingProtoStages = ['p1','p2','p3','p4','p5','p6','concept','ggp',
             'final sample','final','reference sample','reference','proto','sms','pp','tss',
-            'wear test','buyer ref sample','buyer reference sample','buyer ref'];
+            'wear test','buyer ref sample','buyer reference sample','buyer ref',
+            'ref sample','size set','size set sample','buyer reference','ref'];
 
         function isTrackedProtoStage(proto) {
             if (!proto || proto === '---') return false;
@@ -1738,9 +1825,12 @@
                 const stylePro = `${getVal(r,['Style Number','StyleNumber','Style'])}|${proto}`;
                 // Also exclude if consPic was set to 'N/A' in Excel (cross-device N/A)
                 const consPicVal = String(getVal(r, ['Consumption PIC','ConsumptionPIC','Cons PIC'])).trim();
+                // Exclude if Consumption Complete Status = 'Yes' (manually marked complete by Gavin)
+                const consCompleteStatusVal = String(getVal(r, ['Consumption Complete Status','ConsumptionCompleteStatus','Cons Complete Status'])).trim().toLowerCase();
                 return cd && cd !== '---'
                     && (!cs || cs === '---')
                     && consPicVal !== 'N/A'
+                    && consCompleteStatusVal !== 'yes'
                     && isTrackedProtoStage(proto)
                     && !doneJobKeys.has(jobKey(r))
                     && !naHiddenIds.has(rid)
@@ -1749,10 +1839,11 @@
                     && !naHiddenIds.has(String(r['__PowerAppsId__'] || ''));
             });
 
-            // Done = Consumption End Date is filled
+            // Done = Consumption Complete Status = 'Yes' OR Consumption End Date is filled
             const done = allLaserRows.filter(r => {
                 const ce = convertExcelDate(getVal(r, ['Consumption Complete Date','ConsumptionCompleteDate','Cons End']));
-                return ce && ce !== '---';
+                const statusVal = String(getVal(r, ['Consumption Complete Status','ConsumptionCompleteStatus','Cons Complete Status'])).trim().toLowerCase();
+                return (ce && ce !== '---') || statusVal === 'yes';
             });
 
             const elTotal   = document.getElementById('ld-total');
@@ -1832,29 +1923,10 @@
             if (!isSilent && st) { st.innerText = 'Syncing...'; st.classList.add('sync-active'); }
             try {
                 const _ctrl_l = new AbortController(); const _t_l = setTimeout(() => _ctrl_l.abort(), 25000);
-                const r = await fetch(laserFetchURL + "&cb=" + Date.now(), { method: 'POST', body: JSON.stringify({}), signal: _ctrl_l.signal }); clearTimeout(_t_l);
-                const d = await r.json();
-                let rows = [];
-                if (Array.isArray(d)) {
-                    rows = d;
-                } else if (d && Array.isArray(d.value)) {
-                    rows = d.value;
-                } else if (d && d.body && Array.isArray(d.body.value)) {
-                    rows = d.body.value;  // Body token wraps as {body:{value:[]}}
-                } else if (d && d.body && Array.isArray(d.body)) {
-                    rows = d.body;
-                } else {
-                    // Last resort: find any array key
-                    for (const k of Object.keys(d || {})) {
-                        if (Array.isArray(d[k]) && d[k].length > 0) { rows = d[k]; break; }
-                    }
-                }
-                // Sort by ID descending — largest (newest) on top
-                rows.sort((a, b) => {
-                    const ia = parseInt(getVal(a, ['Id','ID','id'])) || 0;
-                    const ib = parseInt(getVal(b, ['Id','ID','id'])) || 0;
-                    return ib - ia;
-                });
+                const r_l = await fetch(laserFetchURL + "&cb=" + Date.now(), { method: 'POST', body: JSON.stringify({}), signal: _ctrl_l.signal }); clearTimeout(_t_l);
+                if (!r_l.ok) throw new Error(`HTTP ${r_l.status}`);
+                const rows = extractRows(await r_l.json());
+                rows.sort((a, b) => (parseInt(b.Id||b.ID||0)) - (parseInt(a.Id||a.ID||0)));
                 allLaserRows = rows;
                 renderLaserTable();
                 renderLaserDashboard();
@@ -1862,10 +1934,10 @@
                 // Render SLA chart if dashboard is visible (canvas must be in DOM and visible)
                 const dashVisible = !document.getElementById('content-dashboard')?.classList.contains('hidden');
                 if (dashVisible) requestAnimationFrame(() => renderLaserSLA());
-                if (st) { st.innerText = 'LIVE: ' + new Date().toLocaleTimeString(); st.classList.remove('sync-active'); }
+                if (st) { st.innerText = 'LIVE: ' + new Date().toLocaleTimeString() + ` (${rows.length} rows)`; st.classList.remove('sync-active'); }
             } catch(e) {
                 const tbody = document.getElementById('laserTable');
-                if (tbody) tbody.innerHTML = '<tr><td colspan="18" class="p-6 text-center text-red-400 italic text-xs">Failed to load laser data. Check the Power Automate flow.</td></tr>';
+                if (tbody) tbody.innerHTML = '<tr><td colspan="19" class="p-6 text-center text-red-400 italic text-xs">Failed to load laser data. Check the Power Automate flow.</td></tr>';
                 if (st) { st.innerText = 'Error'; st.classList.remove('sync-active'); }
             }
         }
@@ -1875,7 +1947,7 @@
             if (!tbody) return;
             const isAdmin = (currentUser === 'Gavin');
             if (!allLaserRows.length) {
-                tbody.innerHTML = '<tr><td colspan="18" class="p-6 text-center text-slate-400 italic text-xs">No laser records found.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="19" class="p-6 text-center text-slate-400 italic text-xs">No laser records found.</td></tr>';
                 return;
             }
             const laserMF = getLaserMonthFilter();
@@ -1900,7 +1972,7 @@
                 return vals.some(v => String(v).toLowerCase().includes(laserSearchQuery));
             });
             if (!laserRowsToShow.length) {
-                tbody.innerHTML = `<tr><td colspan="18" class="p-6 text-center text-slate-400 italic text-xs">No results for "${laserSearchQuery}".</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="19" class="p-6 text-center text-slate-400 italic text-xs">No results for "${laserSearchQuery}".</td></tr>`;
                 return;
             }
             tbody.innerHTML = laserRowsToShow.map(i => {
@@ -1926,6 +1998,12 @@
                 // Consumption always editable — no lock needed
                 const consDisabled = '';
                 const consClass    = 'manual-input admin-input';
+
+                // Consumption Complete Status column — Gavin-only editable
+                const consCompleteStatus = getVal(i, ['Consumption Complete Status','ConsumptionCompleteStatus','Cons Complete Status']);
+                // Derive completion: explicit 'Yes' OR consEnd date filled
+                const consIsDone = (String(consCompleteStatus).trim().toLowerCase() === 'yes')
+                    || (consEnd && consEnd !== '---' && String(consEnd).trim() !== '');
 
                 const sectionDropdown = (editable) => editable
                     ? `<select id="le-section-${rid}" class="manual-input admin-input" style="width:130px">
@@ -1954,7 +2032,14 @@
                         <td class="p-2"><input id="le-consPic-${rid}" class="${consClass}" value="${consPic==='---'?'':consPic}" placeholder="PIC"${consDisabled}></td>
                         <td class="p-2"><input id="le-remark-${rid}" class="manual-input" value="${remark==='---'?'':remark}" placeholder="Remark"></td>
                         <td class="p-2">
-                            <button onclick="saveLaserRow('${rid}', event)" class="bg-blue-600 text-white text-[9px] font-bold px-3 py-1 rounded hover:bg-blue-700 whitespace-nowrap">SAVE</button>
+                            <div class="flex flex-col gap-1">
+                                <select id="le-consStatus-${rid}" class="manual-input admin-input" style="width:80px">
+                                    <option value="" ${!consIsDone&&consCompleteStatus==='---'?'selected':''}>—</option>
+                                    <option value="Yes" ${consIsDone?'selected':''}>Yes</option>
+                                    <option value="No" ${(!consIsDone&&consCompleteStatus==='No')?'selected':''}>No</option>
+                                </select>
+                                <button onclick="saveLaserRow('${rid}', event)" class="bg-blue-600 text-white text-[9px] font-bold px-3 py-1 rounded hover:bg-blue-700 whitespace-nowrap">SAVE</button>
+                            </div>
                         </td>
                     </tr>`;
                 } else {
@@ -1989,9 +2074,12 @@
                         <td class="p-3">${canEditCons
                             ? `<input id="le-remark-${rid}" class="manual-input admin-input" value="${remark==='---'?'':remark}" placeholder="Remark">`
                             : `<span class="italic text-slate-400 text-[10px]">${remark}</span>`}</td>
-                        <td class="p-3">${canEditCons
-                            ? `<button onclick="saveConsumption('${rid}', event)" class="bg-emerald-600 text-white text-[9px] font-bold px-3 py-1 rounded hover:bg-emerald-700 whitespace-nowrap">SAVE</button>`
-                            : ''}</td>
+                        <td class="p-3">
+                            <div class="flex flex-col gap-1">
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${consIsDone?'bg-emerald-100 text-emerald-700':'bg-slate-100 text-slate-500'}">${consIsDone?'Yes':'—'}</span>
+                                ${canEditCons?`<button onclick="saveConsumption('${rid}', event)" class="bg-emerald-600 text-white text-[9px] font-bold px-3 py-1 rounded hover:bg-emerald-700 whitespace-nowrap">SAVE</button>`:''}
+                            </div>
+                        </td>
                     </tr>`;
                 }
             }).join('');
@@ -2049,7 +2137,8 @@
                         const el = document.getElementById(id); if(el) el.value = '';
                     });
                     document.getElementById('l_section').value = '';
-                    setTimeout(() => { btn.innerText = '+ ADD ROW'; btn.disabled = false; refreshLaserData(); }, 3000);
+                    refreshLaserData();
+                    setTimeout(() => { btn.innerText = '+ ADD ROW'; btn.disabled = false; }, 2000);
                 } else {
                     alert(`Add failed (HTTP ${res.status}).\n\nThis usually means your Power Automate Add Flow has a field name mismatch.\nCheck that all triggerBody() expressions match exactly:\n- receivedTime\n- styleNumber\n- garmentQty\n- laserParts\n- ironParts\n- trimParts\n- protoStage\n- consumptionPic\n\nResponse: ${respText.substring(0,200)}`);
                     btn.innerText = '+ ADD ROW'; btn.disabled = false;
@@ -2226,13 +2315,15 @@
                 consStart:      toExcelDateFormat(g('consStart')),
                 consEnd:        toExcelDateFormat(g('consEnd')),
                 consumptionPic: g('consPic'),
+                consumptionCompleteStatus: document.getElementById(`le-consStatus-${rid}`)?.value || '',
                 remark:         g('remark')
             };
             try {
                 const res = await fetch(laserUpdateURL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
                 if (res.ok) {
-                    btn.innerText = 'SAVED!';
-                    setTimeout(() => { btn.innerText = 'SAVE'; btn.disabled = false; refreshLaserData(true); }, 3000);
+                    btn.innerText = 'SAVED ✓';
+                    refreshLaserData(true);
+                    setTimeout(() => { btn.innerText = 'SAVE'; btn.disabled = false; }, 2000);
                 } else {
                     btn.innerText = 'ERROR'; setTimeout(() => { btn.innerText = 'SAVE'; btn.disabled = false; }, 2000);
                 }
@@ -2271,8 +2362,9 @@
             try {
                 const res = await fetch(laserUpdateURL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
                 if (res.ok) {
-                    btn.innerText = 'SAVED!';
-                    setTimeout(() => { btn.innerText = 'SAVE'; btn.disabled = false; refreshLaserData(true); }, 3000);
+                    btn.innerText = 'SAVED ✓';
+                    refreshLaserData(true);
+                    setTimeout(() => { btn.innerText = 'SAVE'; btn.disabled = false; }, 2000);
                 } else {
                     btn.innerText = 'ERROR'; setTimeout(() => { btn.innerText = 'SAVE'; btn.disabled = false; }, 2000);
                 }
@@ -2500,9 +2592,10 @@
                     record.pic = tPic;
                     record.templateNo = tNo || record.templateNo;
                     record.remark = tRem || record.remark;
-                    btn.innerText = "UPDATED!";
+                    btn.innerText = "UPDATED ✓";
                     applyTempFilters(false);
-                    setTimeout(() => { btn.innerText = "SAVE"; btn.disabled = false; refreshTemplateLogs(); }, 3000);
+                    refreshTemplateLogs(true);
+                    setTimeout(() => { btn.innerText = "SAVE"; btn.disabled = false; }, 2000);
                 } else {
                     btn.innerText = "ERROR - RETRY";
                     setTimeout(() => { btn.innerText = "SAVE"; btn.disabled = false; }, 2000);
@@ -2532,7 +2625,7 @@
                 if (localDate && localDate <= today_gm) uniqueMonths.add(`${months[localDate.getMonth()]}-${localDate.getFullYear()}`);
             });
             const currentVal = select.value;
-            select.innerHTML = '<option value="ALL">All History</option>';
+            select.innerHTML = '<option value="ALL">All Months</option>';
             Array.from(uniqueMonths).sort((a, b) => {
                 const [ma, ya] = a.split('-'), [mb, yb] = b.split('-');
                 return new Date(`1 ${ma} ${ya}`) - new Date(`1 ${mb} ${yb}`);
@@ -2764,8 +2857,17 @@
 
         function renderPatchDashboard() {
             if (!allPatchRows.length) return;
-            const total   = allPatchRows.length;
-            const pending = allPatchRows.filter(r => { const cd = getVal(r,['Complete Date m/d/yyyy','Complete Date','CompleteDate']); return !cd||cd==='---'||String(cd).trim()===''; }).length;
+            const months_pd = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+            const sharedMonth = document.getElementById('monthFilter')?.value || 'ALL';
+            // Filter by Patch & Fabric Receive Date for the selected month
+            const filteredPatch = allPatchRows.filter(r => {
+                if (sharedMonth === 'ALL') return true;
+                const d = rawToLocalDate(getVal(r,['Patch & Fabric Receive Date & Time m/d/yyyy','ReceiveDate','Receive Date']));
+                if (!d) return true; // include if date missing
+                return `${months_pd[d.getMonth()]}-${d.getFullYear()}` === sharedMonth;
+            });
+            const total   = filteredPatch.length;
+            const pending = filteredPatch.filter(r => { const cd = getVal(r,['Complete Date m/d/yyyy','Complete Date','CompleteDate']); return !cd||cd==='---'||String(cd).trim()===''; }).length;
             const done    = total - pending;
             const rate    = total ? Math.round(done/total*100)+'%' : '—';
             const el = id => document.getElementById(id);
@@ -2774,9 +2876,9 @@
             if (el('db-patch-done'))    el('db-patch-done').innerText    = done;
             if (el('db-patch-rate'))    el('db-patch-rate').innerText    = rate;
 
-            // Chart 1: Daily completion volume line chart (like template completion trend)
+            // Chart 1: Daily completion volume (filtered)
             const dayCompletions = {};
-            allPatchRows.forEach(r => {
+            filteredPatch.forEach(r => {
                 const cd = getVal(r,['Complete Date m/d/yyyy','Complete Date','CompleteDate']);
                 if (!cd || cd === '---' || String(cd).trim() === '') return;
                 const dateObj = rawToLocalDate(cd);
@@ -2812,9 +2914,9 @@
                 }
             });
 
-            // Chart 2: By Season (doughnut)
+            // Chart 2: By Season (doughnut) — filtered
             const seasonCounts = {};
-            allPatchRows.forEach(r => {
+            filteredPatch.forEach(r => {
                 const s = getVal(r,['Season'])||'Unknown';
                 seasonCounts[s] = (seasonCounts[s]||0)+1;
             });
@@ -2827,9 +2929,9 @@
                 options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ font:{ size:10 }, boxWidth:10 } } } }
             });
 
-            // Pending by PIC table
+            // Pending by PIC table — filtered by month
             const picPend = {};
-            allPatchRows.forEach(r => {
+            filteredPatch.forEach(r => {
                 const cd = getVal(r,['Complete Date m/d/yyyy','Complete Date','CompleteDate']);
                 if (cd && cd !== '---' && String(cd).trim() !== '') return;
                 const pic = getMAPic(r)||'Unassigned';
@@ -3216,8 +3318,8 @@
             if (t === 'support') refreshSupportData(true);
         }
 
-        function login() { currentUser = document.getElementById('userSelect').value; localStorage.setItem('ma_session_user', currentUser); updateSessionUI(); updateLaserPicDisplay(); applyTempFilters(false); renderLaserTable(); }
-        function logout() { currentUser = null; localStorage.removeItem('ma_session_user'); updateSessionUI(); updateLaserPicDisplay(); applyTempFilters(false); renderLaserTable(); }
+        function login() { currentUser = document.getElementById('userSelect').value; sessionStorage.setItem('ma_session_user', currentUser); updateSessionUI(); updateLaserPicDisplay(); applyTempFilters(false); renderLaserTable(); renderSupportTable(); }
+        function logout() { currentUser = null; sessionStorage.removeItem('ma_session_user'); updateSessionUI(); updateLaserPicDisplay(); applyTempFilters(false); renderLaserTable(); renderSupportTable(); }
         function updateSessionUI() { 
             const lv = document.getElementById('loginView'), av = document.getElementById('activeUserView');
             if (currentUser) {
@@ -3259,7 +3361,7 @@
             if (!isSilent && st) { st.innerText = 'Syncing...'; st.classList.add('sync-active'); }
             try {
                 const _ctrl_s = new AbortController(); const _t_s = setTimeout(() => _ctrl_s.abort(), 25000);
-                const r = await fetch(supportFetchURL + "&cb=" + Date.now(), { method: 'POST', body: JSON.stringify({}), signal: _ctrl_s.signal }); clearTimeout(_t_s);
+                const r = await fetch(supportFetchURL + "&cb=" + Date.now(), { method: 'POST', body: JSON.stringify({ '$top': 5000 }), signal: _ctrl_s.signal }); clearTimeout(_t_s);
                 const rawText = await r.text();
                 if (!r.ok) {
                     throw new Error(`HTTP ${r.status}: ${rawText.substring(0, 200)}`);
@@ -3410,7 +3512,7 @@
                         ? `<input id="sup-end-${sid}" class="manual-input admin-input" value="${completeTime==='---'?'':completeTime}" placeholder="m/d/yyyy hh:mm" oninput="updateElapsedDisplay('${sid}')">`
                         : `<span class="${isDone?'text-emerald-600 font-bold':'text-slate-400'}">${completeTime}</span>`}</td>
                     <td class="p-3 font-bold" id="sup-elapsed-display-${sid}" style="color:${parseFloat(elapsed)>8?'#ef4444':'#334155'}">${elapsed !== '---' ? elapsed + ' hrs' : '---'}</td>
-                    <td class="p-3 font-bold ${(!pic || pic === '---') ? 'text-blue-600' : ''}">${(!pic || pic === '---') && canEdit ? `<span class="text-blue-600">${currentUser} <span class="text-[9px] text-slate-400">(will be saved)</span></span>` : pic}</td>
+                    <td class="p-3 font-bold ${(!pic || pic === '---') ? 'text-blue-600' : ''}">${(!pic || pic === '---') && canEdit && currentUser ? `<span class="text-blue-600">${currentUser} <span class="text-[9px] text-slate-400">(will be saved)</span></span>` : ((!pic || pic === '---') ? '---' : pic)}</td>
                     
                     
                     <td class="p-3">${canEdit
@@ -3508,22 +3610,9 @@
             if (!isSilent && st) { st.innerText = 'Syncing...'; st.classList.add('sync-active'); }
             try {
                 const _ctrl_p = new AbortController(); const _t_p = setTimeout(() => _ctrl_p.abort(), 25000);
-                const r = await fetch(patchFetchURL + "&cb=" + Date.now(), { method: 'POST', body: JSON.stringify({}), signal: _ctrl_p.signal }); clearTimeout(_t_p);
-                const rawText = await r.text();
-                if (!r.ok) throw new Error(`HTTP ${r.status}: ${rawText.substring(0,200)}`);
-                if (!rawText || rawText.trim() === '') throw new Error('Flow returned empty response — check Response action body is set to the list value output');
-                const d = (() => { try { return JSON.parse(rawText); } catch(e) { throw new Error('Bad JSON: ' + rawText.substring(0,150)); } })();
-                let rows = [];
-                if (Array.isArray(d)) rows = d;
-                else if (d && Array.isArray(d.value)) rows = d.value;
-                else if (d && d.body && Array.isArray(d.body.value)) rows = d.body.value;
-                else { for (const k of Object.keys(d||{})) { if (Array.isArray(d[k])) { rows = d[k]; break; } } }
-                // Sort by receive date desc — newest first
-                rows.sort((a,b) => {
-                    const da = rawToLocalDate(getVal(a,['Patch & Fabric Receive Date','ReceiveDate','Receive Date']));
-                    const db = rawToLocalDate(getVal(b,['Patch & Fabric Receive Date','ReceiveDate','Receive Date']));
-                    return (db?db.getTime():0) - (da?da.getTime():0);
-                });
+                const r_p = await fetch(patchFetchURL + "&cb=" + Date.now(), { method: 'POST', body: JSON.stringify({}), signal: _ctrl_p.signal }); clearTimeout(_t_p);
+                if (!r_p.ok) throw new Error(`HTTP ${r_p.status}`);
+                const rows = extractRows(await r_p.json());
                 allPatchRows = rows;
                 renderPatchTable();
                 renderPatchDashboard();
@@ -3717,7 +3806,8 @@
                 clearTimeout(t);
                 if (res.ok) {
                     btn.innerText = 'SAVED ✓';
-                    setTimeout(() => { btn.innerText = 'SAVE'; btn.disabled = false; refreshPatchData(true); }, 1800);
+                    refreshPatchData(true);
+                    setTimeout(() => { btn.innerText = 'SAVE'; btn.disabled = false; }, 2000);
                 } else {
                     const txt = await res.text();
                     btn.innerText = 'ERROR'; btn.disabled = false;
@@ -3759,36 +3849,12 @@
             const st = document.getElementById('consumptionSyncStatus');
             if (!isSilent && st) { st.innerText = 'Syncing...'; st.classList.add('sync-active'); }
             try {
-                const _ctrl = new AbortController();
-                const _t = setTimeout(() => _ctrl.abort(), 25000);
-                const r = await fetch(consumptionFetchURL + '&cb=' + Date.now(), {
-                    method: 'POST', body: JSON.stringify({}), signal: _ctrl.signal
-                }); clearTimeout(_t);
-                const rawText = await r.text();
-                if (!r.ok) throw new Error(`HTTP ${r.status}: ${rawText.substring(0,150)}`);
-                if (!rawText || rawText.trim() === '' || rawText.trim() === '{}') {
-                    // Flow returned empty — likely fetch-only flow returns no rows on first call
-                    allConsumptionRows = [];
-                    renderConsumptionTable();
-                    if (st) { st.innerText = 'No data yet'; st.classList.remove('sync-active'); }
-                    return;
-                }
-                let d;
-                try { d = JSON.parse(rawText); }
-                catch(pe) { throw new Error(`Bad JSON: ${rawText.substring(0,150)}`); }
-                let rows = [];
-                if (Array.isArray(d)) rows = d;
-                else if (d?.value && Array.isArray(d.value)) rows = d.value;
-                else if (d?.body?.value && Array.isArray(d.body.value)) rows = d.body.value;
-                else if (d?.body && Array.isArray(d.body)) rows = d.body;
-                else {
-                    for (const k of Object.keys(d||{})) {
-                        if (Array.isArray(d[k]) && d[k].length > 0) { rows = d[k]; break; }
-                    }
-                }
-                console.log('[CON] Received', rows.length, 'rows from consumption fetch');
-                // Sort by ID descending
+                const _ctrl = new AbortController(); const _t = setTimeout(() => _ctrl.abort(), 25000);
+                const r_c = await fetch(consumptionFetchURL + '&cb=' + Date.now(), { method: 'POST', body: JSON.stringify({}), signal: _ctrl.signal }); clearTimeout(_t);
+                if (!r_c.ok) throw new Error(`HTTP ${r_c.status}`);
+                const rows = extractRows(await r_c.json());
                 rows.sort((a,b) => (parseInt(getVal(b,['Id','ID','id']))||0) - (parseInt(getVal(a,['Id','ID','id']))||0));
+                const _dbg = `allConsumptionRows.length = ${rows.length} | Open browser console (F12) for [CON] debug log`;
                 allConsumptionRows = rows;
                 renderConsumptionTable();
                 populateConsumptionMonthFilter();
@@ -3846,7 +3912,11 @@
             });
 
             if (!rows.length) {
-                tbody.innerHTML = `<tr><td colspan="13" class="p-6 text-center text-slate-400 italic text-xs">${consumptionSearchQuery||consumptionMonthQuery ? 'No results.' : 'No consumption records.'}</td></tr>`;
+                const _dbg = `allConsumptionRows.length = ${allConsumptionRows.length} | Open browser console (F12) for [CON] debug log`;
+                tbody.innerHTML = `<tr><td colspan="13" class="p-4 text-center">
+                    <p class="text-slate-400 italic text-xs mb-1">${consumptionSearchQuery||consumptionMonthQuery ? 'No results for current filter.' : 'No consumption records found.'}</p>
+                    <p class="text-[10px] font-mono text-slate-300">${_dbg}</p>
+                </td></tr>`;
                 return;
             }
 
@@ -3921,15 +3991,16 @@
             try {
                 // Note: if you have a separate Add flow URL, replace consumptionFetchURL here
                 const res = await fetch(consumptionFetchURL, {
-                    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
+                    method: 'POST', body: JSON.stringify(payload)
                 });
                 if (res.ok) {
-                    btn.innerText = 'ADDED!';
+                    btn.innerText = 'ADDED ✓';
                     ['c_receivedTime','c_season','c_style','c_jobNo','c_protoStage',
                      'c_requestType','c_startDate','c_completeDate','c_remark'].forEach(id => {
                         const el = document.getElementById(id); if (el) el.value = '';
                     });
-                    setTimeout(() => { btn.innerText = '+ ADD ROW'; btn.disabled = false; refreshConsumptionData(); }, 2500);
+                    refreshConsumptionData();
+                    setTimeout(() => { btn.innerText = '+ ADD ROW'; btn.disabled = false; }, 2000);
                 } else {
                     alert(`Add failed (HTTP ${res.status}). Check Power Automate flow.`);
                     btn.innerText = '+ ADD ROW'; btn.disabled = false;
@@ -3962,8 +4033,9 @@
                     method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
                 });
                 if (res.ok) {
-                    btn.innerText = 'SAVED!';
-                    setTimeout(() => { btn.innerText = 'SAVE'; btn.disabled = false; refreshConsumptionData(true); }, 2500);
+                    btn.innerText = 'SAVED ✓';
+                    refreshConsumptionData(true);
+                    setTimeout(() => { btn.innerText = 'SAVE'; btn.disabled = false; }, 2000);
                 } else {
                     const txt = await res.text();
                     btn.innerText = 'ERROR'; btn.disabled = false;
@@ -3972,26 +4044,48 @@
             } catch(e) { btn.innerText = 'ERROR'; btn.disabled = false; }
         }
 
+        // Robust JSON row extractor — handles all PA response shapes
+        function extractRows(d) {
+            if (Array.isArray(d)) return d;
+            if (d?.value && Array.isArray(d.value)) return d.value;
+            if (d?.body?.value && Array.isArray(d.body.value)) return d.body.value;
+            if (d?.body && Array.isArray(d.body)) return d.body;
+            for (const k of Object.keys(d || {})) { if (Array.isArray(d[k]) && d[k].length) return d[k]; }
+            return [];
+        }
+
         window.onload = () => { 
             updateSessionUI();
             updateLaserPicDisplay();
             updateConsumptionPicDisplay();
+            // If redirected from Skills page with a PIC filter, auto-apply it
+            try {
+                const skillPic = localStorage.getItem('ma_skill_filter_pic');
+                if (skillPic) {
+                    localStorage.removeItem('ma_skill_filter_pic');
+                    setTimeout(() => {
+                        switchTab('template');
+                        const s = document.getElementById('tempSearch');
+                        if (s) { s.value = skillPic; applyTempFilters(false); }
+                    }, 1000);
+                }
+            } catch(e) {}
             updateMachineImage();
             loadAttData(); // load localStorage attendance so utilization works on first render
             switchTab('dashboard'); // always start on dashboard
 
-            // Fire primary data fetches in parallel — don't await each other
+            // Fire only the two primary data sources on load — these power the dashboard
             Promise.all([
                 refreshTemplateLogs(),
-                refreshLaserData(),
-                refreshSupportData(),
-                refreshPatchData(),
-                refreshConsumptionData()
-            ]).catch(() => {}); // errors handled inside each function
+                refreshLaserData()
+            ]).catch(() => {});
 
-            // Defer secondary fetches so primary data renders first
-            setTimeout(() => { refreshLiveLogs(); }, 1500);
-            setTimeout(() => { fetchAttendanceFromCloud(); }, 3000);
+            // Defer secondary fetches — staggered so Power Automate isn't hit all at once
+            setTimeout(() => refreshSupportData(),      2000);
+            setTimeout(() => refreshPatchData(),        4000);
+            setTimeout(() => refreshConsumptionData(),  6000);
+            setTimeout(() => refreshLiveLogs(),         8000);
+            setTimeout(() => fetchAttendanceFromCloud(), 10000);
 
             // Stagger auto-refresh intervals so not all hit Power Automate at once
             setInterval(() => refreshTemplateLogs(true), 60000);
