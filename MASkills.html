@@ -180,11 +180,10 @@
     font-size: .65rem; font-weight: 700; padding: .25rem .6rem;
     border-radius: 99px; text-transform: uppercase; letter-spacing: .05em;
   }
-  .tier-expert   { background: rgba(245,166,35,.12); color: var(--gold); border: 1px solid rgba(245,166,35,.3); }
-  .tier-senior   { background: rgba(99,102,241,.12); color: var(--indigo); border: 1px solid rgba(99,102,241,.3); }
-  .tier-mid      { background: rgba(16,185,129,.12); color: var(--emerald); border: 1px solid rgba(16,185,129,.3); }
-  .tier-junior   { background: rgba(34,211,238,.12); color: #22d3ee; border: 1px solid rgba(34,211,238,.3); }
-  .tier-trainee  { background: rgba(90,96,112,.12); color: var(--muted); border: 1px solid var(--border2); }
+  .tier-expert   { background: rgba(245,166,35,.12);  color: #f5a623;  border: 1px solid rgba(245,166,35,.3); }   /* Expert      → gold   */
+  .tier-advanced { background: rgba(74,222,128,.12);  color: #4ade80;  border: 1px solid rgba(74,222,128,.3); }   /* Advanced    → green  */
+  .tier-mid      { background: rgba(34,211,238,.12);  color: #22d3ee;  border: 1px solid rgba(34,211,238,.3); }   /* Intermediate→ cyan   */
+  .tier-junior   { background: rgba(100,116,139,.12); color: #64748b;  border: 1px solid rgba(100,116,139,.3); }  /* Junior/Basic→ grey   */
 
   /* ── Charts section ── */
   .charts-grid {
@@ -281,18 +280,14 @@
   <section style="margin-top:1rem;margin-bottom:2rem;">
     <div class="section-label">Skill Classification Reference</div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;">
-
-      <!-- Header strip -->
       <div style="padding:1.5rem 2rem 1rem;border-bottom:1px solid var(--border);">
         <h2 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;letter-spacing:-.3px;margin-bottom:.3rem;">How We Classify Skill Level</h2>
         <p style="font-size:.75rem;color:var(--muted);line-height:1.5;">Each completed template job is tagged with a complexity level. A PIC's <strong style="color:var(--text)">Skill Index</strong> is the weighted average of all their completed jobs — higher levels carry more weight. Use the table below to understand what each tier means.</p>
       </div>
-
-      <!-- Skill Index ranges -->
       <div style="display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--border);">
         <div style="padding:1rem 1.25rem;border-right:1px solid var(--border);">
           <div style="font-family:'DM Mono',monospace;font-size:.62rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.4rem;">Skill Index</div>
-          <div style="font-size:1.05rem;font-weight:700;color:var(--accent);font-family:'Syne',sans-serif;white-space:nowrap;">1.0 – 1.9</div>
+          <div style="font-size:1.05rem;font-weight:700;color:#64748b;font-family:'Syne',sans-serif;white-space:nowrap;">1.0 – 1.9</div>
           <div style="font-size:.75rem;color:var(--muted);margin-top:.25rem;">Junior / Basic</div>
         </div>
         <div style="padding:1rem 1.25rem;border-right:1px solid var(--border);">
@@ -307,98 +302,59 @@
         </div>
         <div style="padding:1rem 1.25rem;">
           <div style="font-family:'DM Mono',monospace;font-size:.62rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.4rem;">Skill Index</div>
-          <div style="font-size:1.05rem;font-weight:700;color:#f59e0b;font-family:'Syne',sans-serif;white-space:nowrap;">3.6 – 5.0</div>
+          <div style="font-size:1.05rem;font-weight:700;color:#f5a623;font-family:'Syne',sans-serif;white-space:nowrap;">3.6 – 5.0</div>
           <div style="font-size:.75rem;color:var(--muted);margin-top:.25rem;">Expert</div>
         </div>
       </div>
-
-      <!-- Level detail table -->
       <table style="width:100%;border-collapse:collapse;font-size:.78rem;">
         <thead>
           <tr style="background:rgba(255,255,255,.03);">
             <th style="padding:.75rem 1.5rem;text-align:left;font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:500;width:120px;">Level</th>
-            <th style="padding:.75rem 1.5rem;text-align:left;font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:500;width:140px;">Classification</th>
+            <th style="padding:.75rem 1.5rem;text-align:left;font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:500;width:150px;">Classification</th>
             <th style="padding:.75rem 1.5rem;text-align:left;font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:500;">Description</th>
           </tr>
         </thead>
         <tbody>
           <tr style="border-top:1px solid var(--border);">
-            <td style="padding:.9rem 1.5rem;vertical-align:middle;">
-              <span style="display:inline-flex;align-items:center;gap:.5rem;white-space:nowrap;">
-                <span style="width:10px;height:10px;border-radius:50%;background:#64748b;flex-shrink:0;display:inline-block;"></span>
-                <span style="font-family:'Syne',sans-serif;font-weight:700;color:#64748b;">Level 1</span>
-              </span>
-            </td>
-            <td style="padding:.9rem 1.5rem;vertical-align:middle;">
-              <span style="font-size:.7rem;font-weight:600;color:#64748b;background:rgba(100,116,139,.12);border:1px solid rgba(100,116,139,.2);padding:.2rem .65rem;border-radius:99px;white-space:nowrap;">Junior / Basic</span>
-            </td>
+            <td style="padding:.9rem 1.5rem;vertical-align:middle;"><span style="display:inline-flex;align-items:center;gap:.5rem;white-space:nowrap;"><span style="width:10px;height:10px;border-radius:50%;background:#64748b;flex-shrink:0;display:inline-block;"></span><span style="font-family:'Syne',sans-serif;font-weight:700;color:#64748b;">Level 1</span></span></td>
+            <td style="padding:.9rem 1.5rem;vertical-align:middle;"><span style="font-size:.7rem;font-weight:600;color:#64748b;background:rgba(100,116,139,.12);border:1px solid rgba(100,116,139,.2);padding:.2rem .65rem;border-radius:99px;white-space:nowrap;">Junior / Basic</span></td>
             <td style="padding:.9rem 1.5rem;vertical-align:middle;color:var(--text);line-height:1.6;">Basic marking operations.</td>
           </tr>
           <tr style="border-top:1px solid var(--border);background:rgba(255,255,255,.015);">
-            <td style="padding:.9rem 1.5rem;vertical-align:middle;">
-              <span style="display:inline-flex;align-items:center;gap:.5rem;white-space:nowrap;">
-                <span style="width:10px;height:10px;border-radius:50%;background:#22d3ee;flex-shrink:0;display:inline-block;"></span>
-                <span style="font-family:'Syne',sans-serif;font-weight:700;color:#22d3ee;">Level 2</span>
-              </span>
-            </td>
-            <td style="padding:.9rem 1.5rem;vertical-align:middle;">
-              <span style="font-size:.7rem;font-weight:600;color:#22d3ee;background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.2);padding:.2rem .65rem;border-radius:99px;white-space:nowrap;">Intermediate</span>
-            </td>
+            <td style="padding:.9rem 1.5rem;vertical-align:middle;"><span style="display:inline-flex;align-items:center;gap:.5rem;white-space:nowrap;"><span style="width:10px;height:10px;border-radius:50%;background:#22d3ee;flex-shrink:0;display:inline-block;"></span><span style="font-family:'Syne',sans-serif;font-weight:700;color:#22d3ee;">Level 2</span></span></td>
+            <td style="padding:.9rem 1.5rem;vertical-align:middle;"><span style="font-size:.7rem;font-weight:600;color:#22d3ee;background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.2);padding:.2rem .65rem;border-radius:99px;white-space:nowrap;">Intermediate</span></td>
             <td style="padding:.9rem 1.5rem;vertical-align:middle;color:var(--text);line-height:1.6;">Double-layer attachment construction, quilting, tacking construction, and embellishment stitching.</td>
           </tr>
           <tr style="border-top:1px solid var(--border);">
-            <td style="padding:.9rem 1.5rem;vertical-align:middle;">
-              <span style="display:inline-flex;align-items:center;gap:.5rem;white-space:nowrap;">
-                <span style="width:10px;height:10px;border-radius:50%;background:#4ade80;flex-shrink:0;display:inline-block;"></span>
-                <span style="font-family:'Syne',sans-serif;font-weight:700;color:#4ade80;">Level 3</span>
-              </span>
-            </td>
-            <td style="padding:.9rem 1.5rem;vertical-align:middle;">
-              <span style="font-size:.7rem;font-weight:600;color:#4ade80;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2);padding:.2rem .65rem;border-radius:99px;white-space:nowrap;">Advanced</span>
-            </td>
+            <td style="padding:.9rem 1.5rem;vertical-align:middle;"><span style="display:inline-flex;align-items:center;gap:.5rem;white-space:nowrap;"><span style="width:10px;height:10px;border-radius:50%;background:#4ade80;flex-shrink:0;display:inline-block;"></span><span style="font-family:'Syne',sans-serif;font-weight:700;color:#4ade80;">Level 3</span></span></td>
+            <td style="padding:.9rem 1.5rem;vertical-align:middle;"><span style="font-size:.7rem;font-weight:600;color:#4ade80;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2);padding:.2rem .65rem;border-radius:99px;white-space:nowrap;">Advanced</span></td>
             <td style="padding:.9rem 1.5rem;vertical-align:middle;color:var(--text);line-height:1.6;">Pocket opening construction, or combined quilting with pocket opening.</td>
           </tr>
           <tr style="border-top:1px solid var(--border);background:rgba(255,255,255,.015);">
-            <td style="padding:.9rem 1.5rem;vertical-align:middle;">
-              <span style="display:inline-flex;align-items:center;gap:.5rem;white-space:nowrap;">
-                <span style="width:10px;height:10px;border-radius:50%;background:#f59e0b;flex-shrink:0;display:inline-block;"></span>
-                <span style="font-family:'Syne',sans-serif;font-weight:700;color:#f59e0b;">Level 4</span>
-              </span>
-            </td>
-            <td style="padding:.9rem 1.5rem;vertical-align:middle;">
-              <span style="font-size:.7rem;font-weight:600;color:#f59e0b;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);padding:.2rem .65rem;border-radius:99px;white-space:nowrap;">Expert</span>
-            </td>
+            <td style="padding:.9rem 1.5rem;vertical-align:middle;"><span style="display:inline-flex;align-items:center;gap:.5rem;white-space:nowrap;"><span style="width:10px;height:10px;border-radius:50%;background:#f59e0b;flex-shrink:0;display:inline-block;"></span><span style="font-family:'Syne',sans-serif;font-weight:700;color:#f59e0b;">Level 4</span></span></td>
+            <td style="padding:.9rem 1.5rem;vertical-align:middle;"><span style="font-size:.7rem;font-weight:600;color:#f59e0b;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);padding:.2rem .65rem;border-radius:99px;white-space:nowrap;">Expert</span></td>
             <td style="padding:.9rem 1.5rem;vertical-align:middle;color:var(--text);line-height:1.6;">Multi-layer attachment construction, combining more than two operations.</td>
           </tr>
           <tr style="border-top:1px solid var(--border);">
-            <td style="padding:.9rem 1.5rem;vertical-align:middle;">
-              <span style="display:inline-flex;align-items:center;gap:.5rem;white-space:nowrap;">
-                <span style="width:10px;height:10px;border-radius:50%;background:#f43f5e;flex-shrink:0;display:inline-block;"></span>
-                <span style="font-family:'Syne',sans-serif;font-weight:700;color:#f43f5e;">Level 5</span>
-              </span>
-            </td>
-            <td style="padding:.9rem 1.5rem;vertical-align:middle;">
-              <span style="font-size:.7rem;font-weight:600;color:#f43f5e;background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.2);padding:.2rem .65rem;border-radius:99px;white-space:nowrap;">Expert+</span>
-            </td>
+            <td style="padding:.9rem 1.5rem;vertical-align:middle;"><span style="display:inline-flex;align-items:center;gap:.5rem;white-space:nowrap;"><span style="width:10px;height:10px;border-radius:50%;background:#f43f5e;flex-shrink:0;display:inline-block;"></span><span style="font-family:'Syne',sans-serif;font-weight:700;color:#f43f5e;">Level 5</span></span></td>
+            <td style="padding:.9rem 1.5rem;vertical-align:middle;"><span style="font-size:.7rem;font-weight:600;color:#f43f5e;background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.2);padding:.2rem .65rem;border-radius:99px;white-space:nowrap;">Expert+</span></td>
             <td style="padding:.9rem 1.5rem;vertical-align:middle;color:var(--text);line-height:1.6;">Combination of more than three operations, including machine modification and programming.</td>
           </tr>
         </tbody>
       </table>
-
-      <!-- Footer note -->
       <div style="padding:1rem 1.5rem;border-top:1px solid var(--border);background:rgba(79,143,255,.04);display:flex;align-items:flex-start;gap:.75rem;">
         <span style="font-size:1rem;flex-shrink:0;margin-top:.05rem;">💡</span>
         <p style="font-size:.72rem;color:var(--muted);line-height:1.6;">
           <strong style="color:var(--text);">Skill Index</strong> is calculated as a weighted average of completed job complexity levels.
           A PIC is considered <strong style="color:#4ade80;">Advanced</strong> when their Skill Index reaches <strong style="color:#4ade80;">2.6 or above</strong>,
           meaning they regularly handle Level 3+ jobs such as pocket openings or combined quilting operations.
-          Reaching <strong style="color:#f59e0b;">Expert</strong> (3.6+) requires consistent delivery of multi-operation and machine-level work.
+          Reaching <strong style="color:#f5a623;">Expert</strong> (3.6+) requires consistent delivery of multi-operation and machine-level work.
         </p>
       </div>
     </div>
   </section>
 
-  <!-- Show Mark button — bottom of page -->
+  <!-- Show Mark button — very bottom of page -->
   <div style="text-align:center;padding:1.5rem 0 3rem;">
     <button onclick="toggleMark()" class="pill-btn" id="markToggle">
       <span id="markToggleText">Show Mark</span>
@@ -607,10 +563,10 @@ function calcScore(levelMap) {
 function getTier(avg) {
   // Skill Index ranges from Excel pivot image:
   // 1.0–1.9 = Junior/Basic, 2.0–2.5 = Intermediate, 2.6–3.5 = Advanced, 3.6–5.0 = Expert
-  if (avg >= 3.6) return { label: 'Expert',       cls: 'tier-expert',  color: '#f5a623' };
-  if (avg >= 2.6) return { label: 'Advanced',     cls: 'tier-senior',  color: '#6366f1' };
-  if (avg >= 2.0) return { label: 'Intermediate', cls: 'tier-mid',     color: '#10b981' };
-  return                 { label: 'Junior/Basic',  cls: 'tier-junior',  color: '#22d3ee' };
+  if (avg >= 3.6) return { label: 'Expert',        cls: 'tier-expert',   color: '#f5a623' };
+  if (avg >= 2.6) return { label: 'Advanced',      cls: 'tier-advanced', color: '#4ade80' };
+  if (avg >= 2.0) return { label: 'Intermediate',  cls: 'tier-mid',      color: '#22d3ee' };
+  return                 { label: 'Junior/Basic',  cls: 'tier-junior',   color: '#64748b' };
 }
 
 function getAvatarColor(pic) {
