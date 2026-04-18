@@ -10,6 +10,8 @@
         .machine-btn:active { transform: scale(0.95); }
         .active-filter { border-color: #2563eb; background-color: #eff6ff; color: #1e40af; border-width: 2px; font-weight: 800; }
         .tab-active { border-bottom: 4px solid #2563eb; color: #2563eb; font-weight: 800; }
+        /* Keep tab content aligned inside the same border column as the header/nav */
+        .tab-content { border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; padding: 16px; background: transparent; }
         .switch { position: relative; display: inline-block; width: 44px; height: 22px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
@@ -159,7 +161,7 @@
                         <div id="l_picDisplay" class="p-2 border rounded text-xs bg-slate-50 text-blue-700 font-bold">Not logged in</div>
                     </div>
                     <div class="flex flex-col justify-end">
-                        <button onclick="addLaserRow()" id="laserAddBtn" class="bg-blue-600 text-white text-xs font-bold py-2 px-4 rounded hover:bg-blue-700 active:scale-95 transition-all shadow-md">+ ADD ROW</button>
+                        <button onclick="addLaserRow()" id="laserAddBtn" class="bg-blue-600 text-white text-xs font-bold py-2 px-6 rounded-lg hover:bg-blue-700 active:scale-95 transition-all shadow-sm">+ ADD ROW</button>
                     </div>
                 </div>
             </div>
@@ -683,12 +685,12 @@
                         <option value="AQM0005">AQM0005 (JUITA)</option><option value="AQM0006">AQM0006 (JACK)</option>
                         <option value="AQM0007">AQM0007 (JUITA)</option><option value="AQM0008">AQM0008 (JUITA)</option>
                         <option value="AQM0009">AQM0009 (JUITA)</option>
-                        <option value="CCCM0009">CCCM0009 (AMS)</option>
-                        <option value="CCCM0010">CCCM0010 (AMS)</option>
-                        <option value="CCCM0011">CCCM0011 (AMS)</option>
-                        <option value="CCCM0012">CCCM0012 (AMS)</option>
-                        <option value="CCCM0013">CCCM0013 (AMS)</option>
-                        <option value="CCCM0014">CCCM0014 (AMS)</option>
+                        <option value="CCCM0009">CCCM0009 (JUKI)</option>
+                        <option value="CCCM0010">CCCM0010 (JUKI)</option>
+                        <option value="CCCM0011">CCCM0011 (JUKI)</option>
+                        <option value="CCCM0012">CCCM0012 (JUKI)</option>
+                        <option value="CCCM0013">CCCM0013 (JUKI)</option>
+                        <option value="CCCM0014">CCCM0014 (JUKI)</option>
                     </select>
                     <p id="machineModelLabel" class="text-[11px] text-slate-500 font-mono mt-1 mb-1 col-span-full"></p>
                     <input type="text" id="fName" placeholder="File Name / Style" class="p-2 border rounded text-sm">
@@ -746,11 +748,7 @@
             <div class="bg-white p-6 rounded-xl border shadow-sm mb-4">
                 <div class="flex justify-between items-center mb-4 border-b pb-3">
                     <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest">New Consumption Entry</h2>
-                    <div class="flex items-center gap-3">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">M&A PIC:</span>
-                        <span id="c_picDisplay" class="text-sm font-bold text-blue-600"></span>
-                        <span id="consumptionSyncStatus" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-4">Syncing...</span>
-                    </div>
+                    <span id="consumptionSyncStatus" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Syncing...</span>
                 </div>
                 <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-3">
                     <div class="flex flex-col gap-1">
@@ -789,9 +787,13 @@
                         <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Remark</label>
                         <input type="text" id="c_remark" placeholder="Remark..." class="p-2 border rounded text-xs focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">M&A PIC (Auto)</label>
+                        <div id="c_picDisplay" class="p-2 border rounded text-xs bg-slate-50 text-blue-700 font-bold">Not logged in</div>
+                    </div>
                 </div>
                 <button id="consumptionAddBtn" onclick="addConsumptionRow()"
-                    class="bg-emerald-600 text-white text-xs font-bold px-6 py-2 rounded-lg hover:bg-emerald-700 transition-all disabled:opacity-50">
+                    class="bg-blue-600 text-white text-xs font-bold px-6 py-2 rounded-lg hover:bg-blue-700 active:scale-95 transition-all shadow-sm disabled:opacity-50">
                     + ADD ROW
                 </button>
             </div>
@@ -865,7 +867,7 @@
             </div>
             <!-- Table -->
             <div class="bg-white rounded-xl shadow-sm border overflow-x-auto">
-                <table class="w-full text-left min-w-[1600px]">
+                <table class="w-full text-left min-w-[1200px]">
                     <thead class="bg-slate-100 border-b text-[10px] uppercase tracking-wider text-slate-500 font-bold">
                         <tr>
                             <th class="p-3">Received Time</th>
@@ -891,7 +893,6 @@
                 </table>
             </div>
         </div>
-    </div>
 
         <!-- ═══════ PATCH PAGE ════════════════════════════════════ -->
         <div id="content-patch" class="tab-content hidden">
@@ -956,6 +957,7 @@
                 </table>
             </div>
         </div>
+    </div><!-- end max-w-[1600px] wrapper -->
 
     <!-- ═══════════════════════════════════════════════════════
          ATTENDANCE PAGE — hidden from nav, accessible via ?page=attendance
@@ -1317,13 +1319,13 @@
             "AQM0006": { brand: "JACK", model: "M9-SS-F13-X" }, 
             "AQM0007": { brand: "JUITA", model: "JTK8T-8037AJS" }, 
             "AQM0008": { brand: "JUITA", model: "JTK8T-8037AJS" },
-            "AQM0009": { brand: "Juita", model: "JT G20-T140M-J" },
-            "CCCM0009": { brand: "AMS", model: "AMS221ENHS25165" },
-            "CCCM0010": { brand: "AMS", model: "AMS221ENHS25165" },
-            "CCCM0011": { brand: "AMS", model: "AMS221ENHS25165" },
-            "CCCM0012": { brand: "AMS", model: "AMS221ENHS25165" },
-            "CCCM0013": { brand: "AMS", model: "AMS221ENHS25165" },
-            "CCCM0014": { brand: "AMS", model: "AMS221ENHS3020S" }
+            "AQM0009": { brand: "JUITA", model: "JT G20-T140M-J" },
+            "CCCM0009": { brand: "JUKI", model: "AMS221ENHS25165" },
+            "CCCM0010": { brand: "JUKI", model: "AMS221ENHS25165" },
+            "CCCM0011": { brand: "JUKI", model: "AMS221ENHS25165" },
+            "CCCM0012": { brand: "JUKI", model: "AMS221ENHS25165" },
+            "CCCM0013": { brand: "JUKI", model: "AMS221ENHS25165" },
+            "CCCM0014": { brand: "JUKI", model: "AMS221ENHS3020S" }
         };
 
         const machineImages = {
@@ -1344,12 +1346,12 @@
             "AQM0007": { brand: "JUITA", model: "JTK8T-8037AJS" },
             "AQM0008": { brand: "JUITA", model: "JTK8T-8037AJS" },
             "AQM0009": { brand: "JUITA", model: "JT G20-T140M-J" },
-            "CCCM0009": { brand: "AMS", model: "AMS221ENHS25165" },
-            "CCCM0010": { brand: "AMS", model: "AMS221ENHS25165" },
-            "CCCM0011": { brand: "AMS", model: "AMS221ENHS25165" },
-            "CCCM0012": { brand: "AMS", model: "AMS221ENHS25165" },
-            "CCCM0013": { brand: "AMS", model: "AMS221ENHS25165" },
-            "CCCM0014": { brand: "AMS", model: "AMS221ENHS3020S" }
+            "CCCM0009": { brand: "JUKI", model: "AMS221ENHS25165" },
+            "CCCM0010": { brand: "JUKI", model: "AMS221ENHS25165" },
+            "CCCM0011": { brand: "JUKI", model: "AMS221ENHS25165" },
+            "CCCM0012": { brand: "JUKI", model: "AMS221ENHS25165" },
+            "CCCM0013": { brand: "JUKI", model: "AMS221ENHS25165" },
+            "CCCM0014": { brand: "JUKI", model: "AMS221ENHS3020S" }
         };
 
         // picList MUST exactly match the Data Validation list in Excel column Q (M&A PIC).
