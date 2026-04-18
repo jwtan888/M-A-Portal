@@ -206,7 +206,7 @@
         </div>
 
         <div id="content-dashboard" class="tab-content hidden">
-            <div class="mb-6 flex justify-end">
+            <div class="mb-4 flex justify-end">
                 <div class="flex items-center gap-2 bg-white p-2 px-4 rounded-lg border shadow-sm">
                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Select Month (Template &amp; Laser):</span>
                     <select id="monthFilter" onchange="updateDashboard()" class="text-xs font-bold border-none outline-none bg-transparent text-blue-600 cursor-pointer">
@@ -214,7 +214,15 @@
                     </select>
                 </div>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+
+            <!-- Template KPI — directly below month filter -->
+            <div class="mb-3 flex items-center gap-3">
+                <div class="flex-1 border-t border-slate-200"></div>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2">Template</span>
+                <div class="flex-1 border-t border-slate-200"></div>
+            </div>
+            <!-- Stat cards: New Styles, Pending, Delayed, Done -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                 <div class="bg-white p-6 rounded-xl border shadow-sm">
                     <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">New Styles (Month)</p>
                     <h2 id="stat-total" class="text-3xl font-bold text-slate-800">0</h2>
@@ -232,32 +240,6 @@
                     <h2 id="stat-completed" class="text-3xl font-bold text-emerald-600">0</h2>
                 </div>
             </div>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <div class="bg-white p-6 rounded-xl border shadow-sm">
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Requests by Section</h3>
-                    <div class="h-[300px]"><canvas id="sectionChart"></canvas></div>
-                </div>
-                <div class="bg-white p-6 rounded-xl border shadow-sm">
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Completion Trends (Daily)</h3>
-                    <div class="h-[300px]"><canvas id="volumeChart"></canvas></div>
-                </div>
-            </div>
-
-            <!-- KPI: Template Delivery Performance by Section + PIC (moved below completion trend) -->
-            <div class="mb-4 flex items-center gap-3">
-                <div class="flex-1 border-t border-slate-200"></div>
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2">Delivery KPI</span>
-                <div class="flex-1 border-t border-slate-200"></div>
-            </div>
-            <!-- Template KPI Header -->
-            <div class="mt-2 mb-3 flex items-center gap-3">
-                <div class="flex-1 border-t border-slate-200"></div>
-                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-2 flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>Template Delivery KPI
-                </span>
-                <div class="flex-1 border-t border-slate-200"></div>
-            </div>
-
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
                 <!-- Sample Development KPI -->
                 <div id="kpi-sample-card" class="bg-white rounded-xl shadow-sm overflow-hidden border-l-4 transition-all" style="border-left-color:#10b981;border-top:1px solid #e2e8f0;border-right:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0">
@@ -296,7 +278,6 @@
                     </div>
                     <div id="kpi-sample-pic" class="px-5 pb-4 pt-2 space-y-1.5"></div>
                 </div>
-
                 <!-- Production KPI -->
                 <div id="kpi-prod-card" class="bg-white rounded-xl shadow-sm overflow-hidden border-l-4 transition-all" style="border-left-color:#10b981;border-top:1px solid #e2e8f0;border-right:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0">
                     <div id="kpi-prod-header" class="px-5 py-4 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white border-b">
@@ -334,6 +315,22 @@
                     </div>
                     <div id="kpi-prod-pic" class="px-5 pb-4 pt-2 space-y-1.5"></div>
                 </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white p-6 rounded-xl border shadow-sm">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Requests by Section</h3>
+                    <div class="h-[300px]"><canvas id="sectionChart"></canvas></div>
+                </div>
+                <div class="bg-white p-6 rounded-xl border shadow-sm">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Completion Trends (Daily)</h3>
+                    <div class="h-[300px]"><canvas id="volumeChart"></canvas></div>
+                </div>
+            </div>
+            <!-- Delivery KPI Section Divider -->
+            <div class="mt-2 mb-4 flex items-center gap-3">
+                <div class="flex-1 border-t border-slate-200"></div>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2">Delivery KPI</span>
+                <div class="flex-1 border-t border-slate-200"></div>
             </div>
             <div class="bg-white p-6 rounded-xl border shadow-sm">
                 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">PIC Unfinished Work</h3>
@@ -1306,9 +1303,9 @@
         const patchUpdateURL = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/e1bf8a45c8894344bc743b822de40c56/triggers/manual/paths/invoke?api-version=1";
         // Attendance Fetch Flow URL
         // Consumption: use fetch URL for listing, same URL handles add if flow is configured for both
-        // If you have a separate Add flow, set consumptionAddURL to that URL
         const consumptionFetchURL  = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/aee706c4629744f5b5aa3a756eec00f2/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=tU6CI-qPTZJIJgVViryVC6t9oxk4_gL8xvDgB4e_jwE";
         const consumptionUpdateURL = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/f0612d5d6e1645c1a3a44c2201299a93/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=Q_RMUTXSecFlsNb_o2HhIcjrpN_LyunPb4bkvcUJCpI";
+        const consumptionAddURL    = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/116473b95bb84850832555a76351ddd1/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ZzA8AD1K6CBOYFBNxzSJv3p2aKFgxvfuD_Q3VJifGGM";
         const attendanceFetchURL = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/9f7d2b43fe80443ea830ec0ef1631183/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=0geeH4paQU60TyHlrF0_6_CGqXBmke3BEmk5IiwTxZ0";
 
         const machineSpecs = { 
@@ -1604,26 +1601,42 @@
             document.getElementById('stat-completed').innerText = filteredByMonth.filter(t => t.status === 'COMPLETED').length;
 
             // ── KPI: Delivery by Section + PIC ──────────────────────────────
-            // Late = Complete Date > Required Date (only for completed jobs)
+            // Late definition:
+            //   COMPLETED job: Complete Date > Required Date
+            //   DELAYED job: not yet done but Required Date already passed — counts as late
             function isLate(t) {
-                if (t.status !== 'COMPLETED') return false;
-                if (!t.completeDateDisplay || t.completeDateDisplay === '---') return false;
-                if (!t.requiredDate || t.requiredDate === '---') return false;
-                const req  = (() => { const p = t.requiredDate.split('/'); return p.length===3 ? new Date(parseInt(p[2]),parseInt(p[1])-1,parseInt(p[0])) : null; })();
-                const done = (() => { const p = t.completeDateDisplay.split(' ')[0].split('/'); return p.length===3 ? new Date(parseInt(p[2]),parseInt(p[1])-1,parseInt(p[0])) : null; })();
-                return req && done ? done > req : false;
+                if (t.status === 'COMPLETED') {
+                    if (!t.completeDateDisplay || t.completeDateDisplay === '---') return false;
+                    if (!t.requiredDate || t.requiredDate === '---') return false;
+                    const req  = (() => { const p = t.requiredDate.split('/'); return p.length===3 ? new Date(parseInt(p[2]),parseInt(p[1])-1,parseInt(p[0])) : null; })();
+                    const done = (() => { const p = t.completeDateDisplay.split(' ')[0].split('/'); return p.length===3 ? new Date(parseInt(p[2]),parseInt(p[1])-1,parseInt(p[0])) : null; })();
+                    return req && done ? done > req : false;
+                }
+                if (t.status === 'DELAYED') return true;
+                return false;
             }
-            // KPI filter: completed jobs where Complete Date falls in selected month
-            // This is separate from filteredByMonth (which uses startTime)
+            // KPI filter: completed OR delayed jobs in the selected month window
             const kpiFiltered = allTemplates.filter(t => {
-                if (t.status !== 'COMPLETED') return false;
+                if (t.status !== 'COMPLETED' && t.status !== 'DELAYED') return false;
                 if (selectedMonthStr === 'ALL') return true;
-                if (!t.completeDateDisplay || t.completeDateDisplay === '---') return false;
-                const parts = t.completeDateDisplay.split(' ')[0].split('/');
-                // completeDateDisplay is d/m/yyyy from convertExcelDate (UTC)
-                if (parts.length !== 3) return false;
-                const mName = months[parseInt(parts[1])-1];
-                return `${mName}-${parts[2]}` === selectedMonthStr;
+                const [selMon, selYr] = selectedMonthStr.split('-');
+                const selMonIdx = months.indexOf(selMon);
+                const selYear   = parseInt(selYr);
+                if (selMonIdx < 0 || !selYear) return false;
+                const endOfMonth = new Date(selYear, selMonIdx + 1, 0, 23, 59, 59);
+                if (t.status === 'COMPLETED') {
+                    if (!t.completeDateDisplay || t.completeDateDisplay === '---') return false;
+                    const parts = t.completeDateDisplay.split(' ')[0].split('/');
+                    if (parts.length !== 3) return false;
+                    const mName = months[parseInt(parts[1])-1];
+                    return `${mName}-${parts[2]}` === selectedMonthStr;
+                }
+                const dp = t.startTime.split(' ')[0].split('/');
+                if (dp.length !== 3) return true;
+                const [da, mo, yr] = dp.map(Number);
+                if (!da || !mo || !yr || mo < 1 || mo > 12) return true;
+                const startDate = new Date(yr, mo - 1, da);
+                return !isNaN(startDate.getTime()) && startDate <= endOfMonth;
             });
 
             ['sample','prod'].forEach(key => {
@@ -1655,12 +1668,17 @@
                 if (picEl) {
                     const picStats = {};
                     secJobs.forEach(t => {
-                        if (!picStats[t.pic]) picStats[t.pic] = { total:0, late:0 };
-                        picStats[t.pic].total++;
-                        if (isLate(t)) picStats[t.pic].late++;
+                        const picName = (!t.pic || t.pic === '---') ? '(Unassigned)' : t.pic;
+                        if (!picStats[picName]) picStats[picName] = { total:0, late:0 };
+                        picStats[picName].total++;
+                        if (isLate(t)) picStats[picName].late++;
                     });
                     const picRows = Object.entries(picStats)
-                        .sort((a,b) => (b[1].late/Math.max(b[1].total,1)) - (a[1].late/Math.max(a[1].total,1))) // worst first
+                        .sort((a,b) => {
+                            if (a[0] === '(Unassigned)') return 1;
+                            if (b[0] === '(Unassigned)') return -1;
+                            return (b[1].late/Math.max(b[1].total,1)) - (a[1].late/Math.max(a[1].total,1));
+                        })
                         .map(([name, s]) => {
                             const p    = s.total ? Math.round((s.total-s.late)/s.total*100) : 0;
                             const bc   = p >= 90 ? '#10b981' : p >= 70 ? '#f59e0b' : '#ef4444';
@@ -1885,7 +1903,7 @@
                                 <td class="p-2">${section}</td>
                                 <td class="p-2 font-medium">${pic}</td>
                                 <td class="p-2 text-emerald-600 font-bold">${cd}</td>
-                                <td class="p-2">${currentUser === 'Gavin' ? `<button onclick="markLaserNA('${rid}', event)" class="bg-slate-400 text-white text-[9px] font-bold px-2 py-1 rounded hover:bg-slate-500 whitespace-nowrap">N/A</button>` : ''}</td>
+                                <td class="p-2"></td>
                             </tr>`;
                         }).join('')
                     : '<tr><td colspan="7" class="p-6 text-center italic text-slate-400">All caught up! No pending consumption.</td></tr>';
@@ -2885,19 +2903,24 @@
                 if (!d) return true; // include if date missing
                 return `${months_pd[d.getMonth()]}-${d.getFullYear()}` === sharedMonth;
             });
-            const total   = filteredPatch.length;
-            const pending = filteredPatch.filter(r => { const cd = getVal(r,['Complete Date m/d/yyyy','Complete Date','CompleteDate']); return !cd||cd==='---'||String(cd).trim()===''; }).length;
-            const done    = total - pending;
-            const rate    = total ? Math.round(done/total*100)+'%' : '—';
+            // Exclude cancelled rows (Complete Date = "-") from all counts
+            const activePatch = filteredPatch.filter(r => {
+                const cd = getVal(r,['Complete Date m/d/yyyy','Complete Date','CompleteDate']);
+                return String(cd).trim() !== '-';
+            });
+            const total   = activePatch.length;
+            const pending = activePatch.filter(r => { const cd = getVal(r,['Complete Date m/d/yyyy','Complete Date','CompleteDate']); return !cd||cd==='---'||String(cd).trim()===''||String(cd).trim()==='-'; }).length;
+            const done    = activePatch.filter(r => { const cd = getVal(r,['Complete Date m/d/yyyy','Complete Date','CompleteDate']); return cd && cd !== '---' && String(cd).trim() !== '' && String(cd).trim() !== '-'; }).length;
+            const rate    = (done + pending) ? Math.round(done/(done + pending)*100)+'%' : '—';
             const el = id => document.getElementById(id);
             if (el('db-patch-total'))   el('db-patch-total').innerText   = total;
             if (el('db-patch-pending')) el('db-patch-pending').innerText = pending;
             if (el('db-patch-done'))    el('db-patch-done').innerText    = done;
             if (el('db-patch-rate'))    el('db-patch-rate').innerText    = rate;
 
-            // Chart 1: Daily completion volume (filtered)
+            // Chart 1: Daily completion volume (filtered, no cancelled)
             const dayCompletions = {};
-            filteredPatch.forEach(r => {
+            activePatch.forEach(r => {
                 const cd = getVal(r,['Complete Date m/d/yyyy','Complete Date','CompleteDate']);
                 if (!cd || cd === '---' || String(cd).trim() === '') return;
                 const dateObj = rawToLocalDate(cd);
@@ -2933,9 +2956,9 @@
                 }
             });
 
-            // Chart 2: By Season (doughnut) — filtered
+            // Chart 2: By Season (doughnut) — filtered, no cancelled
             const seasonCounts = {};
-            filteredPatch.forEach(r => {
+            activePatch.forEach(r => {
                 const s = getVal(r,['Season'])||'Unknown';
                 seasonCounts[s] = (seasonCounts[s]||0)+1;
             });
@@ -2948,16 +2971,17 @@
                 options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ font:{ size:10 }, boxWidth:10 } } } }
             });
 
-            // Pending by PIC table — filtered by month
+            // Pending by PIC table — exclude cancelled ("-") rows
             const picPend = {};
-            filteredPatch.forEach(r => {
+            activePatch.forEach(r => {
                 const cd = getVal(r,['Complete Date m/d/yyyy','Complete Date','CompleteDate']);
-                if (cd && cd !== '---' && String(cd).trim() !== '') return;
-                const pic = getMAPic(r)||'Unassigned';
+                if (cd && cd !== '---' && String(cd).trim() !== '' && String(cd).trim() !== '-') return;
+                const pic = getMAPic(r);
+                const picDisplay = (!pic || pic === '---') ? 'Unassigned' : pic;
                 const style = getVal(r,['Style Number','StyleNumber']);
                 const tmpl  = getVal(r,['Template No.','Template No','TemplateNo']);
-                if (!picPend[pic]) picPend[pic] = [];
-                picPend[pic].push(`${style}${tmpl!=='---'?' ('+tmpl+')':''}`);
+                if (!picPend[picDisplay]) picPend[picDisplay] = [];
+                picPend[picDisplay].push(`${style}${tmpl!=='---'?' ('+tmpl+')':''}`);
             });
             const picTbl = el('db-patch-pic-table');
             if (picTbl) picTbl.innerHTML = Object.keys(picPend).length
@@ -3335,10 +3359,13 @@
             }
             // Refresh support data when switching to support tab
             if (t === 'support') refreshSupportData(true);
+            // Re-render patch/consumption with correct canEdit state each time tab is opened
+            if (t === 'patch' && allPatchRows.length) renderPatchTable();
+            if (t === 'consumption' && allConsumptionRows.length) renderConsumptionTable();
         }
 
-        function login() { currentUser = document.getElementById('userSelect').value; sessionStorage.setItem('ma_session_user', currentUser); updateSessionUI(); updateLaserPicDisplay(); applyTempFilters(false); renderLaserTable(); renderSupportTable(); }
-        function logout() { currentUser = null; sessionStorage.removeItem('ma_session_user'); updateSessionUI(); updateLaserPicDisplay(); applyTempFilters(false); renderLaserTable(); renderSupportTable(); }
+        function login() { currentUser = document.getElementById('userSelect').value; sessionStorage.setItem('ma_session_user', currentUser); updateSessionUI(); updateLaserPicDisplay(); updateConsumptionPicDisplay(); applyTempFilters(false); renderLaserTable(); renderSupportTable(); renderPatchTable(); renderConsumptionTable(); }
+        function logout() { currentUser = null; sessionStorage.removeItem('ma_session_user'); updateSessionUI(); updateLaserPicDisplay(); updateConsumptionPicDisplay(); applyTempFilters(false); renderLaserTable(); renderSupportTable(); renderPatchTable(); renderConsumptionTable(); }
         function updateSessionUI() { 
             const lv = document.getElementById('loginView'), av = document.getElementById('activeUserView');
             if (currentUser) {
@@ -3633,7 +3660,12 @@
                 if (!r_p.ok) throw new Error(`HTTP ${r_p.status}`);
                 const rows = extractRows(await r_p.json());
                 allPatchRows = rows;
-                renderPatchTable();
+                // Skip re-render if user is actively editing a patch input
+                const _pActiveEl = document.activeElement;
+                const _pTable = document.getElementById('patchTable');
+                if (!(_pTable && _pActiveEl && _pTable.contains(_pActiveEl) && _pActiveEl.tagName === 'INPUT')) {
+                    renderPatchTable();
+                }
                 renderPatchDashboard();
                 populateTabMonthFilters();
                 if (st) { st.innerText = 'LIVE: ' + new Date().toLocaleTimeString(); st.classList.remove('sync-active'); }
@@ -3678,6 +3710,11 @@
                     getMAPic(r), getVal(r,['Month']), getVal(r,['Remark','Remarks'])
                 ];
                 return vals.some(v => String(v).toLowerCase().includes(patchSearchQuery));
+            }).sort((a, b) => {
+                // Higher No. on top (latest entries first)
+                const na = parseInt(getVal(a,['No.','No'])) || 0;
+                const nb = parseInt(getVal(b,['No.','No'])) || 0;
+                return nb - na;
             });
 
             // Stats
@@ -3761,19 +3798,19 @@
             const tmplNoVal    = document.getElementById(`patch-tmplno-${sid}`)?.value.trim() || '';
             const machineVal   = document.getElementById(`patch-machine-${sid}`)?.value.trim() || '';
             // Gavin-only editable fields
-            const seasonVal    = document.getElementById(`pi-season-${sid}`)?.value.trim() || '';
-            const styleVal     = document.getElementById(`pi-style-${sid}`)?.value.trim() || '';
-            const categoryVal  = document.getElementById(`pi-category-${sid}`)?.value.trim() || '';
-            const jobNoVal     = document.getElementById(`pi-jobno-${sid}`)?.value.trim() || '';
-            const bddPicVal    = document.getElementById(`pi-bddpic-${sid}`)?.value.trim() || '';
-            const patchItemVal = document.getElementById(`pi-patchitem-${sid}`)?.value.trim() || '';
-            const patchDescVal = document.getElementById(`pi-patchdesc-${sid}`)?.value.trim() || '';
-            const fabItemVal   = document.getElementById(`pi-fabitem-${sid}`)?.value.trim() || '';
-            const fabDescVal   = document.getElementById(`pi-fabdesc-${sid}`)?.value.trim() || '';
-            const threadTypeV  = document.getElementById(`pi-threadtype-${sid}`)?.value.trim() || '';
-            const threadColorV = document.getElementById(`pi-threadcolor-${sid}`)?.value.trim() || '';
-            const sampleTypeV  = document.getElementById(`pi-sampletype-${sid}`)?.value.trim() || '';
-            const qtyVal       = document.getElementById(`pi-qty-${sid}`)?.value.trim() || '';
+            const seasonVal    = document.getElementById(`patch-season-${sid}`)?.value.trim() || '';
+            const styleVal     = document.getElementById(`patch-style-${sid}`)?.value.trim() || '';
+            const categoryVal  = document.getElementById(`patch-category-${sid}`)?.value.trim() || '';
+            const jobNoVal     = document.getElementById(`patch-jobno-${sid}`)?.value.trim() || '';
+            const bddPicVal    = document.getElementById(`patch-bddpic-${sid}`)?.value.trim() || '';
+            const patchItemVal = document.getElementById(`patch-patchitem-${sid}`)?.value.trim() || '';
+            const patchDescVal = document.getElementById(`patch-patchdesc-${sid}`)?.value.trim() || '';
+            const fabItemVal   = document.getElementById(`patch-fabitem-${sid}`)?.value.trim() || '';
+            const fabDescVal   = document.getElementById(`patch-fabdesc-${sid}`)?.value.trim() || '';
+            const threadTypeV  = document.getElementById(`patch-threadtype-${sid}`)?.value.trim() || '';
+            const threadColorV = document.getElementById(`patch-threadcolor-${sid}`)?.value.trim() || '';
+            const sampleTypeV  = document.getElementById(`patch-sampletype-${sid}`)?.value.trim() || '';
+            const qtyVal       = document.getElementById(`patch-qty-${sid}`)?.value.trim() || '';
             // Find existing row to preserve PIC and No. key
             const existingRow = allPatchRows.find(r => String(r['__PowerAppsId__']||r['Id']||r['ID']) === String(sid));
             const existingPic = existingRow ? getMAPic(existingRow) : '---';
@@ -3875,7 +3912,12 @@
                 rows.sort((a,b) => (parseInt(getVal(b,['Id','ID','id']))||0) - (parseInt(getVal(a,['Id','ID','id']))||0));
                 const _dbg = `allConsumptionRows.length = ${rows.length} | Open browser console (F12) for [CON] debug log`;
                 allConsumptionRows = rows;
-                renderConsumptionTable();
+                // Skip re-render if user is actively editing a consumption input
+                const _cActiveEl = document.activeElement;
+                const _cTable = document.getElementById('consumptionTable');
+                if (!(_cTable && _cActiveEl && _cTable.contains(_cActiveEl) && _cActiveEl.tagName === 'INPUT')) {
+                    renderConsumptionTable();
+                }
                 populateConsumptionMonthFilter();
                 renderConsumptionDashboard();
                 if (st) { st.innerText = 'LIVE: ' + new Date().toLocaleTimeString(); st.classList.remove('sync-active'); }
@@ -3940,9 +3982,8 @@
             }
 
             tbody.innerHTML = rows.map(i => {
-                const rawID    = i['__PowerAppsId__'] || i['Id'] || i['ID'];
-                const sid      = String(rawID).replace(/['"]/g,'');
                 const rowId    = getVal(i, ['Id','ID','id']);
+                const sid      = String(rowId).replace(/['"]/g,'') || String(i['__PowerAppsId__'] || '').replace(/['"]/g,'');
                 const received = convertExcelDate(getVal(i, ['Received Time m/d/yyyy','Received Time','ReceivedTime']));
                 const season   = getVal(i, ['Season']);
                 const style    = getVal(i, ['Style Number','StyleNumber']);
@@ -4008,8 +4049,8 @@
             const btn = document.getElementById('consumptionAddBtn');
             btn.innerText = 'Saving...'; btn.disabled = true;
             try {
-                // Note: if you have a separate Add flow URL, replace consumptionFetchURL here
-                const res = await fetch(consumptionFetchURL, {
+                // Use dedicated Add flow URL for new rows
+                const res = await fetch(consumptionAddURL, {
                     method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
                 });
                 if (res.ok) {
@@ -4037,10 +4078,14 @@
             const completeVal = document.getElementById(`con-complete-${sid}`)?.value.trim() || '';
             const remarkVal   = document.getElementById(`con-remark-${sid}`)?.value.trim() || '';
             // Preserve existing PIC; only stamp currentUser if blank
-            const existing = allConsumptionRows.find(r => String(r['__PowerAppsId__']||r['Id']||r['ID']) === String(sid));
+            const existing = allConsumptionRows.find(r => {
+                const rId = String(getVal(r, ['Id','ID','id']));
+                return rId === String(sid) || String(r['__PowerAppsId__']||'') === String(sid);
+            });
             const existingPic = existing ? getMAPic(existing) : '---';
             const picToSave = (!existingPic || existingPic === '---') ? currentUser : existingPic;
             const payload = {
+                id:           sid,
                 recordID:     sid,
                 startDate:    toExcelDateFormat(startVal),
                 completeDate: toExcelDateFormat(completeVal),
