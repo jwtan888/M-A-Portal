@@ -1210,10 +1210,23 @@
   async function hardRefreshFromLatestSeed(options = {}) {
     try {
       setFormBusy(true);
-      const latestSeed = await fetchLatestSeedData({ allowSeedFallback: false });
+      let latestSeed;
+      try {
+        latestSeed = await fetchLatestSeedData({ allowSeedFallback: false });
+      } catch (liveError) {
+        console.error("Live refresh returned no usable rows, falling back to seed data", liveError);
+        latestSeed = await fetchLatestSeedData({ allowSeedFallback: true });
+      }
       const mergedRecords = normalizeRecords(mergeRemoteWithPending(latestSeed.records || [], state.records));
-      if (!mergedRecords.length && state.records.length) {
-        throw new Error("Live Excel fetch returned an empty dataset.");
+      if (!mergedRecords.length) {
+        const fallbackRecords = normalizeRecords(seedData.records || []);
+        if (fallbackRecords.length) {
+          state.records = fallbackRecords;
+          persistRecords();
+          render();
+          return;
+        }
+        throw new Error("No usable records were returned from live or seed data.");
       }
       state.records = mergedRecords;
       persistRecords();
