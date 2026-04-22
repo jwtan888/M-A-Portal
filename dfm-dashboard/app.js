@@ -1,7 +1,9 @@
 (function () {
   const seedData = window.DFM_SEED_DATA || { records: [], warnings: [], defectCatalog: [] };
   const STORAGE_KEY = "dfm-dashboard-records";
+  const SYNC_META_KEY = "dfm-dashboard-sync-meta";
   const LEGACY_STORAGE_PREFIX = "dfm-dashboard-records-";
+  const PENDING_SYNC_TTL_MS = 10 * 60 * 1000;
   const FLOW_ENDPOINTS = {
     add: "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/d714eb96fab644dcbfd6c83f28d817b1/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=3MUeOaSxcE-uRBtPqIe2-_KlK8BZ96hU1e2tivu0HOQ",
     update:
@@ -46,6 +48,7 @@
 
   const state = {
     records: loadRecords(),
+    syncMeta: loadSyncMeta(),
     editingId: null,
     rotation: {
       seconds: 30,
@@ -79,6 +82,56 @@
 
   function persistRecords() {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state.records));
+  }
+
+  function loadSyncMeta() {
+    const raw = window.localStorage.getItem(SYNC_META_KEY);
+    if (!raw) {
+      return { pendingUpserts: {}, pendingDeletes: {} };
+    }
+    try {
+      const parsed = JSON.parse(raw);
+      return {
+        pendingUpserts: parsed.pendingUpserts || {},
+        pendingDeletes: parsed.pendingDeletes || {},
+      };
+    } catch (error) {
+      console.error("Failed to parse sync metadata", error);
+      return { pendingUpserts: {}, pendingDeletes: {} };
+    }
+  }
+
+  function pruneSyncMeta(now = Date.now()) {
+    ["pendingUpserts", "pendingDeletes"].forEach((bucket) => {
+      Object.keys(state.syncMeta[bucket] || {}).forEach((id) => {
+        if (now - Number(state.syncMeta[bucket][id] || 0) > PENDING_SYNC_TTL_MS) {
+          delete state.syncMeta[bucket][id];
+        }
+      });
+    });
+  }
+
+  function persistSyncMeta() {
+    pruneSyncMeta();
+    window.localStorage.setItem(SYNC_META_KEY, JSON.stringify(state.syncMeta));
+  }
+
+  function markPendingUpsert(recordId) {
+    if (!recordId) {
+      return;
+    }
+    state.syncMeta.pendingUpserts[recordId] = Date.now();
+    delete state.syncMeta.pendingDeletes[recordId];
+    persistSyncMeta();
+  }
+
+  function markPendingDelete(recordId) {
+    if (!recordId) {
+      return;
+    }
+    state.syncMeta.pendingDeletes[recordId] = Date.now();
+    delete state.syncMeta.pendingUpserts[recordId];
+    persistSyncMeta();
   }
 
   function loadLegacyStoredRecords() {
@@ -124,6 +177,32 @@
     return records
       .map((record, index) => normalizeRecord(record, index))
       .filter((record) => !isBlankRecord(record));
+  }
+
+  function mergeRemoteWithPending(remoteRecords, localRecords) {
+    pruneSyncMeta();
+    const remoteNormalized = normalizeRecords(remoteRecords || []);
+    const localNormalized = normalizeRecords(localRecords || []);
+    const remoteById = new Map(remoteNormalized.map((record) => [record.id, record]));
+    const localById = new Map(localNormalized.map((record) => [record.id, record]));
+
+    Object.keys(state.syncMeta.pendingUpserts || {}).forEach((id) => {
+      if (remoteById.has(id)) {
+        delete state.syncMeta.pendingUpserts[id];
+        return;
+      }
+      const localRecord = localById.get(id);
+      if (localRecord) {
+        remoteById.set(id, localRecord);
+      }
+    });
+
+    Object.keys(state.syncMeta.pendingDeletes || {}).forEach((id) => {
+      remoteById.delete(id);
+    });
+
+    persistSyncMeta();
+    return Array.from(remoteById.values());
   }
 
   function nextRowId() {
@@ -967,25 +1046,44 @@
 
   function normalizeRemoteRecord(row) {
     return {
-      rowId: valueFromRow(row, ["RowId", "rowId", "ROWID"]),
-      id: valueFromRow(row, ["RowId", "rowId", "ROWID"]),
-      no: valueFromRow(row, ["No.", "No", "NO", "no"]),
+      rowId: valueFromRow(row, ["RowId", "rowId", "ROWID", "ROWID", "Row_x0020_Id"]),
+      id: valueFromRow(row, ["RowId", "rowId", "ROWID", "ROWID", "Row_x0020_Id"]),
+      no: valueFromRow(row, ["No.", "No", "NO", "no", "No_x002e_"]),
       season: valueFromRow(row, ["SEASON", "season"]),
       category: valueFromRow(row, ["CATEGORY", "category"]),
-      protoStage: valueFromRow(row, ["PROTO STAGE", "PROTO\n STAGE", "protoStage"]),
+      protoStage: valueFromRow(
+        row,
+        ["PROTO STAGE", "PROTO\n STAGE", "protoStage", "PROTO_x0020_STAGE", "PROTO_x000a__x0020_STAGE"],
+      ),
       style: valueFromRow(row, ["STYLE", "style"]),
-      constructionCode: valueFromRow(row, ["CONSTRUCTION CODE", "CONSTRUCTION\n CODE", "constructionCode"]),
+      constructionCode: valueFromRow(
+        row,
+        ["CONSTRUCTION CODE", "CONSTRUCTION\n CODE", "constructionCode", "CONSTRUCTION_x0020_CODE"],
+      ),
       typeCode: valueFromRow(row, ["TYPE", "typeCode"]),
       modification: valueFromRow(
         row,
-        ["Construction Modification", "Construction \nModification", "constructionModification", "modification"],
+        [
+          "Construction Modification",
+          "Construction \nModification",
+          "constructionModification",
+          "modification",
+          "Construction_x0020_Modification",
+        ],
       ),
       remark: valueFromRow(row, ["REMARK", "remark"]),
-      fgQty: valueFromRow(row, ["FG Qty", "fgQty"]),
+      fgQty: valueFromRow(row, ["FG Qty", "fgQty", "FG_x0020_Qty"]),
     };
   }
 
   function extractRemoteRows(payload) {
+    if (typeof payload === "string") {
+      try {
+        return extractRemoteRows(JSON.parse(payload));
+      } catch (error) {
+        return [];
+      }
+    }
     if (Array.isArray(payload)) {
       return payload;
     }
@@ -1000,6 +1098,15 @@
     }
     if (payload && payload.body && Array.isArray(payload.body.rows)) {
       return payload.body.rows;
+    }
+    if (payload && payload.body && typeof payload.body === "string") {
+      return extractRemoteRows(payload.body);
+    }
+    if (payload && payload.data) {
+      return extractRemoteRows(payload.data);
+    }
+    if (payload && payload.result) {
+      return extractRemoteRows(payload.result);
     }
     return [];
   }
@@ -1019,6 +1126,7 @@
 
     state.records = normalizeRecords(nextRecords);
     persistRecords();
+    markPendingUpsert(enriched.id);
     closeDialog();
     render();
     window.setTimeout(() => {
@@ -1029,13 +1137,15 @@
   function applyDeletedRecord(recordId) {
     state.records = state.records.filter((item) => item.id !== recordId);
     persistRecords();
+    markPendingDelete(recordId);
     render();
     window.setTimeout(() => {
       refreshFromLatestSeed({ silent: true });
     }, 1500);
   }
 
-  async function fetchLatestSeedData() {
+  async function fetchLatestSeedData(options = {}) {
+    const allowSeedFallback = options.allowSeedFallback !== false;
     try {
       const remoteResponse = await window.fetch(FETCH_DFM_CHART_URL, {
         method: "POST",
@@ -1048,7 +1158,7 @@
       if (remoteResponse.ok) {
         const remotePayload = await remoteResponse.json().catch(() => null);
         const remoteRows = extractRemoteRows(remotePayload);
-        if (remoteRows.length) {
+        if (remoteRows.length || !allowSeedFallback) {
           return {
             meta: {
               sourceFile: "Power Automate Fetch DFM chart",
@@ -1060,6 +1170,10 @@
       }
     } catch (error) {
       console.error("Power Automate fetch failed, falling back to seed file", error);
+    }
+
+    if (!allowSeedFallback) {
+      throw new Error("Live Excel fetch returned no records.");
     }
 
     const response = await window.fetch(`./seed-data.js?t=${Date.now()}`, { cache: "no-store" });
@@ -1080,6 +1194,7 @@
     try {
       const latestSeed = await fetchLatestSeedData();
       state.records = normalizeRecords(reconcileStoredRecords(state.records, latestSeed.records || []));
+      state.records = normalizeRecords(mergeRemoteWithPending(state.records, state.records));
       persistRecords();
       if (options.render !== false) {
         render();
@@ -1094,8 +1209,8 @@
   async function hardRefreshFromLatestSeed(options = {}) {
     try {
       setFormBusy(true);
-      const latestSeed = await fetchLatestSeedData();
-      state.records = normalizeRecords(latestSeed.records || []);
+      const latestSeed = await fetchLatestSeedData({ allowSeedFallback: false });
+      state.records = normalizeRecords(mergeRemoteWithPending(latestSeed.records || [], state.records));
       persistRecords();
       render();
     } catch (error) {
@@ -1217,10 +1332,12 @@
       return;
     }
     window.localStorage.removeItem(STORAGE_KEY);
+    window.localStorage.removeItem(SYNC_META_KEY);
     Object.keys(window.localStorage)
       .filter((key) => key.startsWith(LEGACY_STORAGE_PREFIX))
       .forEach((key) => window.localStorage.removeItem(key));
     state.records = normalizeRecords(seedData.records || []);
+    state.syncMeta = { pendingUpserts: {}, pendingDeletes: {} };
     render();
   }
 
