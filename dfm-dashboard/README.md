@@ -30,7 +30,7 @@ Then open:
 
 Push this project to GitHub, then add this repository secret:
 
-- `ONEDRIVE_XLSX_URL`: direct download URL for `DFM 2026.xlsx` in OneDrive
+- `ONEDRIVE_DFMXLSX_URL`: direct download URL for `DFM 2026.xlsx` in OneDrive
 
 The included workflow listens for:
 
