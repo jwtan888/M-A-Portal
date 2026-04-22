@@ -126,7 +126,8 @@
     <div class="max-w-[1600px] mx-auto">
         <header class="mb-4 rounded-[var(--radius-lg)] border overflow-hidden" style="box-shadow:var(--shadow-md)">
             <!-- Top row: logo + title -->
-            <div class="flex items-center gap-4 px-5 pt-4 pb-3" style="background:rgba(255,255,255,0.92);backdrop-filter:blur(20px)">
+            <div class="flex items-center justify-between gap-4 px-5 pt-4 pb-3" style="background:rgba(255,255,255,0.92);backdrop-filter:blur(20px)">
+                <div class="flex items-center gap-4 min-w-0">
                 <div class="flex-shrink-0 flex items-center justify-center" style="height:38px;min-width:38px">
                     <img src="logo.png" alt="M&A Logo" id="headerLogo"
                         style="height:38px;width:auto;object-fit:contain;display:block"
@@ -139,6 +140,11 @@
                     <h1 class="text-xl md:text-2xl font-bold leading-tight truncate" style="color:var(--text-1);letter-spacing:-0.02em" id="mainTitle">M&A Portal</h1>
                     <p style="color:var(--text-3);font-size:9px;font-weight:700;letter-spacing:0.2em" class="uppercase mt-0.5">Modernization & Automation</p>
                 </div>
+                </div>
+                <a href="dfm-dashboard/index.html" target="_self"
+                   class="inline-flex items-center justify-center text-[10px] font-bold rounded-[10px] px-3 py-2 border transition-all whitespace-nowrap flex-shrink-0" style="color:#2563eb;border-color:rgba(37,99,235,0.28);background:rgba(37,99,235,0.06)">
+                    DFM Dashboard
+                </a>
             </div>
             <div id="userSessionArea" class="border-t px-5 py-3" style="background:var(--surface2);border-color:var(--border)">
                 <div id="loginView" class="flex items-center gap-2">
