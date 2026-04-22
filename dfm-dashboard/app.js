@@ -1158,13 +1158,14 @@
       if (remoteResponse.ok) {
         const remotePayload = await remoteResponse.json().catch(() => null);
         const remoteRows = extractRemoteRows(remotePayload);
-        if (remoteRows.length || !allowSeedFallback) {
+        const normalizedRemoteRecords = normalizeRecords(remoteRows.map(normalizeRemoteRecord));
+        if (normalizedRemoteRecords.length) {
           return {
             meta: {
               sourceFile: "Power Automate Fetch DFM chart",
-              recordCount: remoteRows.length,
+              recordCount: normalizedRemoteRecords.length,
             },
-            records: remoteRows.map(normalizeRemoteRecord),
+            records: normalizedRemoteRecords,
           };
         }
       }
@@ -1173,7 +1174,7 @@
     }
 
     if (!allowSeedFallback) {
-      throw new Error("Live Excel fetch returned no records.");
+      throw new Error("Live Excel fetch returned no usable records.");
     }
 
     const response = await window.fetch(`./seed-data.js?t=${Date.now()}`, { cache: "no-store" });
@@ -1210,7 +1211,11 @@
     try {
       setFormBusy(true);
       const latestSeed = await fetchLatestSeedData({ allowSeedFallback: false });
-      state.records = normalizeRecords(mergeRemoteWithPending(latestSeed.records || [], state.records));
+      const mergedRecords = normalizeRecords(mergeRemoteWithPending(latestSeed.records || [], state.records));
+      if (!mergedRecords.length && state.records.length) {
+        throw new Error("Live Excel fetch returned an empty dataset.");
+      }
+      state.records = mergedRecords;
       persistRecords();
       render();
     } catch (error) {
