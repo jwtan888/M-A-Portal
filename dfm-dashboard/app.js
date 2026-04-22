@@ -197,6 +197,8 @@
     const style = cleanText(record.style);
     const typeCode = cleanText(record.typeCode || record.constructionCode);
     const normalizedNo = normalizeExcelNo(record.no || record["No."] || record.id, record.sourceRow);
+    const normalizedRowId =
+      cleanText(record.rowId || record.RowId || record.id) || "manual-" + (Date.now() + index);
     const detail = defectMap.get(typeCode) || {};
     const defects = Array.isArray(record.defects)
       ? record.defects
@@ -209,7 +211,8 @@
         : sum(defects.map((defect) => defect.intensity || 0));
 
     return {
-      id: cleanText(record.id || normalizedNo) || "manual-" + (Date.now() + index),
+      id: normalizedRowId,
+      rowId: normalizedRowId,
       no: normalizedNo || "manual-" + (Date.now() + index),
       sourceRow: record.sourceRow || null,
       season,
@@ -885,10 +888,11 @@
   }
 
   function buildFlowPayload(record, action) {
-    const noValue = record.no || record.id;
-    const rowIdValue = cleanText(record.id || record.no);
+    const noValue = cleanText(record.no);
+    const rowIdValue = cleanText(record.rowId || record.id || record.no);
     return {
       "No.": cleanText(noValue),
+      RowId: rowIdValue,
       rowId: rowIdValue,
       id: rowIdValue,
       no: cleanText(noValue),
