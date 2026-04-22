@@ -4,6 +4,7 @@ import json
 import re
 import zipfile
 from collections import OrderedDict, defaultdict
+from datetime import datetime, timezone
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
@@ -226,6 +227,7 @@ def build_seed_data():
             "recordCount": len(records),
             "styleSeasonCount": len(style_fg_values),
             "generatedBy": "scripts/build_seed_data.py",
+            "generatedAt": datetime.now(timezone.utc).isoformat(),
         },
         "records": records,
         "defectCatalog": list(defect_catalog.values()),
