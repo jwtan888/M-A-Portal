@@ -385,7 +385,7 @@
           season: record.season,
           style: record.style,
           category: record.category,
-          fgQty: record.fgQty || 0,
+          fgQty: record.fgQty,
           constructionRows: 0,
           modifiedRows: 0,
           codes: new Set(),
@@ -395,7 +395,7 @@
       const style = styles.get(record.styleKey);
       style.constructionRows += 1;
       style.modifiedRows += record.modification === "M" ? 1 : 0;
-      if (style.fgQty === 0 && record.fgQty) {
+      if ((style.fgQty === null || style.fgQty === undefined) && record.fgQty !== null && record.fgQty !== undefined) {
         style.fgQty = record.fgQty;
       }
       if (record.category && !style.category) {
@@ -717,7 +717,7 @@
                 <div class="style-name">${escapeHtml(style.style)}</div>
                 <div class="style-meta">${escapeHtml(style.season)} · ${escapeHtml(style.category || "No category")}</div>
               </div>
-              <span class="tag">${escapeHtml(formatNumber(style.fgQty))} FG</span>
+              <span class="tag">${escapeHtml(style.fgQty === null || style.fgQty === undefined ? "Pending FG" : `${formatNumber(style.fgQty)} FG`)}</span>
             </div>
             <div class="style-stats">
               <div class="mini-stat">
@@ -779,7 +779,7 @@
             </div>
             <div class="record-meta">Construction Code: <strong>${escapeHtml(record.constructionCode || "-")}</strong></div>
             <div class="record-meta">Type Code: <strong>${escapeHtml(record.typeCode || "-")}</strong></div>
-            <div class="record-meta">FG Qty: <strong>${escapeHtml(formatNumber(record.fgQty))}</strong></div>
+            <div class="record-meta">FG Qty: <strong>${escapeHtml(record.fgQty === null || record.fgQty === undefined ? "Pending update" : formatNumber(record.fgQty))}</strong></div>
             <div class="record-meta">${escapeHtml(record.remark || "No remark")}</div>
             <div class="row-actions">
               <button class="row-btn" data-action="edit" data-id="${escapeHtml(record.id)}">Edit</button>
@@ -817,8 +817,6 @@
       protoStage: "",
       style: "",
       constructionCode: "",
-      typeCode: "",
-      modification: "",
       fgQty: "",
       remark: "",
     };
@@ -908,17 +906,20 @@
       return;
     }
     const formData = new FormData(elements.form);
+    const currentRecord = state.records.find((record) => record.id === state.editingId) || null;
+    const constructionCode = cleanText(formData.get("constructionCode"));
     const draft = normalizeRecord(
       {
         id: state.editingId || `manual-${Date.now()}`,
-        sourceRow: null,
+        no: currentRecord?.no || "",
+        sourceRow: currentRecord?.sourceRow || null,
         season: formData.get("season"),
         category: formData.get("category"),
         protoStage: formData.get("protoStage"),
         style: formData.get("style"),
-        constructionCode: formData.get("constructionCode"),
-        typeCode: formData.get("typeCode"),
-        modification: formData.get("modification"),
+        constructionCode,
+        typeCode: currentRecord?.typeCode || constructionCode,
+        modification: currentRecord?.modification || "",
         remark: formData.get("remark"),
         fgQty: formData.get("fgQty"),
       },

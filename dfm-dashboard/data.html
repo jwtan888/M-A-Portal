@@ -87,16 +87,14 @@
           <label>Proto Stage <input name="protoStage" /></label>
           <label>Style <input name="style" required /></label>
           <label>Construction Code <input name="constructionCode" required /></label>
-          <label>Type Code <input name="typeCode" required /></label>
+          <div class="auto-note">
+            <span class="auto-note-label">Excel automation</span>
+            <span class="auto-note-copy">Type Code and Construction Modification follow the workbook format automatically.</span>
+          </div>
           <label>
-            Modification
-            <select name="modification">
-              <option value="">Select</option>
-              <option value="M">M</option>
-              <option value="Non-M">Non-M</option>
-            </select>
+            FG Qty
+            <input name="fgQty" type="number" min="0" step="1" placeholder="Optional, update later" />
           </label>
-          <label>FG Qty <input name="fgQty" type="number" min="0" step="1" required /></label>
         </div>
 
         <label class="textarea-label">
@@ -105,7 +103,7 @@
         </label>
 
         <p class="form-note">
-          Saving a row updates FG for all rows that share the same season + style key.
+          FG Qty can be left blank and updated later. Saving a row updates FG for all rows that share the same season + style key.
         </p>
 
         <div class="dialog-actions">
