@@ -1,6 +1,9 @@
 (function () {
-  const STORAGE_KEY = "dfm-dashboard-records-v1";
   const seedData = window.DFM_SEED_DATA || { records: [], warnings: [], defectCatalog: [] };
+  const seedVersion =
+    seedData.meta?.generatedAt ||
+    `${seedData.meta?.recordCount || 0}-${seedData.meta?.styleSeasonCount || 0}`;
+  const STORAGE_KEY = `dfm-dashboard-records-${seedVersion}`;
   const defectMap = new Map((seedData.defectCatalog || []).map((item) => [item.code, item]));
   const page = document.body.dataset.page || "dashboard";
 
