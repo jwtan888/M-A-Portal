@@ -886,23 +886,24 @@
 
   function buildFlowPayload(record, action) {
     const noValue = record.no || record.id;
+    const rowIdValue = cleanText(record.id || record.no);
     return {
-      "No.": noValue,
-      rowId: record.id,
-      id: record.id,
-      no: noValue,
-      sourceRow: record.sourceRow,
-      season: record.season,
-      category: record.category,
-      protoStage: record.protoStage,
-      style: record.style,
-      constructionCode: record.constructionCode,
-      typeCode: record.typeCode,
-      modification: record.modification,
-      styleKey: record.styleKey,
-      remark: record.remark,
-      fgQty: record.fgQty,
-      fgAnchor: record.fgAnchor,
+      "No.": cleanText(noValue),
+      rowId: rowIdValue,
+      id: rowIdValue,
+      no: cleanText(noValue),
+      sourceRow: record.sourceRow ?? "",
+      season: cleanText(record.season),
+      category: cleanText(record.category),
+      protoStage: cleanText(record.protoStage),
+      style: cleanText(record.style),
+      constructionCode: cleanText(record.constructionCode),
+      typeCode: cleanText(record.typeCode),
+      modification: cleanText(record.modification),
+      styleKey: cleanText(record.styleKey),
+      remark: cleanText(record.remark),
+      fgQty: record.fgQty ?? "",
+      fgAnchor: record.fgAnchor ?? "",
       action,
     };
   }
@@ -1064,7 +1065,8 @@
 
     try {
       setFormBusy(true);
-      await callFlow("delete", buildFlowPayload(record, "delete"));
+      const deletePayload = buildFlowPayload(record, "delete");
+      await callFlow("delete", deletePayload);
       state.records = state.records.filter((item) => item.id !== recordId);
       persistRecords();
       render();
