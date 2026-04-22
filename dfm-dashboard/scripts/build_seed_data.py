@@ -91,20 +91,50 @@ def maybe_number(value):
     return round(number, 4)
 
 
+def pick_sheet_name(sheet_paths, preferred_names, fallback_index=None):
+    for name in preferred_names:
+        if name in sheet_paths:
+            return name
+    if fallback_index is not None and len(sheet_paths) > fallback_index:
+        return list(sheet_paths.keys())[fallback_index]
+    return None
+
+
 def build_seed_data():
     with zipfile.ZipFile(str(WORKBOOK_PATH)) as archive:
         shared_strings = read_shared_strings(archive)
         sheet_paths = workbook_sheet_paths(archive)
 
+        collection_sheet_name = pick_sheet_name(
+            sheet_paths,
+            ["Data Collection", "DataCollection", "Sheet1"],
+        )
+        if not collection_sheet_name:
+            raise KeyError(
+                "Could not find the main data sheet. Available sheets: {}".format(
+                    ", ".join(sheet_paths.keys())
+                )
+            )
+
+        metadata_sheet_name = pick_sheet_name(
+            sheet_paths,
+            ["Sheet2", "Occurency", "Occurrence", "Metadata"],
+            fallback_index=1,
+        )
+
         collection_rows = read_sheet_rows(
             archive,
             shared_strings,
-            sheet_paths["Data Collection"],
+            sheet_paths[collection_sheet_name],
         )
-        defect_rows = read_sheet_rows(
-            archive,
-            shared_strings,
-            sheet_paths["Sheet2"],
+        defect_rows = (
+            read_sheet_rows(
+                archive,
+                shared_strings,
+                sheet_paths[metadata_sheet_name],
+            )
+            if metadata_sheet_name
+            else []
         )
 
     defect_catalog = OrderedDict()
