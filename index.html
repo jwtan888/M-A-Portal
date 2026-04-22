@@ -4046,12 +4046,13 @@
             const st = document.getElementById('patchSyncStatus');
             if (!isSilent && st) { st.innerText = 'Syncing...'; st.classList.add('sync-active'); }
             try {
-                const _ctrl_p = new AbortController(); const _t_p = setTimeout(() => _ctrl_p.abort(), 25000);
+                const _ctrl_p = new AbortController(); const _t_p = setTimeout(() => _ctrl_p.abort(), 30000);
                 const r_p = await fetch(patchFetchURL + "&cb=" + Date.now(), { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({}), signal: _ctrl_p.signal }); clearTimeout(_t_p);
-                if (!r_p.ok) throw new Error(`HTTP ${r_p.status}`);
-                const rows = extractRows(await r_p.json());
-                allPatchRows = rows;
-                // Skip re-render if user is actively editing any input (table row OR add form)
+                const rawText_p = await r_p.text();
+                if (!r_p.ok) throw new Error(`HTTP ${r_p.status}: ${rawText_p.substring(0,200)}`);
+                let d_p; try { d_p = JSON.parse(rawText_p); } catch(pe) { throw new Error(`Bad JSON: ${rawText_p.substring(0,150)}`); }
+                let rows_p=[]; if(Array.isArray(d_p)) rows_p=d_p; else if(d_p?.value&&Array.isArray(d_p.value)) rows_p=d_p.value; else if(d_p?.body?.value&&Array.isArray(d_p.body.value)) rows_p=d_p.body.value; else if(d_p?.body&&Array.isArray(d_p.body)) rows_p=d_p.body; else{for(const k of Object.keys(d_p||{})){if(Array.isArray(d_p[k])&&d_p[k].length){rows_p=d_p[k];break;}}}
+                allPatchRows = rows_p;
                 const _pActiveEl = document.activeElement;
                 const _pContent = document.getElementById('content-patch');
                 if (!(_pContent && _pActiveEl && _pContent.contains(_pActiveEl) && (_pActiveEl.tagName === 'INPUT' || _pActiveEl.tagName === 'SELECT' || _pActiveEl.tagName === 'TEXTAREA'))) {
@@ -4059,11 +4060,12 @@
                 }
                 renderPatchDashboard();
                 populateTabMonthFilters();
-                if (st) { st.innerText = 'LIVE: ' + new Date().toLocaleTimeString(); st.classList.remove('sync-active'); }
+                if (st) { st.innerText = `LIVE: ${new Date().toLocaleTimeString()} (${rows_p.length} rows)`; st.classList.remove('sync-active'); }
             } catch(e) {
+                console.error('[Patch]', e.message);
                 const tbody = document.getElementById('patchTable');
-                if (tbody) tbody.innerHTML = `<tr><td colspan="22" class="p-6 text-center text-red-400 italic text-xs">Failed to load: ${e.message}</td></tr>`;
-                if (st) st.innerText = 'Error';
+                if (tbody) tbody.innerHTML = `<tr><td colspan="22" class="p-6 text-center text-red-400 italic text-xs">ERR: ${e.message}</td></tr>`;
+                if (st) { st.innerText = `ERR: ${e.message.substring(0,60)}`; st.classList.remove('sync-active'); }
             }
         }
 
@@ -4124,9 +4126,10 @@
 
             const isGavinP = currentUser === 'Gavin';
             tbody.innerHTML = rows.map(i => {
-                const rawID     = i['__PowerAppsId__'] || i['Id'] || i['ID'];
-                const sid       = String(rawID).replace(/['"]/g,'');
-                const noKey     = i['No_x002e_'] || i['No.'] || getVal(i,['No.','No']);
+                // Use No. (No_x002e_) as the row key — this is what PA's Key Column is set to
+                const noVal     = String(i['No_x002e_'] ?? i['No.'] ?? getVal(i,['No.','No']) ?? '').trim();
+                const sid       = noVal; // sid = No. value, used to match row for save
+                const rawPAId   = i['__PowerAppsId__'] || i['Id'] || i['ID'] || noVal;
                 const season    = getVal(i,['Season']);
                 const style     = getVal(i,['Style Number','StyleNumber']);
                 const category  = getVal(i,['Category']);
@@ -4154,8 +4157,8 @@
                 const canEdit   = !!currentUser && (isGavinP || !rowPic || rowPic === currentUser);
                 const picDisplay = (!pic||pic==='---') && canEdit ? currentUser : (pic||'---');
 
-                return `<tr class="border-b hover:bg-slate-50 ${isDone?'bg-emerald-50/30':''} ${!canEdit&&!!currentUser?'opacity-60':''}">
-                    <td class="p-3 font-mono text-slate-500 text-[10px]">${noKey}</td>
+                return `<tr class="border-b hover:bg-slate-50 ${isDone?'bg-emerald-50/30':''}  ${!canEdit&&!!currentUser?'opacity-60':''}">
+                    <td class="p-3 font-mono text-slate-500 text-[10px]">${noVal}</td>
                     <td class="p-3">${isGavinP ? `<input id="patch-season-${sid}" class="manual-input" style="width:70px" value="${season!=='---'?season:''}" placeholder="Season">` : `<span class="text-[10px]">${season}</span>`}</td>
                     <td class="p-3 font-bold">${isGavinP ? `<input id="patch-style-${sid}" class="manual-input" style="width:90px" value="${style!=='---'?style:''}" placeholder="Style No.">` : `<span class="text-slate-800">${style}</span>`}</td>
                     <td class="p-3">${isGavinP ? `<input id="patch-category-${sid}" class="manual-input" style="width:80px" value="${category!=='---'?category:''}" placeholder="Category">` : `<span class="text-[10px]">${category}</span>`}</td>
@@ -4184,91 +4187,92 @@
 
         async function savePatchRow(sid, event) {
             if (!currentUser) return alert('Please login first.');
-            const btn = event.target; btn.innerText = 'SAVING...'; btn.disabled = true;
+            const btn = event.target;
+            btn.innerText = 'SAVING...'; btn.disabled = true;
 
-            const existingRow = allPatchRows.find(r => String(r['__PowerAppsId__']||r['Id']||r['ID']) === String(sid));
-            if (!existingRow) { btn.innerText = 'ERROR'; btn.disabled = false; alert('Row not found — try refreshing.'); return; }
+            // Find the row by No. value (same column PA uses as Key Column)
+            const existingRow = allPatchRows.find(r => {
+                const rNo = String(r['No_x002e_'] ?? r['No.'] ?? getVal(r,['No.','No']) ?? '').trim();
+                return rNo === String(sid).trim();
+            });
 
-            // Key field: PA encodes "No." as "No_x002e_" in JSON responses — check both
-            const noKey = String(
-                existingRow['No_x002e_'] ||
-                existingRow['No.'] ||
-                existingRow['No'] ||
-                getVal(existingRow, ['No.','No','NUMBER','No_x002e_']) ||
-                ''
-            ).trim();
-            if (!noKey) { btn.innerText = 'ERROR'; btn.disabled = false; alert('Could not find row key (No.) — try refreshing.'); return; }
+            if (!existingRow) {
+                btn.innerText = 'ERROR'; btn.disabled = false;
+                alert(`Row with No.="${sid}" not found in local data — try refreshing.`);
+                return;
+            }
 
-            // Read input value — returns null if element doesn't exist (field not editable for this user)
-            const inp = id => { const el = document.getElementById(id); return el ? el.value.trim() : null; };
+            // Helper: read input by id, null if not in DOM
+            const g = id => { const el = document.getElementById(`${id}-${sid}`); return el ? el.value.trim() : null; };
 
-            // Collect only fields where an input EXISTS and value differs from stored value
-            const payload = { 'No.': noKey };
-
-            const addIfChanged = (inputId, excelColName, existingKeys) => {
-                const inputVal = inp(inputId);
-                if (inputVal === null) return; // field not rendered for this user, skip
-                const existingRaw = getVal(existingRow, existingKeys);
-                const existingClean = (existingRaw && existingRaw !== '---') ? existingRaw.toString().trim() : '';
-                // Always include if user has the input (even unchanged) so PA updates correctly
-                payload[excelColName] = inputVal;
+            // Build payload with exact keys matching PA trigger body (triggerBody()?['key'])
+            // Key field sent as 'No.' — PA uses idColumn: No_x002e_ and id: triggerBody()?['No.']
+            const payload = {
+                'No.':                 sid,
+                'Season':              g('patch-season')              ?? getVal(existingRow,['Season']),
+                'Style Number':        g('patch-style')               ?? getVal(existingRow,['Style Number','StyleNumber']),
+                'Category':            g('patch-category')            ?? getVal(existingRow,['Category']),
+                'Job Number':          g('patch-jobno')               ?? getVal(existingRow,['Job Number','JobNo']),
+                'BDD PIC':             g('patch-bddpic')              ?? getVal(existingRow,['BDD PIC','BDDPIC']),
+                'Patch Item':          g('patch-patchitem')           ?? getVal(existingRow,['Patch Item','PatchItem']),
+                'Patch Description':   g('patch-patchdesc')           ?? getVal(existingRow,['Patch Description','PatchDescription']),
+                'Fabric Item':         g('patch-fabitem')             ?? getVal(existingRow,['Fabric Item','FabricItem']),
+                'Fabric Description':  g('patch-fabdesc')             ?? getVal(existingRow,['Fabric Description','FabricDescription']),
+                'Thread Type':         g('patch-threadtype')          ?? getVal(existingRow,['Thread Type','ThreadType']),
+                'Thread Color':        g('patch-threadcolor')         ?? getVal(existingRow,['Thread Color','ThreadColor']),
+                'Type Of Sample':      g('patch-sampletype')         ?? getVal(existingRow,['Type Of Sample','TypeOfSample']),
+                'Quantity':            g('patch-qty')                 ?? getVal(existingRow,['Quantity','Qty']),
+                'Patch & Fabric Receive Date & Time m/d/yyyy':
+                                       g('patch-received')            ?? convertExcelDate(getVal(existingRow,['Patch & Fabric Receive Date & Time m/d/yyyy','Patch & Fabric Receive Date'])),
+                'Template No.':        g('patch-tmplno')              ?? getVal(existingRow,['Template No.','TemplateNo','Template No']),
+                'Machine No.':         g('patch-machine')             ?? getVal(existingRow,['Machine No.','Machine No','MachineNo','Machine']),
+                'Start Date m/d/yyyy': g('patch-startdate')           ?? convertExcelDate(getVal(existingRow,['Start Date m/d/yyyy','Start Date','StartDate'])),
+                'Complete Date m/d/yyyy':
+                                       g('patch-complete')            ?? convertExcelDate(getVal(existingRow,['Complete Date m/d/yyyy','Complete Date','CompleteDate'])),
+                'M&A PIC':             (() => { const p = getMAPic(existingRow); return (!p||p==='---') ? currentUser : p; })(),
+                'Remark':              g('patch-remark')              ?? getVal(existingRow,['Remark','Remarks'])
             };
 
-            // Gavin-only fields
-            addIfChanged(`patch-season-${sid}`,      'Season',            ['Season']);
-            addIfChanged(`patch-style-${sid}`,       'Style Number',      ['Style Number','StyleNumber']);
-            addIfChanged(`patch-category-${sid}`,    'Category',          ['Category']);
-            addIfChanged(`patch-jobno-${sid}`,       'Job Number',        ['Job Number','JobNo','Job No']);
-            addIfChanged(`patch-bddpic-${sid}`,      'BDD PIC',           ['BDD PIC','BDDPIC','BDD']);
-            addIfChanged(`patch-patchitem-${sid}`,   'Patch Item',        ['Patch Item','PatchItem']);
-            addIfChanged(`patch-patchdesc-${sid}`,   'Patch Description', ['Patch Description','PatchDescription']);
-            addIfChanged(`patch-fabitem-${sid}`,     'Fabric Item',       ['Fabric Item','FabricItem']);
-            addIfChanged(`patch-fabdesc-${sid}`,     'Fabric Description',['Fabric Description','FabricDescription']);
-            addIfChanged(`patch-threadtype-${sid}`,  'Thread Type',       ['Thread Type','ThreadType']);
-            addIfChanged(`patch-threadcolor-${sid}`, 'Thread Color',      ['Thread Color','ThreadColor']);
-            addIfChanged(`patch-sampletype-${sid}`,  'Type Of Sample',    ['Type Of Sample','TypeOfSample']);
-            addIfChanged(`patch-qty-${sid}`,         'Quantity',          ['Quantity','Qty']);
-            // Editable by all PIC
-            addIfChanged(`patch-received-${sid}`,    'Patch & Fabric Receive Date & Time m/d/yyyy', ['Patch & Fabric Receive Date & Time m/d/yyyy','Patch & Fabric Receive Date']);
-            addIfChanged(`patch-tmplno-${sid}`,      'Template No.',      ['Template No.','TemplateNo','Template No']);
-            addIfChanged(`patch-machine-${sid}`,     'Machine No.',       ['Machine No.','Machine No','MachineNo','Machine']);
-            addIfChanged(`patch-startdate-${sid}`,   'Start Date m/d/yyyy',    ['Start Date m/d/yyyy','Start Date','StartDate']);
-            addIfChanged(`patch-complete-${sid}`,    'Complete Date m/d/yyyy', ['Complete Date m/d/yyyy','Complete Date','CompleteDate']);
-            addIfChanged(`patch-remark-${sid}`,      'Remark',            ['Remark','Remarks']);
+            // Strip '---' placeholders — send empty string instead
+            Object.keys(payload).forEach(k => {
+                if (payload[k] === '---' || payload[k] === null || payload[k] === undefined) payload[k] = '';
+            });
 
-            // Always include M&A PIC
-            const existingPic = getMAPic(existingRow);
-            payload['M&A PIC'] = (!existingPic || existingPic === '---') ? currentUser : existingPic;
-
-            console.log('[PatchSave] Sending to PA:', JSON.stringify(payload, null, 2));
+            console.log('[PatchSave] Payload:', JSON.stringify(payload, null, 2));
 
             try {
                 const ctrl = new AbortController();
-                const t = setTimeout(() => ctrl.abort(), 25000);
+                const t = setTimeout(() => ctrl.abort(), 30000);
                 const res = await fetch(patchUpdateURL, {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload),
                     signal: ctrl.signal
                 });
                 clearTimeout(t);
+
                 if (res.ok) {
+                    // Update local cache with saved values
+                    Object.entries(payload).forEach(([k, v]) => { existingRow[k] = v; });
+
                     btn.innerText = 'SAVED ✓';
-                    // Immediately patch local cache with what was saved
-                    Object.keys(payload).forEach(k => { if (k !== 'No.') existingRow[k] = payload[k]; });
-                    renderPatchTable();
-                    setTimeout(() => {
-                        refreshPatchData(true);
-                        btn.innerText = 'SAVE'; btn.disabled = false;
-                    }, 3000);
+                    btn.style.background = '#10b981';
+
+                    // Re-render after short delay (shows success state first)
+                    setTimeout(() => { renderPatchTable(); }, 1500);
+
+                    // Background refresh after PA has written to Excel (~12s)
+                    setTimeout(() => { refreshPatchData(true); btn.style.background = ''; }, 12000);
+
                 } else {
-                    const txt = await res.text();
+                    const txt = await res.text().catch(()=>'');
                     btn.innerText = 'ERROR'; btn.disabled = false;
-                    alert(`Save failed HTTP ${res.status}: ${txt.substring(0,300)}`);
+                    console.error('[PatchSave] HTTP', res.status, txt);
+                    alert(`Save failed (HTTP ${res.status}):\n${txt.substring(0,400)}`);
                 }
             } catch(e) {
                 btn.innerText = 'ERROR'; btn.disabled = false;
-                alert(e.name === 'AbortError' ? 'Timed out — check PA flow.' : e.message);
+                alert(e.name === 'AbortError' ? 'Timed out (30s) — check Power Automate flow.' : `Network error: ${e.message}`);
             }
         }
 
