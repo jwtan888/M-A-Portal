@@ -886,21 +886,24 @@
 
   function buildFlowPayload(record, action) {
     const noValue = record.no || record.id;
-    if (action === "delete") {
-      return {
-        "No.": noValue,
-      };
-    }
-
     return {
       "No.": noValue,
+      rowId: record.id,
+      id: record.id,
+      no: noValue,
+      sourceRow: record.sourceRow,
       season: record.season,
       category: record.category,
       protoStage: record.protoStage,
       style: record.style,
       constructionCode: record.constructionCode,
+      typeCode: record.typeCode,
+      modification: record.modification,
+      styleKey: record.styleKey,
       remark: record.remark,
       fgQty: record.fgQty,
+      fgAnchor: record.fgAnchor,
+      action,
     };
   }
 
