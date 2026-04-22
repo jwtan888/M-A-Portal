@@ -101,6 +101,27 @@ def pick_sheet_name(sheet_paths, preferred_names, fallback_index=None):
     return None
 
 
+def normalize_header(value):
+    return re.sub(r"[^a-z0-9]", "", clean_text(value).lower())
+
+
+def build_header_map(header_row):
+    mapping = {}
+    for column, value in header_row.items():
+        normalized = normalize_header(value)
+        if normalized:
+            mapping[normalized] = column
+    return mapping
+
+
+def first_present_value(row, *values):
+    for value in values:
+        text = clean_text(value)
+        if text:
+            return text
+    return ""
+
+
 def build_seed_data():
     with zipfile.ZipFile(str(WORKBOOK_PATH)) as archive:
         shared_strings = read_shared_strings(archive)
@@ -138,6 +159,13 @@ def build_seed_data():
             else []
         )
 
+    collection_header_map = build_header_map(collection_rows[0] if collection_rows else {})
+    row_id_column = (
+        collection_header_map.get("rowid")
+        or collection_header_map.get("rowkey")
+        or collection_header_map.get("recordid")
+    )
+
     defect_catalog = OrderedDict()
     for row in defect_rows[1:]:
         code = clean_text(row.get("D", ""))
@@ -167,6 +195,11 @@ def build_seed_data():
     records = []
     for index, row in enumerate(collection_rows[1:], start=2):
         excel_no = clean_text(row.get("A", "")) or str(index - 1)
+        row_id = first_present_value(
+            row.get(row_id_column, "") if row_id_column else "",
+            row.get("M", ""),
+            excel_no,
+        )
         season = clean_text(row.get("B", ""))
         style = clean_text(row.get("E", ""))
         style_key = "{}__{}".format(season, style)
@@ -184,7 +217,8 @@ def build_seed_data():
 
         records.append(
             {
-                "id": excel_no,
+                "id": row_id,
+                "rowId": row_id,
                 "no": excel_no,
                 "sourceRow": index,
                 "season": season,
