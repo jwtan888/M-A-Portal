@@ -4,6 +4,13 @@
     seedData.meta?.generatedAt ||
     `${seedData.meta?.recordCount || 0}-${seedData.meta?.styleSeasonCount || 0}`;
   const STORAGE_KEY = `dfm-dashboard-records-${seedVersion}`;
+  const FLOW_ENDPOINTS = {
+    add: "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/d714eb96fab644dcbfd6c83f28d817b1/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=3MUeOaSxcE-uRBtPqIe2-_KlK8BZ96hU1e2tivu0HOQ",
+    update:
+      "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/bf99bd66b5064455a0fef384e50953e2/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=1TzaVpi7HoqovWJL1iKsVlkk2QoX0x6pYuwNWUtMKwA",
+    delete:
+      "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/52a76b61c7e84e09a8df6eee0ad2a029/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=QslAg0t1-QLN3UvBy_7jBzUaY7YxcfADrJIjm15i-rw",
+  };
   const defectMap = new Map((seedData.defectCatalog || []).map((item) => [item.code, item]));
   const page = document.body.dataset.page || "dashboard";
 
@@ -43,6 +50,7 @@
       timerId: null,
       tick: 0,
     },
+    isSaving: false,
     filters: {
       search: "",
       season: "all",
@@ -68,6 +76,27 @@
 
   function persistRecords() {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state.records));
+  }
+
+  function setFormBusy(isBusy) {
+    state.isSaving = isBusy;
+    if (elements.addRecordBtn) {
+      elements.addRecordBtn.disabled = isBusy;
+    }
+    if (elements.resetDataBtn) {
+      elements.resetDataBtn.disabled = isBusy;
+    }
+    if (elements.closeDialogBtn) {
+      elements.closeDialogBtn.disabled = isBusy;
+    }
+    if (elements.cancelDialogBtn) {
+      elements.cancelDialogBtn.disabled = isBusy;
+    }
+    if (elements.form) {
+      Array.from(elements.form.elements).forEach((field) => {
+        field.disabled = isBusy;
+      });
+    }
   }
 
   function normalizeRecords(records) {
@@ -740,11 +769,55 @@
     };
   }
 
-  function saveRecord(event) {
+  function buildFlowPayload(record) {
+    return {
+      rowId: record.id,
+      id: record.id,
+      sourceRow: record.sourceRow,
+      season: record.season,
+      category: record.category,
+      protoStage: record.protoStage,
+      style: record.style,
+      styleKey: record.styleKey,
+      constructionCode: record.constructionCode,
+      typeCode: record.typeCode,
+      modification: record.modification,
+      remark: record.remark,
+      fgQty: record.fgQty,
+      fgAnchor: record.fgAnchor,
+    };
+  }
+
+  async function callFlow(action, payload) {
+    const url = FLOW_ENDPOINTS[action];
+    if (!url) {
+      throw new Error(`Missing Power Automate URL for ${action}.`);
+    }
+
+    const response = await window.fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const text = await response.text().catch(() => "");
+      throw new Error(text || `Power Automate ${action} failed with ${response.status}.`);
+    }
+
+    return response;
+  }
+
+  async function saveRecord(event) {
     if (!elements.form) {
       return;
     }
     event.preventDefault();
+    if (state.isSaving) {
+      return;
+    }
     const formData = new FormData(elements.form);
     const draft = normalizeRecord(
       {
@@ -766,37 +839,61 @@
     const enriched = enrichRecordFromCatalog(draft);
     const nextRecords = state.records.slice();
     const recordIndex = nextRecords.findIndex((record) => record.id === enriched.id);
+    const flowAction = recordIndex >= 0 ? "update" : "add";
 
-    if (recordIndex >= 0) {
-      nextRecords[recordIndex] = enriched;
-    } else {
-      nextRecords.unshift(enriched);
-    }
+    try {
+      setFormBusy(true);
+      await callFlow(flowAction, buildFlowPayload(enriched));
 
-    nextRecords.forEach((record) => {
-      if (record.styleKey === enriched.styleKey) {
-        record.fgQty = enriched.fgQty;
+      if (recordIndex >= 0) {
+        nextRecords[recordIndex] = enriched;
+      } else {
+        nextRecords.unshift(enriched);
       }
-    });
 
-    state.records = normalizeRecords(nextRecords);
-    persistRecords();
-    closeDialog();
-    render();
+      nextRecords.forEach((record) => {
+        if (record.styleKey === enriched.styleKey) {
+          record.fgQty = enriched.fgQty;
+        }
+      });
+
+      state.records = normalizeRecords(nextRecords);
+      persistRecords();
+      closeDialog();
+      render();
+    } catch (error) {
+      console.error(error);
+      window.alert(`Unable to save record to OneDrive Excel.\n${error.message}`);
+    } finally {
+      setFormBusy(false);
+    }
   }
 
-  function deleteRecord(recordId) {
+  async function deleteRecord(recordId) {
     const record = state.records.find((item) => item.id === recordId);
     if (!record) {
+      return;
+    }
+    if (state.isSaving) {
       return;
     }
     const confirmed = window.confirm(`Delete ${record.season} / ${record.style} / ${record.constructionCode}?`);
     if (!confirmed) {
       return;
     }
-    state.records = state.records.filter((item) => item.id !== recordId);
-    persistRecords();
-    render();
+
+    try {
+      setFormBusy(true);
+      await callFlow("delete", buildFlowPayload(record));
+      state.records = state.records.filter((item) => item.id !== recordId);
+      persistRecords();
+      render();
+    } catch (error) {
+      console.error(error);
+      window.alert(`Unable to delete record from OneDrive Excel.\n${error.message}`);
+    } finally {
+      setFormBusy(false);
+    }
   }
 
   function resetData() {
