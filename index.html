@@ -134,11 +134,27 @@
             width: 100%;
             overflow-x: auto;
         }
-        .portal-mouse-scroll {
-            cursor: grab;
+        .portal-scroll-controls {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
         }
-        .portal-mouse-scroll:active {
-            cursor: grabbing;
+        .portal-scroll-btn {
+            border: 1px solid var(--border2);
+            background: rgba(255,255,255,0.92);
+            color: var(--text-2);
+            border-radius: 999px;
+            padding: 0.35rem 0.7rem;
+            font-size: 11px;
+            font-weight: 700;
+            line-height: 1;
+            transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+        }
+        .portal-scroll-btn:hover {
+            background: rgba(0,113,227,0.08);
+            color: var(--accent);
+            border-color: rgba(0,113,227,0.2);
         }
         .portal-wide-table {
             width: 100%;
@@ -5036,24 +5052,27 @@
             return [];
         }
 
-        function enableMouseHorizontalScroll() {
+        function enableTableScrollControls() {
             const wrappers = Array.from(document.querySelectorAll('div.overflow-x-auto, .portal-table-shell'))
                 .filter((el, index, arr) => arr.indexOf(el) === index)
                 .filter(el => el.querySelector('table'));
 
             wrappers.forEach(el => {
-                if (el.dataset.mouseScrollBound === '1') return;
-                el.dataset.mouseScrollBound = '1';
-                el.classList.add('portal-mouse-scroll');
-                el.addEventListener('wheel', (event) => {
-                    if (el.scrollWidth <= el.clientWidth) return;
-                    const mostlyVertical = Math.abs(event.deltaY) >= Math.abs(event.deltaX);
-                    if (!mostlyVertical && !event.shiftKey) return;
-                    const delta = mostlyVertical ? event.deltaY : event.deltaX;
-                    if (!delta) return;
-                    event.preventDefault();
-                    el.scrollLeft += delta;
-                }, { passive: false });
+                if (el.dataset.scrollControlsBound === '1') return;
+                el.dataset.scrollControlsBound = '1';
+                const controls = document.createElement('div');
+                controls.className = 'portal-scroll-controls';
+                controls.innerHTML = `
+                    <button type="button" class="portal-scroll-btn" data-dir="left">← Scroll</button>
+                    <button type="button" class="portal-scroll-btn" data-dir="right">Scroll →</button>
+                `;
+                controls.querySelectorAll('.portal-scroll-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const dir = btn.dataset.dir === 'left' ? -1 : 1;
+                        el.scrollBy({ left: dir * Math.max(320, Math.round(el.clientWidth * 0.6)), behavior: 'smooth' });
+                    });
+                });
+                el.parentNode.insertBefore(controls, el);
             });
         }
 
@@ -5100,9 +5119,9 @@
             setInterval(() => refreshConsumptionData(true),  72000);
             setInterval(() => refreshDownData(true),     75000);
             setInterval(() => refreshLiveLogs(true),     78000);
-            enableMouseHorizontalScroll();
-            setTimeout(enableMouseHorizontalScroll, 1500);
-            setTimeout(enableMouseHorizontalScroll, 5000);
+            enableTableScrollControls();
+            setTimeout(enableTableScrollControls, 1500);
+            setTimeout(enableTableScrollControls, 5000);
         };
     </script>
 </body>
