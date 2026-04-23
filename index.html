@@ -134,6 +134,12 @@
             width: 100%;
             overflow-x: auto;
         }
+        .portal-mouse-scroll {
+            cursor: grab;
+        }
+        .portal-mouse-scroll:active {
+            cursor: grabbing;
+        }
         .portal-wide-table {
             width: 100%;
             min-width: 1400px;
@@ -197,10 +203,16 @@
                     <p style="color:var(--text-3);font-size:9px;font-weight:700;letter-spacing:0.2em" class="uppercase mt-0.5">Modernization & Automation</p>
                 </div>
                 </div>
-                <a href="dfm-dashboard/index.html" target="_self"
-                   class="inline-flex items-center justify-center text-[10px] font-bold rounded-[10px] px-3 py-2 border transition-all whitespace-nowrap flex-shrink-0" style="color:#2563eb;border-color:rgba(37,99,235,0.28);background:rgba(37,99,235,0.06)">
-                    DFM Dashboard
-                </a>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    <a href="MASkills.html" target="_self"
+                       class="inline-flex items-center justify-center text-[10px] font-bold rounded-[10px] px-3 py-2 border transition-all whitespace-nowrap" style="color:#6366f1;border-color:rgba(99,102,241,0.3);background:rgba(99,102,241,0.06)">
+                        Skills
+                    </a>
+                    <a href="dfm-dashboard/index.html" target="_self"
+                       class="inline-flex items-center justify-center text-[10px] font-bold rounded-[10px] px-3 py-2 border transition-all whitespace-nowrap" style="color:#2563eb;border-color:rgba(37,99,235,0.28);background:rgba(37,99,235,0.06)">
+                        DFM Dashboard
+                    </a>
+                </div>
             </div>
             <div id="userSessionArea" class="border-t px-5 py-3" style="background:var(--surface2);border-color:var(--border)">
                 <div id="loginView" class="flex items-center gap-2">
@@ -216,10 +228,6 @@
                     <a id="att-link" href="#attendance" onclick="setTimeout(openAttendance,50)"
                            class="hidden items-center gap-1 text-[10px] font-bold hover:underline rounded-full px-2.5 py-1 border transition-all" style="color:var(--text-2);border-color:var(--border2)">
                             📋 Attendance
-                        </a>
-                        <a href="MASkills.html" target="_self"
-                           class="flex items-center gap-1 text-[10px] font-bold rounded-full px-2.5 py-1 border transition-all" style="color:#6366f1;border-color:rgba(99,102,241,0.3)">
-                            ⚡ Skills
                         </a>
                     <button onclick="logout()" class="text-xs font-bold px-3 py-2 rounded-[10px] border transition-all" style="color:#ef4444;border-color:rgba(239,68,68,0.25)">Logout</button>
                 </div>
@@ -1731,28 +1739,75 @@
             return `${now.getMonth()+1}/${now.getDate()}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
         }
 
+        function normalizeTimePart(timePart) {
+            if (!timePart) return '';
+            const clean = String(timePart).trim();
+            if (!clean) return '';
+            const match = clean.match(/^(\d{1,2})(?::(\d{1,2}))?(?::(\d{1,2}))?\s*([AaPp][Mm])?$/);
+            if (!match) return clean;
+            let hours = parseInt(match[1], 10);
+            const minutes = String(parseInt(match[2] || '0', 10)).padStart(2, '0');
+            const meridiem = match[4] ? match[4].toUpperCase() : '';
+            if (meridiem === 'PM' && hours < 12) hours += 12;
+            if (meridiem === 'AM' && hours === 12) hours = 0;
+            return `${String(hours).padStart(2, '0')}:${minutes}`;
+        }
+
         // Convert any date string to M/D/YYYY HH:MM for Excel.
         // Handles both DD/MM/YYYY and M/D/YYYY input from users.
         // Rule: if day part > 12 it must be DD/MM — swap it. Otherwise assume M/D already.
         function toExcelDateFormat(str) {
             if (!str || !str.trim()) return '';
-            const s = str.trim();
-            // Split date and time parts
-            const [datePart, timePart] = s.split(' ');
+            const s = str
+                .trim()
+                .replace(/\s*([\/.-])\s*/g, '$1')
+                .replace(/\s+/g, ' ')
+                .replace(/(\d)([AaPp][Mm])$/, '$1 $2');
+            const match = s.match(/^(.+?)(?:\s+(\d{1,2}(?::\d{1,2})?(?::\d{1,2})?\s*(?:[AaPp][Mm])?))?$/);
+            const datePart = match ? match[1].trim() : s;
+            const timePart = match ? normalizeTimePart(match[2]) : '';
             if (!datePart) return s;
-            const parts = datePart.split('/');
-            if (parts.length !== 3) return s; // unknown format, pass through
-            let [a, b, y] = parts;
-            a = parseInt(a); b = parseInt(b);
-            let month, day;
-            // If first number > 12 it cannot be a month — must be DD/MM/YYYY
-            if (a > 12) { day = a; month = b; }
-            // If second number > 12 it cannot be a month — must be M/DD/YYYY already
-            else if (b > 12) { month = a; day = b; }
-            // Both <= 12: ambiguous — trust user typed M/D/YYYY as instructed
-            else { month = a; day = b; }
-            const time = timePart ? ` ${timePart}` : '';
-            return `${month}/${day}/${y}${time}`;
+
+            const normalizedDate = datePart.replace(/[.\-]/g, '/');
+            const isoMatch = normalizedDate.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+            let month, day, year;
+
+            if (isoMatch) {
+                year = parseInt(isoMatch[1], 10);
+                month = parseInt(isoMatch[2], 10);
+                day = parseInt(isoMatch[3], 10);
+            } else {
+                const parts = normalizedDate.split('/').map(p => p.trim()).filter(Boolean);
+                if (parts.length !== 3) return s;
+                let [a, b, y] = parts;
+                let first = parseInt(a, 10);
+                let second = parseInt(b, 10);
+                year = parseInt(y, 10);
+                if (!Number.isFinite(first) || !Number.isFinite(second) || !Number.isFinite(year)) return s;
+                if (String(y).length === 2) year += 2000;
+                if (first > 12) {
+                    day = first;
+                    month = second;
+                } else if (second > 12) {
+                    month = first;
+                    day = second;
+                } else {
+                    month = first;
+                    day = second;
+                }
+            }
+
+            if (!month || !day || !year) {
+                const fallback = new Date(s);
+                if (!Number.isNaN(fallback.getTime())) {
+                    const normalized = `${fallback.getMonth() + 1}/${fallback.getDate()}/${fallback.getFullYear()}`;
+                    const fallbackTime = `${String(fallback.getHours()).padStart(2, '0')}:${String(fallback.getMinutes()).padStart(2, '0')}`;
+                    return fallbackTime === '00:00' ? normalized : `${normalized} ${fallbackTime}`;
+                }
+                return s;
+            }
+            const normalized = `${month}/${day}/${year}`;
+            return timePart ? `${normalized} ${timePart}` : normalized;
         }
 
         function formatExcelPayload(dateStr) {
@@ -2740,6 +2795,8 @@
                 consEnd:        toExcelDateFormat(g('consEnd')),
                 consumptionPic: g('consPic'),
                 consumptionCompleteStatus: document.getElementById(`le-consStatus-${rid}`)?.value || '',
+                'consumption complete status': document.getElementById(`le-consStatus-${rid}`)?.value || '',
+                'Consumption Complete Status': document.getElementById(`le-consStatus-${rid}`)?.value || '',
                 remark:         g('remark')
             };
             try {
@@ -2904,9 +2961,15 @@
 
         function preserveDateValue(value, fallback) {
             const text = sanitizeTemplateValue(value);
-            if (text) return formatExcelPayload(text);
+            if (text) return toExcelDateFormat(text);
             const safeFallback = sanitizeTemplateValue(fallback);
-            return safeFallback ? formatExcelPayload(safeFallback) : '';
+            return safeFallback ? toExcelDateFormat(safeFallback) : '';
+        }
+
+        function toExcelDateOnlyFormat(value) {
+            const normalized = preserveDateValue(value, '');
+            if (!normalized) return '';
+            return String(normalized).split(' ')[0];
         }
 
         function assignIfPresent(target, entries) {
@@ -3027,7 +3090,7 @@
             const tDateRaw = document.getElementById(`date-${simpleId}`)?.value || "";
             const tRem = document.getElementById(`remark-${simpleId}`)?.value.trim() || "";
             const isAdminUser = currentUser === 'Gavin';
-            const tDateExcel = preserveDateValue(tDateRaw, record.completeDateDisplay);
+            const tDateExcel = toExcelDateOnlyFormat(tDateRaw);
 
             let tPic = "";
             if (picDropdown) {
@@ -3051,8 +3114,10 @@
             const tDFM         = preserveTextValue(document.getElementById(`dfm-${simpleId}`)?.value, record.dfm);
             const recordIdValue = String(record.id);
             const picValue = String(tPic);
-            const completionDateValue = String(isAdminUser ? preserveDateValue(record.completeDateDisplay, record.completeDateDisplay) : tDateExcel);
-            const completeQtyValue = String(isAdminUser ? preserveTextValue(record.qty, record.qty) : preserveTextValue(tQty, record.qty));
+            const hasEditedDate = !!sanitizeTemplateValue(tDateRaw);
+            const hasEditedQty = !!sanitizeTemplateValue(tQty);
+            const completionDateValue = String(hasEditedDate ? tDateExcel : '');
+            const completeQtyValue = String(hasEditedQty ? preserveTextValue(tQty, '') : '');
             const remarkValue = String(preserveTextValue(tRem, record.remark));
             const payload = {
                 recordID: recordIdValue,
@@ -3084,7 +3149,9 @@
                     ['dfm', tDFM],
                     ['DFM', tDFM]
                 ]);
-            } else {
+            }
+
+            if (!isAdminUser || hasEditedDate || hasEditedQty) {
                 assignIfPresent(payload, [
                     ['completionDate', completionDateValue],
                     ['completeDate', completionDateValue],
@@ -4969,6 +5036,27 @@
             return [];
         }
 
+        function enableMouseHorizontalScroll() {
+            const wrappers = Array.from(document.querySelectorAll('div.overflow-x-auto, .portal-table-shell'))
+                .filter((el, index, arr) => arr.indexOf(el) === index)
+                .filter(el => el.querySelector('table'));
+
+            wrappers.forEach(el => {
+                if (el.dataset.mouseScrollBound === '1') return;
+                el.dataset.mouseScrollBound = '1';
+                el.classList.add('portal-mouse-scroll');
+                el.addEventListener('wheel', (event) => {
+                    if (el.scrollWidth <= el.clientWidth) return;
+                    const mostlyVertical = Math.abs(event.deltaY) >= Math.abs(event.deltaX);
+                    if (!mostlyVertical && !event.shiftKey) return;
+                    const delta = mostlyVertical ? event.deltaY : event.deltaX;
+                    if (!delta) return;
+                    event.preventDefault();
+                    el.scrollLeft += delta;
+                }, { passive: false });
+            });
+        }
+
         window.onload = () => {
             updateSessionUI();
             updateLaserPicDisplay();
@@ -5012,6 +5100,9 @@
             setInterval(() => refreshConsumptionData(true),  72000);
             setInterval(() => refreshDownData(true),     75000);
             setInterval(() => refreshLiveLogs(true),     78000);
+            enableMouseHorizontalScroll();
+            setTimeout(enableMouseHorizontalScroll, 1500);
+            setTimeout(enableMouseHorizontalScroll, 5000);
         };
     </script>
 </body>
