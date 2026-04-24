@@ -109,17 +109,18 @@
   function loadSyncMeta() {
     const raw = window.localStorage.getItem(SYNC_META_KEY);
     if (!raw) {
-      return { pendingUpserts: {}, pendingDeletes: {} };
+      return { pendingUpserts: {}, pendingDeletes: {}, pendingSummaryUpserts: {} };
     }
     try {
       const parsed = JSON.parse(raw);
       return {
         pendingUpserts: parsed.pendingUpserts || {},
         pendingDeletes: parsed.pendingDeletes || {},
+        pendingSummaryUpserts: parsed.pendingSummaryUpserts || {},
       };
     } catch (error) {
       console.error("Failed to parse sync metadata", error);
-      return { pendingUpserts: {}, pendingDeletes: {} };
+      return { pendingUpserts: {}, pendingDeletes: {}, pendingSummaryUpserts: {} };
     }
   }
 
@@ -167,7 +168,7 @@
   }
 
   function pruneSyncMeta(now = Date.now()) {
-    ["pendingUpserts", "pendingDeletes"].forEach((bucket) => {
+    ["pendingUpserts", "pendingDeletes", "pendingSummaryUpserts"].forEach((bucket) => {
       Object.keys(state.syncMeta[bucket] || {}).forEach((id) => {
         if (now - Number(state.syncMeta[bucket][id] || 0) > PENDING_SYNC_TTL_MS) {
           delete state.syncMeta[bucket][id];
@@ -196,6 +197,22 @@
     }
     state.syncMeta.pendingDeletes[recordId] = Date.now();
     delete state.syncMeta.pendingUpserts[recordId];
+    persistSyncMeta();
+  }
+
+  function markPendingSummaryUpsert(code) {
+    if (!code) {
+      return;
+    }
+    state.syncMeta.pendingSummaryUpserts[code] = Date.now();
+    persistSyncMeta();
+  }
+
+  function clearPendingSummaryUpsert(code) {
+    if (!code) {
+      return;
+    }
+    delete state.syncMeta.pendingSummaryUpserts[code];
     persistSyncMeta();
   }
 
@@ -1701,6 +1718,20 @@
     const nextImprovementType = cleanText(improvementType);
     const nextDecision = cleanText(investmentDecision);
     const updatedAt = Date.now();
+    markPendingSummaryUpsert(code);
+    persistInvestmentNote(
+      code,
+      nextSam,
+      nextImprovementType,
+      calculateImprovementValue(
+        nextSam,
+        getInvestmentRowTotalVolume(code),
+        parseImprovementFactor(nextImprovementType),
+        "",
+      ),
+      nextDecision,
+      updatedAt,
+    );
     const payload = {
       constructionCode: cleanText(code),
       samImprovement: nextSam,
@@ -1760,6 +1791,7 @@
         );
         return;
       }
+      clearPendingSummaryUpsert(code);
       console.error(error);
       window.alert(`Unable to save DFM Summary decision.\n${error.message}`);
     }
@@ -1995,19 +2027,56 @@
           return;
         }
         const existing = nextNotes[code] || {};
+        const pendingAt = Number(state.syncMeta.pendingSummaryUpserts?.[code] || 0);
+        const hasPending = pendingAt && Date.now() - pendingAt <= PENDING_SYNC_TTL_MS;
         const mergeValue = (nextValue, fallbackValue) => {
           const cleaned = cleanText(nextValue);
           return cleaned === "" ? fallbackValue || "" : cleaned;
         };
+        const remoteSam = cleanText(row.samImprovement);
+        const remoteImprovementType = cleanText(row.improvementType);
+        const remoteDecision = cleanText(row.investmentDecision);
+        const remoteImprovementValue = cleanText(row.improvementValue);
+        const remoteUpdatedAt = cleanText(row.updatedAt);
+        const expectedMatched =
+          !hasPending ||
+          (remoteSam === cleanText(existing.samImprovement) &&
+            remoteImprovementType === cleanText(existing.improvementType) &&
+            remoteDecision === cleanText(existing.investmentDecision));
+        if (expectedMatched) {
+          clearPendingSummaryUpsert(code);
+        }
+        const preservePendingField = (remoteValue, localValue) =>
+          hasPending && !expectedMatched ? cleanText(localValue) : cleanText(remoteValue);
+        const preservePendingFormulaValue = (remoteValue, localValue) => {
+          const cleanedRemote = cleanText(remoteValue);
+          const cleanedLocal = cleanText(localValue);
+          if (!hasPending || expectedMatched) {
+            return cleanedRemote;
+          }
+          return cleanedRemote === "" || /^0(?:\.0+)?$/.test(cleanedRemote) ? cleanedLocal : cleanedRemote;
+        };
         nextNotes[code] = {
           currentTotalFgQty: mergeValue(row.currentTotalFgQty, existing.currentTotalFgQty),
           currentRank: mergeValue(row.currentRank, existing.currentRank),
-          samImprovement: mergeValue(row.samImprovement, existing.samImprovement),
-          improvementType: mergeValue(row.improvementType, existing.improvementType),
-          improvementValue: mergeValue(row.improvementValue, existing.improvementValue),
-          investmentDecision: mergeValue(row.investmentDecision, existing.investmentDecision),
+          samImprovement: mergeValue(preservePendingField(remoteSam, existing.samImprovement), existing.samImprovement),
+          improvementType: mergeValue(
+            preservePendingField(remoteImprovementType, existing.improvementType),
+            existing.improvementType,
+          ),
+          improvementValue: mergeValue(
+            preservePendingFormulaValue(remoteImprovementValue, existing.improvementValue),
+            existing.improvementValue,
+          ),
+          investmentDecision: mergeValue(
+            preservePendingField(remoteDecision, existing.investmentDecision),
+            existing.investmentDecision,
+          ),
           updatedBy: mergeValue(row.updatedBy, existing.updatedBy),
-          updatedAt: mergeValue(row.updatedAt, existing.updatedAt),
+          updatedAt: mergeValue(
+            preservePendingField(remoteUpdatedAt, existing.updatedAt),
+            existing.updatedAt,
+          ),
           activeTop20: mergeValue(row.activeTop20, existing.activeTop20),
         };
       });
