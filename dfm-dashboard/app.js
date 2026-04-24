@@ -2,6 +2,7 @@
   const seedData = window.DFM_SEED_DATA || { records: [], warnings: [], defectCatalog: [] };
   const STORAGE_KEY = "dfm-dashboard-records";
   const SYNC_META_KEY = "dfm-dashboard-sync-meta";
+  const INVESTMENT_NOTES_KEY = "dfm-dashboard-investment-notes";
   const LEGACY_STORAGE_PREFIX = "dfm-dashboard-records-";
   const PENDING_SYNC_TTL_MS = 10 * 60 * 1000;
   const FLOW_ENDPOINTS = {
@@ -13,6 +14,8 @@
   };
   const FETCH_DFM_CHART_URL =
     "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/777a0c72d4684db68a350132def5fb37/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=4SIb_3sXxhX4jOUhTA6L8-kcgrr37CcmJwDkloVPDv4";
+  const DFM_SUMMARY_UPDATE_URL =
+    "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/8a1ee6b32b44477ab947ff85d3c38881/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=-cqYV3Ac1tBeoECt_zje-s9Yk1B0RZYvDxqV-fP24N8";
   const SEED_REFRESH_MS = 15000;
   const defectMap = new Map((seedData.defectCatalog || []).map((item) => [item.code, item]));
   const page = document.body.dataset.page || "dashboard";
@@ -24,12 +27,15 @@
     categoryBars: document.getElementById("category-bars"),
     seasonTiles: document.getElementById("season-tiles"),
     kpiGrid: document.getElementById("kpi-grid"),
+    benchmarkChart: document.getElementById("benchmark-chart"),
+    investmentBoard: document.getElementById("investment-board"),
     filteredSummary: document.getElementById("filtered-summary"),
     seasonBars: document.getElementById("season-bars"),
     codeBars: document.getElementById("code-bars"),
     modSummary: document.getElementById("mod-summary"),
     styleCards: document.getElementById("style-cards"),
     codeDirectory: document.getElementById("code-directory"),
+    dashboardDetailGrid: document.getElementById("dashboard-detail-grid"),
     syncSource: document.getElementById("sync-source"),
     syncStatus: document.getElementById("sync-status"),
     syncTime: document.getElementById("sync-time"),
@@ -52,6 +58,7 @@
   const state = {
     records: loadRecords(),
     syncMeta: loadSyncMeta(),
+    investmentNotes: loadInvestmentNotes(),
     editingId: null,
     rotation: {
       seconds: 30,
@@ -59,10 +66,13 @@
       tick: 0,
     },
     seedRefreshTimerId: null,
+    dashboardFrameId: null,
+    lastDashboardAnalytics: null,
     latestSource: "Seed file",
     lastRefreshAt: null,
     syncStatus: "Waiting for refresh",
     isSaving: false,
+    investmentEditingCode: null,
     filters: {
       search: "",
       season: "all",
@@ -105,6 +115,23 @@
       console.error("Failed to parse sync metadata", error);
       return { pendingUpserts: {}, pendingDeletes: {} };
     }
+  }
+
+  function loadInvestmentNotes() {
+    const raw = window.localStorage.getItem(INVESTMENT_NOTES_KEY);
+    if (!raw) {
+      return {};
+    }
+    try {
+      return JSON.parse(raw);
+    } catch (error) {
+      console.error("Failed to parse investment notes", error);
+      return {};
+    }
+  }
+
+  function persistInvestmentNotes() {
+    window.localStorage.setItem(INVESTMENT_NOTES_KEY, JSON.stringify(state.investmentNotes));
   }
 
   function pruneSyncMeta(now = Date.now()) {
@@ -579,39 +606,93 @@
 
     const codeMap = new Map();
     const seasonCodeMap = new Map();
+    const codeSeasonMap = new Map();
+    const utilizationTypeMap = new Map();
+    const utilizationSeasonMap = new Map();
     records.forEach((record) => {
       const key = record.constructionCode || "Unknown";
       codeMap.set(key, (codeMap.get(key) || 0) + 1);
       const seasonKey = record.season || "Unknown";
       seasonCodeMap.set(seasonKey, (seasonCodeMap.get(seasonKey) || 0) + 1);
+      if (!codeSeasonMap.has(key)) {
+        codeSeasonMap.set(key, new Map());
+      }
+      const seasonCounts = codeSeasonMap.get(key);
+      seasonCounts.set(seasonKey, (seasonCounts.get(seasonKey) || 0) + (record.fgQty || 0));
+
+      const utilizationKey = record.typeCode || record.constructionCode || "Unknown";
+      if (!utilizationTypeMap.has(utilizationKey)) {
+        utilizationTypeMap.set(utilizationKey, 0);
+      }
+      utilizationTypeMap.set(utilizationKey, utilizationTypeMap.get(utilizationKey) + 1);
+      if (!utilizationSeasonMap.has(utilizationKey)) {
+        utilizationSeasonMap.set(utilizationKey, new Map());
+      }
+      const utilizationSeasons = utilizationSeasonMap.get(utilizationKey);
+      utilizationSeasons.set(seasonKey, (utilizationSeasons.get(seasonKey) || 0) + (record.fgQty || 0));
     });
 
-    const mCount = records.filter((record) => record.modification === "M").length;
-    const nonMCount = records.filter((record) => record.modification === "Non-M").length;
-    const otherCount = Math.max(0, records.length - mCount - nonMCount);
+    const investmentSeasonLabels = Array.from(seasonCodeMap.keys())
+      .filter(Boolean)
+      .sort(compareSeasons);
+
+    const mTypeCodes = new Set();
+    const nonMTypeCodes = new Set();
+    const otherTypeCodes = new Set();
+    records.forEach((record) => {
+      const typeKey = cleanText(record.typeCode) || "Unknown";
+      if (record.modification === "M") {
+        mTypeCodes.add(typeKey);
+      } else if (record.modification === "Non-M") {
+        nonMTypeCodes.add(typeKey);
+      } else {
+        otherTypeCodes.add(typeKey);
+      }
+    });
+    const totalModTypes = mTypeCodes.size + nonMTypeCodes.size + otherTypeCodes.size;
+
+    const investmentBoardRows = Array.from(codeMap.entries())
+      .map(([label]) => {
+        const seasonCounts = codeSeasonMap.get(label) || new Map();
+        const manual = state.investmentNotes[label] || {};
+        const seasonVolumes = investmentSeasonLabels.map((season) => ({
+          season,
+          value: seasonCounts.get(season) || 0,
+        }));
+        return {
+          label,
+          totalVolume: sum(seasonVolumes.map((item) => item.value)),
+          seasonVolumes,
+          samImprovement: cleanText(manual.samImprovement),
+          investmentDecision: cleanText(manual.investmentDecision),
+          updatedAt: manual.updatedAt || null,
+        };
+      })
+      .sort((a, b) => b.totalVolume - a.totalVolume || a.label.localeCompare(b.label))
+      .slice(0, 20);
 
     return {
       styleSummary: styleSummary.sort((a, b) => b.fgQty - a.fgQty),
       kpis: [
         {
-          label: "Season + Style Count",
+          label: "Total Style",
           value: formatNumber(styleSummary.length),
-          subtext: "FG counted once per style key",
+          subtext: "",
         },
         {
-          label: "Unique FG Qty",
+          label: "Total FG QTY",
           value: formatNumber(totalFg),
-          subtext: "No FG accumulation across construction rows",
+          subtext: "",
+        },
+        {
+          label: "Total Unique Construction Code",
+          value: formatNumber(codeMap.size),
+          subtext: "",
         },
         {
           label: "construction occuracy",
           value: formatNumber(records.length),
-          subtext: `${formatPercent(modificationRate)} modified rows`,
-        },
-        {
-          label: "Construction Codes",
-          value: formatNumber(codeMap.size),
-          subtext: "Unique construction codes in filter",
+          subtext: "",
         },
       ],
       seasonBars: Array.from(seasonMap.entries())
@@ -637,19 +718,50 @@
         }))
         .sort((a, b) => compareSeasons(a.label, b.label))
         .slice(0, 5),
-      codeBars: Array.from(codeMap.entries())
-        .map(([label, value]) => ({ label, value }))
-        .sort((a, b) => b.value - a.value)
-        .slice(0, 8),
+      codeBars: investmentBoardRows.slice(0, 8).map((row) => ({
+        label: row.label,
+        value: row.totalVolume,
+      })),
       modSummary: [
-        { label: "Modified", value: mCount, note: "Rows marked M" },
-        { label: "Non-Modified", value: nonMCount, note: "Rows marked Non-M" },
-        { label: "Unspecified", value: otherCount, note: "Rows without modification value" },
+        {
+          label: "Modified",
+          value: mTypeCodes.size,
+          share: totalModTypes ? mTypeCodes.size / totalModTypes : 0,
+          note: "Unique type codes marked M",
+        },
+        {
+          label: "Non-Modified",
+          value: nonMTypeCodes.size,
+          share: totalModTypes ? nonMTypeCodes.size / totalModTypes : 0,
+          note: "Unique type codes marked Non-M",
+        },
+        {
+          label: "Unspecified",
+          value: otherTypeCodes.size,
+          share: totalModTypes ? otherTypeCodes.size / totalModTypes : 0,
+          note: "Type codes without modification value",
+        },
       ].filter((item) => item.value > 0),
       codeDirectory: Array.from(codeMap.entries())
         .map(([label, value]) => ({ label, value }))
         .sort((a, b) => b.value - a.value || a.label.localeCompare(b.label))
         .slice(0, 40),
+      benchmark: (() => {
+        const activeNonMTypeCodes = new Set(
+          records
+            .filter((record) => record.modification === "Non-M")
+            .map((record) => record.typeCode || record.constructionCode || "Unknown")
+            .filter(Boolean),
+        ).size;
+        return {
+          target: 641,
+          active: activeNonMTypeCodes,
+          inactive: Math.max(0, 641 - activeNonMTypeCodes),
+          over: Math.max(0, activeNonMTypeCodes - 641),
+        };
+      })(),
+      investmentSeasonLabels,
+      investmentBoard: investmentBoardRows,
     };
   }
 
@@ -657,21 +769,45 @@
     populateFilterOptions();
 
     const filteredRecords = filterRecords(state.records);
-    const analytics = computeAnalytics(filteredRecords);
+    const computedAnalytics = computeAnalytics(filteredRecords);
+    const hasDashboardContent =
+      computedAnalytics.seasonDonut.length ||
+      computedAnalytics.seasonBars.length ||
+      computedAnalytics.codeBars.length ||
+      computedAnalytics.investmentBoard.length ||
+      computedAnalytics.categoryBars.length;
+    const analytics =
+      page === "dashboard" && !hasDashboardContent && state.lastDashboardAnalytics
+        ? state.lastDashboardAnalytics
+        : computedAnalytics;
 
     if (page === "dashboard") {
-      renderSeasonDonut(analytics.seasonDonut);
-      renderBars(elements.categoryBars, analytics.categoryBars, formatNumber);
-      renderSeasonTiles(analytics.seasonTiles);
+      if (hasDashboardContent) {
+        state.lastDashboardAnalytics = computedAnalytics;
+      }
+      if (elements.dashboardDetailGrid) {
+        elements.dashboardDetailGrid.hidden = !analytics.styleSummary.length && !analytics.codeDirectory.length;
+      }
       renderKpis(analytics.kpis);
+      renderBenchmarkChart(analytics.benchmark);
+      renderInvestmentBoard(analytics.investmentBoard, analytics.investmentSeasonLabels, false);
       renderBars(elements.seasonBars, analytics.seasonBars, formatNumber);
-      renderBars(elements.codeBars, analytics.codeBars, formatNumber);
       renderModSummary(analytics.modSummary);
-      renderStyleCards(analytics.styleSummary);
-      renderCodeDirectory(analytics.codeDirectory);
+      if (state.dashboardFrameId) {
+        window.cancelAnimationFrame(state.dashboardFrameId);
+      }
+      state.dashboardFrameId = window.requestAnimationFrame(() => {
+        renderSeasonDonut(analytics.seasonDonut);
+        renderBars(elements.categoryBars, analytics.categoryBars, formatNumber);
+        renderSeasonTiles(analytics.seasonTiles);
+        renderStyleCards(analytics.styleSummary);
+        renderCodeDirectory(analytics.codeDirectory);
+        state.dashboardFrameId = null;
+      });
     }
 
     if (page === "data") {
+      renderInvestmentBoard(analytics.investmentBoard, analytics.investmentSeasonLabels, true);
       renderRecordCards(filteredRecords);
       if (elements.filteredSummary) {
         elements.filteredSummary.textContent = `${labelCount(filteredRecords.length, "construction row", "construction rows")} shown`;
@@ -745,16 +881,158 @@
       .join("");
   }
 
+  function renderBenchmarkChart(benchmark) {
+    if (!elements.benchmarkChart) {
+      return;
+    }
+    const target = Number(benchmark?.target || 0);
+    const active = Number(benchmark?.active || 0);
+    const inactive = Number(benchmark?.inactive || 0);
+    const over = Number(benchmark?.over || 0);
+    const utilization = target > 0 ? Math.round((active / target) * 100) : 0;
+    const denominator = Math.max(target, active, 1);
+    const activeWidth = Math.max(0, (Math.min(active, denominator) / denominator) * 100);
+    const inactiveWidth = Math.max(0, (inactive / denominator) * 100);
+
+    elements.benchmarkChart.innerHTML = `
+      <div class="benchmark-summary">
+        <div class="benchmark-current">
+          <div class="benchmark-label">Current Active Construction Code (Non-M)</div>
+          <div class="benchmark-value">${escapeHtml(formatNumber(active))}<span class="benchmark-value-inline">${escapeHtml(`${utilization}%`)}</span></div>
+          <div class="benchmark-meta">${over > 0 ? `${escapeHtml(formatNumber(over))} above benchmark` : ""}</div>
+        </div>
+        <div class="benchmark-current">
+          <div class="benchmark-label">Nike Construction Code</div>
+          <div class="benchmark-value">${escapeHtml(formatNumber(target))}</div>
+          <div class="benchmark-meta"></div>
+        </div>
+      </div>
+      <div class="benchmark-track">
+        <div class="benchmark-fill" style="width:${activeWidth}%"></div>
+        ${inactive > 0 ? `<div class="benchmark-fill benchmark-fill--inactive" style="width:${inactiveWidth}%"></div>` : ""}
+      </div>
+      <div class="benchmark-legend">
+        <div class="benchmark-legend-item">
+          <span class="benchmark-legend-label"><span class="benchmark-dot"></span>Active code qty</span>
+          <span class="benchmark-legend-value">${escapeHtml(formatNumber(active))}</span>
+        </div>
+        <div class="benchmark-legend-item">
+          <span class="benchmark-legend-label"><span class="benchmark-dot benchmark-dot--inactive"></span>Inactive code qty</span>
+          <span class="benchmark-legend-value">${escapeHtml(formatNumber(inactive))}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderInvestmentBoard(rows, seasonLabels, editable = false) {
+    if (!elements.investmentBoard) {
+      return;
+    }
+    if (!rows.length) {
+      elements.investmentBoard.innerHTML = '<div class="empty-state">No construction code volume available.</div>';
+      return;
+    }
+
+    elements.investmentBoard.innerHTML = `
+      <table class="investment-table ${editable ? "investment-table--editable" : "investment-table--readonly"}">
+        <thead>
+          <tr>
+            <th rowspan="2">Construction Code</th>
+            <th colspan="${Math.max(seasonLabels.length, 1)}" class="group-head">Volume by Season</th>
+            <th rowspan="2">Total FG Volume</th>
+            <th rowspan="2">SAM Improvement</th>
+            <th rowspan="2">Investment Decision</th>
+            ${editable ? '<th rowspan="2"></th>' : ""}
+          </tr>
+          <tr>
+            ${
+              seasonLabels.length
+                ? seasonLabels.map((season) => `<th>${escapeHtml(season)}</th>`).join("")
+                : "<th>Season</th>"
+            }
+          </tr>
+        </thead>
+        <tbody>
+          ${rows
+            .map(
+              (row, index) => `
+                <tr data-code="${escapeHtml(row.label)}" data-editing="${state.investmentEditingCode === row.label ? "true" : "false"}">
+                  <td class="investment-code"><span class="investment-rank ${
+                    index === 0
+                      ? "investment-rank--1"
+                      : index === 1
+                        ? "investment-rank--2"
+                        : index === 2
+                          ? "investment-rank--3"
+                          : ""
+                  }">Top ${index + 1}</span>${escapeHtml(row.label)}</td>
+                  ${
+                    seasonLabels.length
+                      ? row.seasonVolumes
+                          .map(
+                            (item) =>
+                              `<td class="investment-volume">${item.value ? escapeHtml(formatNumber(item.value)) : "-"}</td>`,
+                          )
+                          .join("")
+                      : '<td class="investment-volume">-</td>'
+                  }
+                  <td class="investment-total">${escapeHtml(formatNumber(row.totalVolume))}</td>
+                  <td class="investment-manual-cell">
+                    ${
+                      editable
+                        ? `<input class="investment-input" data-role="sam" type="text" ${state.investmentEditingCode === row.label ? "" : "disabled"} value="${escapeHtml(
+                            row.samImprovement,
+                          )}" placeholder="SAM improvement" />`
+                        : `<span class="investment-display">${escapeHtml(row.samImprovement || "-")}</span>`
+                    }
+                  </td>
+                  <td class="investment-manual-cell">
+                    ${
+                      editable
+                        ? `<select class="investment-select" data-role="decision" ${state.investmentEditingCode === row.label ? "" : "disabled"}>
+                      ${["", "Yes", "No", "Review"]
+                        .map((option) => {
+                          const selected = option === row.investmentDecision ? " selected" : "";
+                          const label = option || "Select decision";
+                          return `<option value="${escapeHtml(option)}"${selected}>${escapeHtml(label)}</option>`;
+                        })
+                        .join("")}
+                    </select>`
+                        : `<span class="investment-display">${escapeHtml(row.investmentDecision || "-")}</span>`
+                    }
+                    ${editable ? `<span class="investment-meta">${row.updatedAt ? `Updated ${formatRefreshTime(row.updatedAt)}` : ""}</span>` : ""}
+                  </td>
+                  ${
+                    editable
+                      ? `<td class="investment-actions">
+                    <button class="investment-save" type="button" data-action="${state.investmentEditingCode === row.label ? "save-investment" : "edit-investment"}" data-code="${escapeHtml(
+                      row.label,
+                    )}">${state.investmentEditingCode === row.label ? "Save" : "Edit"}</button>
+                  </td>`
+                      : ""
+                  }
+                </tr>
+              `,
+            )
+            .join("")}
+        </tbody>
+      </table>
+    `;
+  }
+
   function renderSeasonDonut(items) {
     if (!elements.seasonDonut || !elements.seasonDonutLegend || !elements.seasonDonutTotal) {
       return;
     }
+    const panel = elements.seasonDonut.closest(".panel");
     if (!items.length) {
+      panel?.classList.add("panel--hidden");
       elements.seasonDonut.style.background = "rgba(30, 87, 216, 0.08)";
       elements.seasonDonutLegend.innerHTML = '<div class="empty-state">No season data available.</div>';
       elements.seasonDonutTotal.textContent = "0";
       return;
     }
+    panel?.classList.remove("panel--hidden");
 
     const palette = ["#1e57d8", "#4f7de5", "#7ca4ef", "#aac4f5", "#c7f13b", "#151515", "#8d98b3"];
     const activeIndex = items.length ? state.rotation.tick % items.length : 0;
@@ -798,10 +1076,13 @@
     if (!target) {
       return;
     }
+    const panel = target.closest(".panel");
     if (!items.length) {
+      panel?.classList.add("panel--hidden");
       target.innerHTML = '<div class="empty-state">No data for the current filter set.</div>';
       return;
     }
+    panel?.classList.remove("panel--hidden");
     const max = Math.max(...items.map((item) => item.value), 1);
     const activeIndex = items.length ? state.rotation.tick % items.length : 0;
     target.innerHTML = items
@@ -825,10 +1106,13 @@
     if (!elements.modSummary) {
       return;
     }
+    const panel = elements.modSummary.closest(".panel");
     if (!items.length) {
+      panel?.classList.add("panel--hidden");
       elements.modSummary.innerHTML = '<div class="empty-state">No modification summary available.</div>';
       return;
     }
+    panel?.classList.remove("panel--hidden");
 
     const activeIndex = items.length ? state.rotation.tick % items.length : 0;
     elements.modSummary.innerHTML = items
@@ -836,7 +1120,7 @@
         (item, index) => `
           <div class="stack-item ${index === activeIndex ? "is-active" : ""}">
             <div>${escapeHtml(item.label)}</div>
-            <div class="stack-value">${escapeHtml(formatNumber(item.value))}</div>
+            <div class="stack-value">${escapeHtml(formatNumber(item.value))}${item.share !== undefined ? ` <span class="stack-value-inline">${escapeHtml(formatPercent(item.share))}</span>` : ""}</div>
             <div class="stack-meta">${escapeHtml(item.note)}</div>
           </div>
         `,
@@ -848,10 +1132,13 @@
     if (!elements.seasonTiles) {
       return;
     }
+    const panel = elements.seasonTiles.closest(".panel");
     if (!items.length) {
+      panel?.classList.add("panel--hidden");
       elements.seasonTiles.innerHTML = '<div class="empty-state">No season density available.</div>';
       return;
     }
+    panel?.classList.remove("panel--hidden");
 
     elements.seasonTiles.innerHTML = items
       .map(
@@ -866,14 +1153,28 @@
       .join("");
   }
 
+  function updateDashboardDetailVisibility() {
+    if (!elements.dashboardDetailGrid) {
+      return;
+    }
+    const panels = Array.from(elements.dashboardDetailGrid.querySelectorAll(".panel"));
+    const hasVisiblePanel = panels.some((panel) => !panel.classList.contains("panel--hidden"));
+    elements.dashboardDetailGrid.classList.toggle("panel-grid--collapsed", !hasVisiblePanel);
+  }
+
   function renderStyleCards(styles) {
     if (!elements.styleCards) {
       return;
     }
+    const panel = elements.styleCards.closest(".panel");
     if (!styles.length) {
+      panel?.classList.add("panel--hidden");
       elements.styleCards.innerHTML = '<div class="empty-state">No styles match the current filters.</div>';
+      updateDashboardDetailVisibility();
       return;
     }
+    panel?.classList.remove("panel--hidden");
+    updateDashboardDetailVisibility();
 
     elements.styleCards.innerHTML = styles
       .slice(0, 12)
@@ -908,10 +1209,15 @@
     if (!elements.codeDirectory) {
       return;
     }
+    const panel = elements.codeDirectory.closest(".panel");
     if (!items.length) {
+      panel?.classList.add("panel--hidden");
       elements.codeDirectory.innerHTML = '<div class="empty-state">No construction codes in the current filter.</div>';
+      updateDashboardDetailVisibility();
       return;
     }
+    panel?.classList.remove("panel--hidden");
+    updateDashboardDetailVisibility();
 
     elements.codeDirectory.innerHTML = items
       .map(
@@ -957,6 +1263,82 @@
         `,
       )
       .join("");
+  }
+
+  function persistInvestmentNote(code, samImprovement, investmentDecision, updatedAt) {
+    if (!code) {
+      return;
+    }
+    const nextSam = cleanText(samImprovement);
+    const nextDecision = cleanText(investmentDecision);
+    if (!nextSam && !nextDecision) {
+      delete state.investmentNotes[code];
+    } else {
+      state.investmentNotes[code] = {
+        samImprovement: nextSam,
+        investmentDecision: nextDecision,
+        updatedAt,
+      };
+    }
+    persistInvestmentNotes();
+    render();
+  }
+
+  function formatExcelFriendlyTimestamp(value) {
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return "";
+    }
+    const local = new Date(
+      date.toLocaleString("en-US", { timeZone: "Asia/Kuala_Lumpur" }),
+    );
+    const year = local.getFullYear();
+    const month = String(local.getMonth() + 1).padStart(2, "0");
+    const day = String(local.getDate()).padStart(2, "0");
+    const hour = String(local.getHours()).padStart(2, "0");
+    const minute = String(local.getMinutes()).padStart(2, "0");
+    const second = String(local.getSeconds()).padStart(2, "0");
+    return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+  }
+
+  async function saveInvestmentRow(code, samImprovement, investmentDecision) {
+    if (!code) {
+      return;
+    }
+    const nextSam = cleanText(samImprovement);
+    const nextDecision = cleanText(investmentDecision);
+    const updatedAt = Date.now();
+    const payload = {
+      constructionCode: cleanText(code),
+      samImprovement: nextSam,
+      investmentDecision: nextDecision,
+      updatedBy: "Gavin",
+      updatedAt: formatExcelFriendlyTimestamp(updatedAt),
+    };
+
+    try {
+      const response = await window.fetch(DFM_SUMMARY_UPDATE_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const text = await response.text().catch(() => "");
+        throw new Error(text || `DFM Summary update failed with ${response.status}.`);
+      }
+
+      persistInvestmentNote(code, nextSam, nextDecision, updatedAt);
+    } catch (error) {
+      if (isNoResponseError(error)) {
+        persistInvestmentNote(code, nextSam, nextDecision, updatedAt);
+        return;
+      }
+      console.error(error);
+      window.alert(`Unable to save DFM Summary decision.\n${error.message}`);
+    }
   }
 
   function renderModificationTag(value) {
@@ -1446,11 +1828,13 @@
     }
     window.localStorage.removeItem(STORAGE_KEY);
     window.localStorage.removeItem(SYNC_META_KEY);
+    window.localStorage.removeItem(INVESTMENT_NOTES_KEY);
     Object.keys(window.localStorage)
       .filter((key) => key.startsWith(LEGACY_STORAGE_PREFIX))
       .forEach((key) => window.localStorage.removeItem(key));
     state.records = normalizeRecords(seedData.records || []);
     state.syncMeta = { pendingUpserts: {}, pendingDeletes: {} };
+    state.investmentNotes = {};
     render();
   }
 
@@ -1524,6 +1908,31 @@
         if (button.dataset.action === "delete") {
           deleteRecord(recordId);
         }
+      });
+    }
+
+    if (elements.investmentBoard) {
+      elements.investmentBoard.addEventListener("click", (event) => {
+        const button = event.target.closest('button[data-action]');
+        if (!button) {
+          return;
+        }
+        const row = button.closest("tr[data-code]");
+        if (!row) {
+          return;
+        }
+        const code = row.dataset.code || "";
+        if (button.dataset.action === "edit-investment") {
+          state.investmentEditingCode = code;
+          render();
+          return;
+        }
+        const samValue = row.querySelector('[data-role="sam"]')?.value || "";
+        const decisionValue = row.querySelector('[data-role="decision"]')?.value || "";
+        saveInvestmentRow(code, samValue, decisionValue).finally(() => {
+          state.investmentEditingCode = null;
+          render();
+        });
       });
     }
   }
