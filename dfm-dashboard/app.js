@@ -3,6 +3,7 @@
   const STORAGE_KEY = "dfm-dashboard-records";
   const SYNC_META_KEY = "dfm-dashboard-sync-meta";
   const INVESTMENT_NOTES_KEY = "dfm-dashboard-investment-notes";
+  const INVESTMENT_VISIBILITY_KEY = "dfm-dashboard-investment-visibility";
   const LEGACY_STORAGE_PREFIX = "dfm-dashboard-records-";
   const PENDING_SYNC_TTL_MS = 10 * 60 * 1000;
   const FLOW_ENDPOINTS = {
@@ -29,6 +30,7 @@
     kpiGrid: document.getElementById("kpi-grid"),
     benchmarkChart: document.getElementById("benchmark-chart"),
     investmentBoard: document.getElementById("investment-board"),
+    investmentControls: document.getElementById("investment-controls"),
     filteredSummary: document.getElementById("filtered-summary"),
     seasonBars: document.getElementById("season-bars"),
     codeBars: document.getElementById("code-bars"),
@@ -59,6 +61,7 @@
     records: loadRecords(),
     syncMeta: loadSyncMeta(),
     investmentNotes: loadInvestmentNotes(),
+    investmentVisibility: loadInvestmentVisibility(),
     editingId: null,
     rotation: {
       seconds: 30,
@@ -67,6 +70,7 @@
     },
     seedRefreshTimerId: null,
     dashboardFrameId: null,
+    dashboardDeferredTimeout: null,
     lastDashboardAnalytics: null,
     latestSource: "Seed file",
     lastRefreshAt: null,
@@ -132,6 +136,32 @@
 
   function persistInvestmentNotes() {
     window.localStorage.setItem(INVESTMENT_NOTES_KEY, JSON.stringify(state.investmentNotes));
+  }
+
+  function loadInvestmentVisibility() {
+    const defaults = {
+      samImprovement: true,
+      improvementType: true,
+      improvementValue: true,
+      investmentDecision: true,
+    };
+    const raw = window.localStorage.getItem(INVESTMENT_VISIBILITY_KEY);
+    if (!raw) {
+      return defaults;
+    }
+    try {
+      return {
+        ...defaults,
+        ...JSON.parse(raw),
+      };
+    } catch (error) {
+      console.error("Failed to parse investment visibility", error);
+      return defaults;
+    }
+  }
+
+  function persistInvestmentVisibility() {
+    window.localStorage.setItem(INVESTMENT_VISIBILITY_KEY, JSON.stringify(state.investmentVisibility));
   }
 
   function pruneSyncMeta(now = Date.now()) {
@@ -443,6 +473,109 @@
     return `${Math.round(Number(value || 0) * 100)}%`;
   }
 
+  function formatCurrency(value) {
+    return new Intl.NumberFormat("en-MY", {
+      style: "currency",
+      currency: "MYR",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(Number(value || 0));
+  }
+
+  function parseImprovementFactor(value) {
+    const text = cleanText(value);
+    if (!text) {
+      return null;
+    }
+    const numericMatch = text.match(/-?\d+(?:\.\d+)?/);
+    if (!numericMatch) {
+      return null;
+    }
+    const numeric = Number(numericMatch[0]);
+    if (!Number.isFinite(numeric)) {
+      return null;
+    }
+    if (text.includes("%")) {
+      return numeric / 100;
+    }
+    return numeric;
+  }
+
+  function calculateImprovementValue(samImprovement, totalVolume, factor, fallbackValue = "") {
+    const sam = Number(samImprovement);
+    if (!Number.isFinite(sam) || sam === 0) {
+      return cleanText(fallbackValue);
+    }
+    if (!Number.isFinite(factor)) {
+      return cleanText(fallbackValue);
+    }
+    return formatCurrency(sam * Number(totalVolume || 0) * factor);
+  }
+
+  function extractImprovementValueFromSummaryResponse(payload) {
+    if (!payload || typeof payload !== "object") {
+      return "";
+    }
+    const candidates = [
+      payload,
+      payload.body,
+      payload.data,
+      payload.result,
+    ].filter(Boolean);
+
+    const findLooseMatch = (candidate, target) => {
+      const targetKey = cleanText(target).toLowerCase();
+      for (const [key, value] of Object.entries(candidate || {})) {
+        if (cleanText(key).toLowerCase() === targetKey) {
+          return value;
+        }
+      }
+      return "";
+    };
+
+    for (const candidate of candidates) {
+      const value =
+        candidate?.improvementValue ??
+        candidate?.["Improvement Value"] ??
+        candidate?.ImprovementValue ??
+        candidate?.["Improvement_x0020_Value"] ??
+        findLooseMatch(candidate, "Improvement Value");
+      const text = cleanText(value);
+      if (text) {
+        return text;
+      }
+    }
+
+    return "";
+  }
+
+  function getInvestmentRowTotalVolume(code) {
+    if (!code) {
+      return 0;
+    }
+    const analytics = computeAnalytics(filterRecords(state.records));
+    const row = analytics.investmentBoard.find((item) => item.label === code);
+    return row ? Number(row.totalVolume || 0) : 0;
+  }
+
+  function formatInvestmentFieldValue(columnKey, value) {
+    if (columnKey !== "improvementValue") {
+      return cleanText(value) || "-";
+    }
+    const text = cleanText(value);
+    if (!text) {
+      return "-";
+    }
+    if (/^myr\b/i.test(text)) {
+      return text.replace(/^myr\b/i, "MYR");
+    }
+    const numeric = Number(String(text).replace(/,/g, ""));
+    if (Number.isFinite(numeric)) {
+      return formatCurrency(numeric);
+    }
+    return text;
+  }
+
   function seasonPriority(season) {
     const text = cleanText(season);
     const prefix = text.slice(0, 2).toUpperCase();
@@ -632,7 +765,23 @@
       utilizationSeasons.set(seasonKey, (utilizationSeasons.get(seasonKey) || 0) + (record.fgQty || 0));
     });
 
-    const investmentSeasonLabels = Array.from(seasonCodeMap.keys())
+    const nonMRecords = records.filter((record) => record.modification === "Non-M");
+    const nonMCodeMap = new Map();
+    const nonMSeasonCodeMap = new Map();
+    const nonMCodeSeasonMap = new Map();
+    nonMRecords.forEach((record) => {
+      const key = record.constructionCode || "Unknown";
+      nonMCodeMap.set(key, (nonMCodeMap.get(key) || 0) + 1);
+      const seasonKey = record.season || "Unknown";
+      nonMSeasonCodeMap.set(seasonKey, (nonMSeasonCodeMap.get(seasonKey) || 0) + 1);
+      if (!nonMCodeSeasonMap.has(key)) {
+        nonMCodeSeasonMap.set(key, new Map());
+      }
+      const seasonCounts = nonMCodeSeasonMap.get(key);
+      seasonCounts.set(seasonKey, (seasonCounts.get(seasonKey) || 0) + (record.fgQty || 0));
+    });
+
+    const investmentSeasonLabels = Array.from(nonMSeasonCodeMap.keys())
       .filter(Boolean)
       .sort(compareSeasons);
 
@@ -651,19 +800,28 @@
     });
     const totalModTypes = mTypeCodes.size + nonMTypeCodes.size + otherTypeCodes.size;
 
-    const investmentBoardRows = Array.from(codeMap.entries())
+    const investmentBoardRows = Array.from(nonMCodeMap.entries())
       .map(([label]) => {
-        const seasonCounts = codeSeasonMap.get(label) || new Map();
+        const seasonCounts = nonMCodeSeasonMap.get(label) || new Map();
         const manual = state.investmentNotes[label] || {};
         const seasonVolumes = investmentSeasonLabels.map((season) => ({
           season,
           value: seasonCounts.get(season) || 0,
         }));
+        const totalVolume = sum(seasonVolumes.map((item) => item.value));
+        const factor = parseImprovementFactor(manual.improvementType);
         return {
           label,
-          totalVolume: sum(seasonVolumes.map((item) => item.value)),
+          totalVolume,
           seasonVolumes,
           samImprovement: cleanText(manual.samImprovement),
+          improvementType: cleanText(manual.improvementType),
+          improvementValue: calculateImprovementValue(
+            manual.samImprovement,
+            totalVolume,
+            factor,
+            manual.improvementValue,
+          ),
           investmentDecision: cleanText(manual.investmentDecision),
           updatedAt: manual.updatedAt || null,
         };
@@ -717,7 +875,7 @@
           fg: seasonMap.get(label) || 0,
         }))
         .sort((a, b) => compareSeasons(a.label, b.label))
-        .slice(0, 5),
+        ,
       codeBars: investmentBoardRows.slice(0, 8).map((row) => ({
         label: row.label,
         value: row.totalVolume,
@@ -790,23 +948,31 @@
       }
       renderKpis(analytics.kpis);
       renderBenchmarkChart(analytics.benchmark);
+      renderInvestmentControls();
       renderInvestmentBoard(analytics.investmentBoard, analytics.investmentSeasonLabels, false);
       renderBars(elements.seasonBars, analytics.seasonBars, formatNumber);
+      renderBars(elements.categoryBars, analytics.categoryBars, formatNumber);
       renderModSummary(analytics.modSummary);
       if (state.dashboardFrameId) {
         window.cancelAnimationFrame(state.dashboardFrameId);
       }
+      if (state.dashboardDeferredTimeout) {
+        window.clearTimeout(state.dashboardDeferredTimeout);
+      }
       state.dashboardFrameId = window.requestAnimationFrame(() => {
-        renderSeasonDonut(analytics.seasonDonut);
-        renderBars(elements.categoryBars, analytics.categoryBars, formatNumber);
-        renderSeasonTiles(analytics.seasonTiles);
-        renderStyleCards(analytics.styleSummary);
-        renderCodeDirectory(analytics.codeDirectory);
+        state.dashboardDeferredTimeout = window.setTimeout(() => {
+          renderSeasonDonut(analytics.seasonDonut);
+          renderSeasonTiles(analytics.seasonTiles);
+          renderStyleCards(analytics.styleSummary);
+          renderCodeDirectory(analytics.codeDirectory);
+          state.dashboardDeferredTimeout = null;
+        }, 80);
         state.dashboardFrameId = null;
       });
     }
 
     if (page === "data") {
+      renderInvestmentControls();
       renderInvestmentBoard(analytics.investmentBoard, analytics.investmentSeasonLabels, true);
       renderRecordCards(filteredRecords);
       if (elements.filteredSummary) {
@@ -924,6 +1090,72 @@
     `;
   }
 
+  function getInvestmentManualColumns(editable = false) {
+    const columns = [
+      {
+        key: "samImprovement",
+        label: "SAM Improvement",
+        role: "sam",
+        placeholder: "SAM improvement",
+      },
+      {
+        key: "improvementType",
+        label: "Improvement Type",
+        role: "improvement-type",
+        placeholder: "Improvement type",
+      },
+      {
+        key: "improvementValue",
+        label: "Improvement Value",
+        role: "improvement-value",
+        displayOnly: true,
+      },
+      {
+        key: "investmentDecision",
+        label: "Investment Decision",
+        role: "decision",
+        type: "select",
+      },
+    ];
+
+    if (editable) {
+      return columns;
+    }
+
+    return columns.filter((column) => state.investmentVisibility[column.key] !== false);
+  }
+
+  function renderInvestmentControls() {
+    if (!elements.investmentControls) {
+      return;
+    }
+
+    const labels = {
+      samImprovement: "SAM Improvement",
+      improvementType: "Improvement Type",
+      improvementValue: "Improvement Value",
+      investmentDecision: "Investment Decision",
+    };
+
+    elements.investmentControls.innerHTML = `
+      <span class="panel-note">Dashboard columns</span>
+      ${Object.entries(labels)
+        .map(
+          ([key, label]) => `
+            <button
+              class="investment-toggle ${state.investmentVisibility[key] !== false ? "is-active" : ""}"
+              type="button"
+              data-action="toggle-investment-column"
+              data-column="${escapeHtml(key)}"
+            >
+              ${escapeHtml(label)}
+            </button>
+          `,
+        )
+        .join("")}
+    `;
+  }
+
   function renderInvestmentBoard(rows, seasonLabels, editable = false) {
     if (!elements.investmentBoard) {
       return;
@@ -933,6 +1165,8 @@
       return;
     }
 
+    const manualColumns = getInvestmentManualColumns(editable);
+
     elements.investmentBoard.innerHTML = `
       <table class="investment-table ${editable ? "investment-table--editable" : "investment-table--readonly"}">
         <thead>
@@ -940,8 +1174,7 @@
             <th rowspan="2">Construction Code</th>
             <th colspan="${Math.max(seasonLabels.length, 1)}" class="group-head">Volume by Season</th>
             <th rowspan="2">Total FG Volume</th>
-            <th rowspan="2">SAM Improvement</th>
-            <th rowspan="2">Investment Decision</th>
+            ${manualColumns.map((column) => `<th rowspan="2">${escapeHtml(column.label)}</th>`).join("")}
             ${editable ? '<th rowspan="2"></th>' : ""}
           </tr>
           <tr>
@@ -977,31 +1210,47 @@
                       : '<td class="investment-volume">-</td>'
                   }
                   <td class="investment-total">${escapeHtml(formatNumber(row.totalVolume))}</td>
-                  <td class="investment-manual-cell">
-                    ${
-                      editable
-                        ? `<input class="investment-input" data-role="sam" type="text" ${state.investmentEditingCode === row.label ? "" : "disabled"} value="${escapeHtml(
-                            row.samImprovement,
-                          )}" placeholder="SAM improvement" />`
-                        : `<span class="investment-display">${escapeHtml(row.samImprovement || "-")}</span>`
-                    }
-                  </td>
-                  <td class="investment-manual-cell">
-                    ${
-                      editable
-                        ? `<select class="investment-select" data-role="decision" ${state.investmentEditingCode === row.label ? "" : "disabled"}>
-                      ${["", "Yes", "No", "Review"]
-                        .map((option) => {
-                          const selected = option === row.investmentDecision ? " selected" : "";
-                          const label = option || "Select decision";
-                          return `<option value="${escapeHtml(option)}"${selected}>${escapeHtml(label)}</option>`;
-                        })
-                        .join("")}
-                    </select>`
-                        : `<span class="investment-display">${escapeHtml(row.investmentDecision || "-")}</span>`
-                    }
-                    ${editable ? `<span class="investment-meta">${row.updatedAt ? `Updated ${formatRefreshTime(row.updatedAt)}` : ""}</span>` : ""}
-                  </td>
+                  ${manualColumns
+                    .map((column, columnIndex) => {
+                      if (editable && column.type === "select") {
+                        return `
+                          <td class="investment-manual-cell">
+                            <select class="investment-select" data-role="${escapeHtml(column.role)}" ${state.investmentEditingCode === row.label ? "" : "disabled"}>
+                              ${["", "Yes", "No", "Review"]
+                                .map((option) => {
+                                  const selected = option === row[column.key] ? " selected" : "";
+                                  const label = option || "Select decision";
+                                  return `<option value="${escapeHtml(option)}"${selected}>${escapeHtml(label)}</option>`;
+                                })
+                                .join("")}
+                            </select>
+                            ${
+                              editable && columnIndex === manualColumns.length - 1
+                                ? `<span class="investment-meta">${row.updatedAt ? `Updated ${formatRefreshTime(row.updatedAt)}` : ""}</span>`
+                                : ""
+                            }
+                          </td>
+                        `;
+                      }
+
+                      return `
+                        <td class="investment-manual-cell">
+                          ${
+                            editable && !column.displayOnly
+                              ? `<input class="investment-input" data-role="${escapeHtml(column.role)}" type="text" ${state.investmentEditingCode === row.label ? "" : "disabled"} value="${escapeHtml(
+                                  row[column.key] || "",
+                                )}" placeholder="${escapeHtml(column.placeholder || "")}" />`
+                              : `<span class="investment-display">${escapeHtml(formatInvestmentFieldValue(column.key, row[column.key]))}</span>`
+                          }
+                          ${
+                            editable && columnIndex === manualColumns.length - 1
+                              ? `<span class="investment-meta">${row.updatedAt ? `Updated ${formatRefreshTime(row.updatedAt)}` : ""}</span>`
+                              : ""
+                          }
+                        </td>
+                      `;
+                    })
+                    .join("")}
                   ${
                     editable
                       ? `<td class="investment-actions">
@@ -1059,7 +1308,7 @@
           <div class="legend-row">
             <span class="legend-dot" style="background:${item.color}"></span>
             <span class="legend-label ${index === activeIndex ? "is-active" : ""}">${escapeHtml(item.label || "Unknown")}</span>
-            <span class="legend-value ${index === activeIndex ? "is-active" : ""}">${escapeHtml(formatPercent(item.share))}</span>
+            <span class="legend-value ${index === activeIndex ? "is-active" : ""}">${escapeHtml(`${formatPercent(item.share)} · ${formatNumber(item.value)}`)}</span>
           </div>
         `,
       )
@@ -1145,8 +1394,7 @@
         (item, index) => `
           <article class="metric-tile ${index === (items.length ? state.rotation.tick % items.length : 0) ? "is-active" : ""}">
             <div class="metric-tile-label">${escapeHtml(item.label || "Unknown")}</div>
-            <div class="metric-tile-value">${escapeHtml(formatNumber(item.value))}</div>
-            <div class="metric-tile-meta">${escapeHtml(labelCount(item.value, "style", "styles"))} · ${escapeHtml(formatNumber(item.fg))} FG</div>
+            <div class="metric-tile-value">${escapeHtml(`${formatNumber(item.value)} style`)}</div>
           </article>
         `,
       )
@@ -1265,17 +1513,28 @@
       .join("");
   }
 
-  function persistInvestmentNote(code, samImprovement, investmentDecision, updatedAt) {
+  function persistInvestmentNote(
+    code,
+    samImprovement,
+    improvementType,
+    improvementValue,
+    investmentDecision,
+    updatedAt,
+  ) {
     if (!code) {
       return;
     }
     const nextSam = cleanText(samImprovement);
+    const nextImprovementType = cleanText(improvementType);
+    const nextImprovementValue = cleanText(improvementValue);
     const nextDecision = cleanText(investmentDecision);
-    if (!nextSam && !nextDecision) {
+    if (!nextSam && !nextImprovementType && !nextImprovementValue && !nextDecision) {
       delete state.investmentNotes[code];
     } else {
       state.investmentNotes[code] = {
         samImprovement: nextSam,
+        improvementType: nextImprovementType,
+        improvementValue: nextImprovementValue,
         investmentDecision: nextDecision,
         updatedAt,
       };
@@ -1301,16 +1560,23 @@
     return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
   }
 
-  async function saveInvestmentRow(code, samImprovement, investmentDecision) {
+  async function saveInvestmentRow(
+    code,
+    samImprovement,
+    improvementType,
+    investmentDecision,
+  ) {
     if (!code) {
       return;
     }
     const nextSam = cleanText(samImprovement);
+    const nextImprovementType = cleanText(improvementType);
     const nextDecision = cleanText(investmentDecision);
     const updatedAt = Date.now();
     const payload = {
       constructionCode: cleanText(code),
       samImprovement: nextSam,
+      improvementType: nextImprovementType,
       investmentDecision: nextDecision,
       updatedBy: "Gavin",
       updatedAt: formatExcelFriendlyTimestamp(updatedAt),
@@ -1330,10 +1596,40 @@
         throw new Error(text || `DFM Summary update failed with ${response.status}.`);
       }
 
-      persistInvestmentNote(code, nextSam, nextDecision, updatedAt);
+      let improvementValueFromResponse = "";
+      try {
+        const responseText = await response.text();
+        if (responseText) {
+          const parsed = JSON.parse(responseText);
+          improvementValueFromResponse = extractImprovementValueFromSummaryResponse(parsed);
+        }
+      } catch (error) {
+        improvementValueFromResponse = "";
+      }
+
+      persistInvestmentNote(
+        code,
+        nextSam,
+        nextImprovementType,
+        improvementValueFromResponse,
+        nextDecision,
+        updatedAt,
+      );
     } catch (error) {
       if (isNoResponseError(error)) {
-        persistInvestmentNote(code, nextSam, nextDecision, updatedAt);
+        persistInvestmentNote(
+          code,
+          nextSam,
+          nextImprovementType,
+          calculateImprovementValue(
+            nextSam,
+            getInvestmentRowTotalVolume(code),
+            parseImprovementFactor(nextImprovementType),
+            "",
+          ),
+          nextDecision,
+          updatedAt,
+        );
         return;
       }
       console.error(error);
@@ -1928,11 +2224,28 @@
           return;
         }
         const samValue = row.querySelector('[data-role="sam"]')?.value || "";
+        const improvementTypeValue = row.querySelector('[data-role="improvement-type"]')?.value || "";
         const decisionValue = row.querySelector('[data-role="decision"]')?.value || "";
-        saveInvestmentRow(code, samValue, decisionValue).finally(() => {
+        saveInvestmentRow(code, samValue, improvementTypeValue, decisionValue).finally(() => {
           state.investmentEditingCode = null;
           render();
         });
+      });
+    }
+
+    if (elements.investmentControls) {
+      elements.investmentControls.addEventListener("click", (event) => {
+        const button = event.target.closest('button[data-action="toggle-investment-column"]');
+        if (!button) {
+          return;
+        }
+        const column = button.dataset.column;
+        if (!column) {
+          return;
+        }
+        state.investmentVisibility[column] = !(state.investmentVisibility[column] !== false);
+        persistInvestmentVisibility();
+        render();
       });
     }
   }
