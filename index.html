@@ -220,15 +220,15 @@
                 </div>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
-                    <a href="./attendance.html" target="_self"
+                    <a href="./attendance.html" data-site-href="attendance.html" target="_self"
                        class="inline-flex items-center justify-center text-[10px] font-bold rounded-[10px] px-3 py-2 border transition-all whitespace-nowrap" style="color:#0f766e;border-color:rgba(15,118,110,0.28);background:rgba(15,118,110,0.06)">
                         Attendance
                     </a>
-                    <a href="./MASkills.html" target="_self"
+                    <a href="./MASkills.html" data-site-href="MASkills.html" target="_self"
                        class="inline-flex items-center justify-center text-[10px] font-bold rounded-[10px] px-3 py-2 border transition-all whitespace-nowrap" style="color:#6366f1;border-color:rgba(99,102,241,0.3);background:rgba(99,102,241,0.06)">
                         Skills
                     </a>
-                    <a href="./dfm-dashboard/index.html" target="_self"
+                    <a href="./dfm-dashboard/index.html" data-site-href="dfm-dashboard/index.html" target="_self"
                        class="inline-flex items-center justify-center text-[10px] font-bold rounded-[10px] px-3 py-2 border transition-all whitespace-nowrap" style="color:#2563eb;border-color:rgba(37,99,235,0.28);background:rgba(37,99,235,0.06)">
                         DFM
                     </a>
@@ -1289,6 +1289,17 @@
     </div><!-- end max-w-[1600px] wrapper -->
 
     <script>
+    (function () {
+        if (location.protocol === 'file:' || !/github\.io$/i.test(location.hostname)) return;
+        const parts = location.pathname.split('/').filter(Boolean);
+        if (!parts.length) return;
+        const repoBase = '/' + parts[0] + '/';
+        document.querySelectorAll('[data-site-href]').forEach((el) => {
+            const target = String(el.getAttribute('data-site-href') || '').replace(/^\.?\//, '');
+            if (target) el.setAttribute('href', repoBase + target);
+        });
+    })();
+
     const ATT_MEMBERS = ['Phone','James','Ram','Keat','Viki','Mark','Joe','Gavin'];
     const ATT_EDITORS = ['Gavin','Joe'];
     let attData = {};

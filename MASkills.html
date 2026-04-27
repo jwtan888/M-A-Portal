@@ -294,7 +294,7 @@
     </div>
     <div class="header-right">
       <span class="sync-badge" id="syncStatus">● Loading...</span>
-      <a href="index.html" class="back-link">← Back to Portal</a>
+      <a href="./index.html" data-site-href="index.html" class="back-link">← Back to Portal</a>
     </div>
   </header>
 
@@ -391,6 +391,17 @@
 </div>
 
 <script>
+(function () {
+  if (location.protocol === 'file:' || !/github\.io$/i.test(location.hostname)) return;
+  const parts = location.pathname.split('/').filter(Boolean);
+  if (!parts.length) return;
+  const repoBase = '/' + parts[0] + '/';
+  document.querySelectorAll('[data-site-href]').forEach((el) => {
+    const target = String(el.getAttribute('data-site-href') || '').replace(/^\.?\//, '');
+    if (target) el.setAttribute('href', repoBase + target);
+  });
+})();
+
 // ── Config ─────────────────────────────────────────────────────────────────
 const TEMPLATE_FETCH_URL = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/81581050d13a4df09275905e9e05e2df/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=yWugYHV-OyqB2yVi3eSd94XXEA2CgOngdaCVf83xBtA";
 
