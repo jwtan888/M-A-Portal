@@ -1682,23 +1682,32 @@
                 // Use local interpretation: shift by timezone offset
                 date = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
             } else {
-                date = new Date(String(v).replace('Z','').trim());
+                const raw = String(v).replace('Z','').trim();
+                date = new Date(raw);
+                if (isNaN(date.getTime())) {
+                    const m = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2}))?$/);
+                    if (m) {
+                        const a = parseInt(m[1], 10);
+                        const b = parseInt(m[2], 10);
+                        const y = parseInt(m[3], 10);
+                        const hh = parseInt(m[4] || '0', 10);
+                        const mm = parseInt(m[5] || '0', 10);
+                        // Prefer d/m/yyyy when the first token cannot be a month; otherwise assume m/d/yyyy
+                        if (a > 12) date = new Date(y, b - 1, a, hh, mm);
+                        else date = new Date(y, a - 1, b, hh, mm);
+                    }
+                }
             }
             return isNaN(date.getTime()) ? null : date;
         }
 
         function convertExcelDate(v, isTimestamp = true) {
             if (!v || v === "---" || String(v).trim() === "") return "---";
-            let date;
-            if (typeof v === 'number' || (!isNaN(v) && !isNaN(parseFloat(v)))) {
-                date = new Date((parseFloat(v) - 25569) * 86400 * 1000);
-            } else {
-                date = new Date(String(v).replace('Z', '').trim());
-            }
-            if (isNaN(date.getTime())) return String(v);
-            const d = date.getUTCDate(), m = date.getUTCMonth() + 1, y = date.getUTCFullYear();
+            const date = rawToLocalDate(v);
+            if (!date || isNaN(date.getTime())) return String(v);
+            const d = date.getDate(), m = date.getMonth() + 1, y = date.getFullYear();
             if (!isTimestamp) return `${d}/${m}/${y}`;
-            const hh = String(date.getUTCHours()).padStart(2, '0'), mm = String(date.getUTCMinutes()).padStart(2, '0');
+            const hh = String(date.getHours()).padStart(2, '0'), mm = String(date.getMinutes()).padStart(2, '0');
             return `${d}/${m}/${y} ${hh}:${mm}`;
         }
 
@@ -1768,7 +1777,7 @@
                     }
                     return {
                         guid: i['__PowerAppsId__'] || i['Id'] || i['ID'], id: getVal(i, ['Id', 'ID']),
-                        startTime: convertExcelDate(getVal(i, ['Start time','Start Time'])),
+                        startTime: convertExcelDate(getVal(i, ['Start Date m/d/yyyy','Start Date','StartDate','Start time','Start Time'])),
                         section: getVal(i, ['Section']),
                         requestor: getVal(i, ['Requestor']),
                         style: getVal(i, ['Style Number', 'Style']),
@@ -1784,7 +1793,8 @@
                         pic: getMAPic(i),
                         complexity: getVal(i, ['Complexity Level','ComplexityLevel','Complexity']),
                         dfm: getVal(i, ['DFM']),
-                        remark: getVal(i, ['Remark']), status: currentStatus, raw: getVal(i, ['Start time'])
+                        remark: getVal(i, ['Remark']), status: currentStatus,
+                        raw: getVal(i, ['Start Date m/d/yyyy','Start Date','StartDate','Start time','Start Time'])
                     };
                 })
                 // Tag cancelled jobs (date field = "-") but KEEP them for the data table
@@ -1794,7 +1804,7 @@
                     t.cancelled = cancelIndicators.some(v => String(v).trim() === '-');
                     return t;
                 })
-                .sort((a,b)=>b.raw - a.raw);
+                .sort((a, b) => (parseInt(b.id, 10) || 0) - (parseInt(a.id, 10) || 0));
                 allTemplates = mergeTemplatePendingUpdates(allTemplates);
                 generateMonthOptions(); updateDashboard(); 
                 // Don't re-render template table if user is actively typing in it
@@ -2280,6 +2290,9 @@
                 const remark       = getVal(i, ['Remark','Remarks']);
                 const isComplete   = completeDate && completeDate !== '---';
                 const rid          = String(id);
+                const existingConsPic = String(consPic || '').trim();
+                const hasLockedConsOwner = !!existingConsPic && existingConsPic !== '---' && existingConsPic.toUpperCase() !== 'N/A';
+                const canEditExistingConsOwner = isAdmin || (currentUser && currentUser === existingConsPic);
                 // Consumption always editable — no lock needed
                 const consDisabled = '';
                 const consClass    = 'manual-input admin-input';
@@ -2328,9 +2341,8 @@
                         </td>
                     </tr>`;
                 } else {
-                    // Regular users: consumption fields always editable by ANY logged-in user
-                    // Consumption PIC auto-fills from currentUser on save
-                    const canEditCons = !!currentUser;
+                    // Regular users: once a row has a Consumption PIC owner, only that PIC or Gavin can edit it
+                    const canEditCons = !!currentUser && (!hasLockedConsOwner || canEditExistingConsOwner);
                     return `<tr class="border-b hover:bg-slate-50">
                         <td class="p-3 font-mono text-slate-400">${id}</td>
                         <td class="p-3 text-slate-500 date-cell">${received}</td>
@@ -2347,14 +2359,14 @@
                         <td class="p-3 font-medium">${maPic}</td>
                         <td class="p-3">${canEditCons
                             ? `<input id="le-consStart-${rid}" class="manual-input admin-input" value="${consStart==='---'?'':consStart}" placeholder="m/d/yyyy">`
-                            : consStart}</td>
+                            : `<span>${consStart}</span>`}</td>
                         <td class="p-3">${canEditCons
                             ? `<input id="le-consEnd-${rid}" class="manual-input admin-input" value="${consEnd==='---'?'':consEnd}" placeholder="m/d/yyyy">`
-                            : consEnd}</td>
+                            : `<span>${consEnd}</span>`}</td>
                         <td class="p-3">
                             ${canEditCons
-                                ? `<span class="text-blue-700 font-bold text-xs bg-blue-50 px-2 py-1 rounded border border-blue-200">${currentUser}</span>`
-                                : consPic}
+                                ? `<span class="text-blue-700 font-bold text-xs">${currentUser}</span>`
+                                : `<span class="text-slate-600 font-bold text-xs">${consPic}</span>`}
                         </td>
                         <td class="p-3">${canEditCons
                             ? `<input id="le-remark-${rid}" class="manual-input admin-input" value="${remark==='---'?'':remark}" placeholder="Remark">`
@@ -2405,7 +2417,7 @@
                 consStart:     toExcelDateFormat(document.getElementById('l_consStart').value.trim()),
                 consEnd:       toExcelDateFormat(document.getElementById('l_consEnd').value.trim()),
                 maPic:         currentUser,
-                consumptionPic: currentUser,
+                consumptionPic: '',
                 remark:        document.getElementById('l_remark').value.trim()
             };
             if (!payload.styleNumber) return alert('Style Number is required.');
@@ -2634,10 +2646,17 @@
         // PIC saves consumption fields only (consStart, consEnd, consumptionPic auto = currentUser)
         async function saveConsumption(rid, event) {
             const btn = event.target; btn.innerText = 'SAVING...'; btn.disabled = true;
+            const row = allLaserRows.find(r => String(getVal(r, ['Id','ID','id'])) === String(rid));
+            if (!row) { btn.innerText = 'SAVE'; btn.disabled = false; return; }
+            const existingConsPic = String(getVal(row, ['Consumption PIC','ConsumptionPIC','Cons PIC']) || '').trim();
+            const hasLockedConsOwner = !!existingConsPic && existingConsPic !== '---' && existingConsPic.toUpperCase() !== 'N/A';
+            if (hasLockedConsOwner && currentUser !== existingConsPic && currentUser !== 'Gavin') {
+                alert(`This consumption record is locked by ${existingConsPic}. Only ${existingConsPic} or Gavin can edit it.`);
+                btn.innerText = 'SAVE'; btn.disabled = false; return;
+            }
             const consStart = document.getElementById(`le-consStart-${rid}`)?.value.trim() || '';
             const consEnd   = document.getElementById(`le-consEnd-${rid}`)?.value.trim() || '';
             // Send full row payload but only consumption fields are changed; others kept as-is from allLaserRows
-            const row = allLaserRows.find(r => String(getVal(r, ['Id','ID','id'])) === String(rid));
             const consStartNorm = preparePortalDatePayload(consStart, convertExcelDate(getVal(row, ['Consumption Start Date','ConsumptionStartDate','Cons Start'])));
             const consEndNorm = preparePortalDatePayload(consEnd, convertExcelDate(getVal(row, ['Consumption Complete Date','ConsumptionCompleteDate','Cons End'])));
             if (!consStartNorm) { alert('Please fill Consumption Start Date.'); btn.innerText = 'SAVE'; btn.disabled = false; return; }
@@ -2809,31 +2828,16 @@
             return rawToLocalDate(toExcelDateFormat(String(value).trim()));
         }
 
-        function sortTemplateRows(rows, prioritySort = false) {
+        function sortTemplateRows(rows, prioritySort = false, groupByStatus = false) {
             const weights = { 'DELAYED': 0, 'PENDING': 1, 'COMPLETED': 2 };
             return rows.sort((a, b) => {
-                const statusDiff = (weights[a.status] ?? 99) - (weights[b.status] ?? 99);
-                if (statusDiff !== 0) return statusDiff;
+                if (groupByStatus) {
+                    const statusDiff = (weights[a.status] ?? 99) - (weights[b.status] ?? 99);
+                    if (statusDiff !== 0) return statusDiff;
 
-                if (a.status === 'COMPLETED' && b.status === 'COMPLETED') {
-                    const aDone = getTemplateSortDate(a.completeDateDisplay);
-                    const bDone = getTemplateSortDate(b.completeDateDisplay);
-                    if (aDone && bDone && aDone.getTime() !== bDone.getTime()) {
-                        return bDone - aDone;
-                    }
-                } else {
-                    const aReq = getTemplateSortDate(a.requiredDate);
-                    const bReq = getTemplateSortDate(b.requiredDate);
-                    if (aReq && bReq && aReq.getTime() !== bReq.getTime()) {
-                        return aReq - bReq;
-                    }
                 }
 
-                if (prioritySort) {
-                    return (Number(b.raw) || 0) - (Number(a.raw) || 0);
-                }
-
-                return (Number(b.raw) || 0) - (Number(a.raw) || 0);
+                return (parseInt(b.id, 10) || 0) - (parseInt(a.id, 10) || 0);
             });
         }
 
@@ -2844,10 +2848,11 @@
             let filtered = allTemplates.filter(t => {
                 // Month filter by Start Time (matches what populateTabMonthFilters uses)
                 if (selMonth) {
-                    const dp = t.startTime.split(' ')[0].split('/');
+                    const startLabel = String(t.startTime || '---');
+                    const dp = startLabel.split(' ')[0].split('/');
                     if (dp.length !== 3) return false;
                     // startTime is d/m/yyyy (from convertExcelDate) — dp[0]=day, dp[1]=month
-                    const [da, mo, yr] = dp.map(Number);
+                    const [, mo, yr] = dp.map(Number);
                     if (!mo || mo > 12) return false;
                     const label = `${months[mo-1]}-${yr}`;
                     if (label !== selMonth) return false;
@@ -2867,7 +2872,8 @@
                 String(t.requestor).toLowerCase().includes(sv) ||
                 String(t.protoStage).toLowerCase().includes(sv)
             );
-            sortTemplateRows(filtered, prioritySort);
+            const isPicFilter = !!sv && filtered.length > 0 && filtered.every(t => String(t.pic || '').toLowerCase().includes(sv));
+            sortTemplateRows(filtered, prioritySort, isPicFilter);
             document.getElementById('tempTable').innerHTML = filtered.map(t => {
                 const done = t.status === 'COMPLETED', isMine = (currentUser === t.pic);
                 const canEdit    = isAdmin || (isMine && !done); // structural edits (Gavin always, PIC only when pending)
@@ -2915,7 +2921,7 @@
                         ? `<input type="text" id="dfm-${t.id}" class="manual-input admin-input" style="width:70px" value="${t.dfm&&t.dfm!=='---'?t.dfm:''}" placeholder="Code/No">`
                         : `<span class="text-[10px] font-bold ${t.dfm&&t.dfm!=='---'?'text-teal-600':''}">${t.dfm&&t.dfm!=='---'?t.dfm:'—'}</span>`}</td>
                     <td class="p-3 date-cell">${canEditPIC
-                        ? `<input type="text" id="date-${t.id}" class="manual-input${isAdmin?' admin-input':''}" value="${done?t.completeDateDisplay:''}" placeholder="m/d/yyyy">`
+                        ? `<input type="text" id="date-${t.id}" class="manual-input${isAdmin?' admin-input':''}" value="${done?t.completeDateDisplay:''}" placeholder="m/d/yyyy hh:mm">`
                         : `<span class="${done?'text-emerald-600 font-bold':'text-slate-400'} text-[10px]">${done?t.completeDateDisplay:'---'}</span>`}</td>
                     <td class="p-3">${canEditPIC
                         ? `<input type="number" id="qty-${t.id}" class="manual-input qty-input" placeholder="Qty" value="${done?t.qty:''}">`
@@ -2944,7 +2950,7 @@
             const tDateRaw = document.getElementById(`date-${simpleId}`)?.value || "";
             const tRem = document.getElementById(`remark-${simpleId}`)?.value.trim() || "";
             const isAdminUser = currentUser === 'Gavin';
-            const tDateExcel = toExcelDateOnlyFormat(tDateRaw);
+            const tDateExcel = preserveDateValue(tDateRaw, '');
 
             let tPic = "";
             if (picDropdown) {
@@ -2971,7 +2977,7 @@
             const hasEditedDate = !!sanitizeTemplateValue(tDateRaw);
             const hasEditedQty = !!sanitizeTemplateValue(tQty);
             const completionDateValue = String(hasEditedDate ? tDateExcel : '');
-            const completionDateDisplayValue = completionDateValue ? convertExcelDate(completionDateValue, false) : '';
+            const completionDateDisplayValue = completionDateValue ? convertExcelDate(completionDateValue, true) : '';
             const completeQtyValue = String(hasEditedQty ? preserveTextValue(tQty, '') : '');
             const remarkValue = String(preserveTextValue(tRem, record.remark));
             const payload = {
