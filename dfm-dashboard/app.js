@@ -535,6 +535,10 @@
     return formatCurrency(sam * Number(totalVolume || 0) * factor);
   }
 
+  function isFormulaText(value) {
+    return /^\s*=/.test(String(value || ""));
+  }
+
   function extractImprovementValueFromSummaryResponse(payload) {
     if (!payload || typeof payload !== "object") {
       return "";
@@ -1671,6 +1675,7 @@
     const nextImprovementType = cleanText(improvementType);
     const nextImprovementValue = cleanText(improvementValue);
     const nextDecision = cleanText(investmentDecision);
+    const existingImprovementValue = cleanText(state.investmentNotes[code]?.improvementValue);
     if (!nextSam && !nextImprovementType && !nextImprovementValue && !nextDecision) {
       delete state.investmentNotes[code];
     } else {
@@ -1723,12 +1728,7 @@
       code,
       nextSam,
       nextImprovementType,
-      calculateImprovementValue(
-        nextSam,
-        getInvestmentRowTotalVolume(code),
-        parseImprovementFactor(nextImprovementType),
-        "",
-      ),
+      existingImprovementValue,
       nextDecision,
       updatedAt,
     );
@@ -1770,7 +1770,9 @@
         code,
         nextSam,
         nextImprovementType,
-        improvementValueFromResponse,
+        isFormulaText(existingImprovementValue) && !isFormulaText(improvementValueFromResponse)
+          ? existingImprovementValue
+          : improvementValueFromResponse || existingImprovementValue,
         nextDecision,
         updatedAt,
       );
@@ -1780,12 +1782,7 @@
           code,
           nextSam,
           nextImprovementType,
-          calculateImprovementValue(
-            nextSam,
-            getInvestmentRowTotalVolume(code),
-            parseImprovementFactor(nextImprovementType),
-            "",
-          ),
+          existingImprovementValue,
           nextDecision,
           updatedAt,
         );
@@ -2051,6 +2048,9 @@
         const preservePendingFormulaValue = (remoteValue, localValue) => {
           const cleanedRemote = cleanText(remoteValue);
           const cleanedLocal = cleanText(localValue);
+          if (isFormulaText(cleanedLocal) && !isFormulaText(cleanedRemote)) {
+            return cleanedLocal;
+          }
           if (!hasPending || expectedMatched) {
             return cleanedRemote;
           }
