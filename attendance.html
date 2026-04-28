@@ -164,7 +164,7 @@
                 </div>
                 <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
                     <select id="userSelect" class="min-w-0 w-full sm:min-w-[180px] sm:w-auto px-3 py-2 text-sm font-semibold">
-                        <option value="">Select Editor...</option>
+                        <option value="">Select PIC...</option>
                         <option>Gavin</option>
                         <option>Joe</option>
                     </select>
@@ -177,6 +177,23 @@
                 </div>
             </div>
         </section>
+
+        <div id="passwordModal" class="hidden fixed inset-0 z-50">
+            <div class="absolute inset-0 bg-slate-900/40" onclick="closePasswordModal()"></div>
+            <div class="relative flex min-h-full items-center justify-center p-4">
+                <div class="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl">
+                    <div class="mb-4">
+                        <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Attendance Admin</p>
+                        <h3 id="passwordModalTitle" class="mt-1 text-lg font-bold text-slate-900">Enter Password</h3>
+                    </div>
+                    <input id="modalPasswordInput" type="password" placeholder="Password" onkeydown="if(event.key==='Enter'){event.preventDefault();submitPasswordLogin();}" class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-semibold outline-none">
+                    <div class="mt-4 flex items-center justify-end gap-2">
+                        <button onclick="closePasswordModal()" class="rounded-full border border-slate-200 px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-600 transition hover:bg-slate-50">Cancel</button>
+                        <button onclick="submitPasswordLogin()" class="rounded-full bg-slate-900 px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-slate-700">Continue</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <section class="grid grid-cols-1 gap-4 md:grid-cols-3 mb-5">
             <article class="panel px-5 py-5">
@@ -276,6 +293,7 @@
         const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const SESSION_KEY = 'ma_session_user';
         const ATT_STORAGE_KEY = 'ma_attendance';
+        const ATT_EDITOR_PASSWORD = 'Modernization@888';
 
         const attendanceUpdateURL = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/b0bdaebbf2104b669de00b09a78add75/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=5rXFrjS1WABIzdnSZrqhqsxfZqp0G1c7E-GzkSnkqBk";
         const attendanceFetchURL = "https://defaultb4f081a089004baaa6a8ff79312af2.61.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/9f7d2b43fe80443ea830ec0ef1631183/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=0geeH4paQU60TyHlrF0_6_CGqXBmke3BEmk5IiwTxZ0";
@@ -294,6 +312,7 @@
         let allSupportRows = [];
         let allConsumptionRows = [];
         let utilChart = null;
+        let pendingLoginUser = '';
 
         function attKey() {
             return `${attYear}-${String(attMonth + 1).padStart(2, '0')}`;
@@ -427,8 +446,36 @@
         function login() {
             const selected = document.getElementById('userSelect').value;
             if (!selected) return;
+            pendingLoginUser = selected;
+            openPasswordModal(selected);
+        }
+
+        function openPasswordModal(user) {
+            const modal = document.getElementById('passwordModal');
+            const title = document.getElementById('passwordModalTitle');
+            const input = document.getElementById('modalPasswordInput');
+            if (title) title.innerText = `Enter Password for ${user}`;
+            if (input) input.value = '';
+            modal.classList.remove('hidden');
+            setTimeout(() => input && input.focus(), 30);
+        }
+
+        function closePasswordModal() {
+            document.getElementById('passwordModal').classList.add('hidden');
+            pendingLoginUser = '';
+        }
+
+        function submitPasswordLogin() {
+            const password = document.getElementById('modalPasswordInput').value;
+            if (!pendingLoginUser) return;
+            if (ATT_EDITORS.includes(pendingLoginUser) && password !== ATT_EDITOR_PASSWORD) {
+                alert('Invalid password.');
+                return;
+            }
+            const selected = pendingLoginUser;
             currentUser = selected;
             sessionStorage.setItem(SESSION_KEY, currentUser);
+            closePasswordModal();
             updateUserUI();
             renderAttendance();
         }
