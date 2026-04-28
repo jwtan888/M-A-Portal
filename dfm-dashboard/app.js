@@ -2072,10 +2072,7 @@
           if (hasPending && !expectedMatched) {
             return cleanedLocal || cleanedRemote;
           }
-          if (cleanedRemote) {
-            return cleanedRemote;
-          }
-          return cleanedLocal;
+          return cleanedRemote;
         };
         nextNotes[code] = {
           currentTotalFgQty: mergeValue(row.currentTotalFgQty, existing.currentTotalFgQty),
