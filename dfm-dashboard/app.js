@@ -2026,7 +2026,17 @@
   }
 
   function buildInvestmentNotesFromSummaryRows(rows, existingNotes = {}) {
-    const nextNotes = { ...existingNotes };
+    const nextNotes = Object.fromEntries(
+      Object.entries(existingNotes || {}).map(([code, note]) => [
+        code,
+        {
+          ...note,
+          currentTotalFgQty: "",
+          currentRank: "",
+          activeTop20: "",
+        },
+      ]),
+    );
     rows
       .map(normalizeSummaryRow)
       .forEach((row) => {
