@@ -5,6 +5,128 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DFM Data Management</title>
     <link rel="stylesheet" href="./styles.css?v=20260424c" />
+    <style>
+      .dfm-session-panel {
+        margin-bottom: 24px;
+      }
+      .dfm-session-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .dfm-session-actions,
+      .dfm-session-status {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+      }
+      .dfm-session-select {
+        min-width: 180px;
+        padding: 10px 12px;
+        border: 1px solid rgba(141, 152, 179, 0.28);
+        border-radius: 12px;
+        background: #fff;
+        font-size: 0.95rem;
+        font-weight: 700;
+      }
+      .dfm-active-user {
+        border-radius: 999px;
+        background: #f1f5f9;
+        padding: 10px 16px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #475569;
+      }
+      .dfm-password-modal.hidden {
+        display: none;
+      }
+      .dfm-password-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+      }
+      .dfm-password-modal-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.4);
+      }
+      .dfm-password-modal-dialog {
+        position: relative;
+        display: flex;
+        min-height: 100%;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+      }
+      .dfm-password-modal-card {
+        width: 100%;
+        max-width: 24rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 1rem;
+        background: #fff;
+        padding: 20px;
+        box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.35);
+      }
+      .dfm-password-modal-label {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #94a3b8;
+      }
+      .dfm-password-modal-title {
+        margin: 4px 0 0;
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #0f172a;
+      }
+      .dfm-password-modal-input {
+        width: 100%;
+        margin-top: 16px;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 10px 12px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        outline: none;
+      }
+      .dfm-password-modal-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 16px;
+      }
+      .dfm-password-modal-secondary,
+      .dfm-password-modal-primary {
+        border-radius: 999px;
+        padding: 8px 16px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        transition: 0.2s ease;
+      }
+      .dfm-password-modal-secondary {
+        border: 1px solid #e2e8f0;
+        background: #fff;
+        color: #475569;
+      }
+      .dfm-password-modal-secondary:hover {
+        background: #f8fafc;
+      }
+      .dfm-password-modal-primary {
+        border: none;
+        background: #0f172a;
+        color: #fff;
+      }
+      .dfm-password-modal-primary:hover {
+        background: #334155;
+      }
+    </style>
   </head>
   <body data-page="data">
     <div class="app-shell">
@@ -21,6 +143,29 @@
       </header>
 
       <main class="dashboard">
+        <section class="panel dfm-session-panel">
+          <div class="panel-heading panel-heading--stack">
+            <div>
+              <p class="eyebrow">Session</p>
+              <h2>DFM PIC Login</h2>
+            </div>
+          </div>
+          <div class="dfm-session-row">
+            <div class="dfm-session-actions">
+              <select id="dfm-user-select" class="dfm-session-select">
+                <option value="">Select PIC...</option>
+                <option>Gavin</option>
+                <option>Joe</option>
+              </select>
+              <button id="dfm-login-btn" type="button" class="primary-btn" onclick="openDfmLogin()">Login</button>
+              <button id="dfm-logout-btn" type="button" class="ghost-btn" onclick="logoutDfm()" style="display:none;">Logout</button>
+            </div>
+            <div class="dfm-session-status">
+              <div id="dfm-active-user" class="dfm-active-user">Not logged in</div>
+            </div>
+          </div>
+        </section>
+
         <section class="hero hero--simple">
           <div class="hero-copy-block">
             <p class="eyebrow">Editable Source View</p>
@@ -87,6 +232,29 @@
       </main>
     </div>
 
+    <div id="dfmPasswordModal" class="dfm-password-modal hidden">
+      <div class="dfm-password-modal-backdrop" onclick="closeDfmPasswordModal()"></div>
+      <div class="dfm-password-modal-dialog">
+        <div class="dfm-password-modal-card">
+          <div>
+            <p class="dfm-password-modal-label">DFM PIC Login</p>
+            <h3 id="dfmPasswordModalTitle" class="dfm-password-modal-title">Enter Password</h3>
+          </div>
+          <input
+            id="dfmModalPasswordInput"
+            type="password"
+            placeholder="Password"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();submitDfmPasswordLogin();}"
+            class="dfm-password-modal-input"
+          />
+          <div class="dfm-password-modal-actions">
+            <button type="button" onclick="closeDfmPasswordModal()" class="dfm-password-modal-secondary">Cancel</button>
+            <button type="button" onclick="submitDfmPasswordLogin()" class="dfm-password-modal-primary">Continue</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <dialog id="record-dialog" class="dialog">
       <form id="record-form" class="record-form" method="dialog">
         <div class="dialog-heading">
@@ -136,6 +304,63 @@
           if (target) el.setAttribute('href', repoBase + target);
         });
       })();
+
+      const DFM_SESSION_KEY = 'ma_session_user';
+      const DFM_PASSWORD = 'Modernization@888';
+      let dfmPendingUser = '';
+
+      function updateDfmSessionUI() {
+        const currentUser = sessionStorage.getItem(DFM_SESSION_KEY) || '';
+        const active = document.getElementById('dfm-active-user');
+        const loginBtn = document.getElementById('dfm-login-btn');
+        const logoutBtn = document.getElementById('dfm-logout-btn');
+        const select = document.getElementById('dfm-user-select');
+        if (select) select.value = currentUser || '';
+        if (active) active.textContent = currentUser ? `PIC: ${currentUser}` : 'Not logged in';
+        if (loginBtn) loginBtn.style.display = currentUser ? 'none' : '';
+        if (logoutBtn) logoutBtn.style.display = currentUser ? '' : 'none';
+      }
+
+      function openDfmLogin() {
+        const selected = document.getElementById('dfm-user-select')?.value || '';
+        if (!selected) return;
+        dfmPendingUser = selected;
+        const modal = document.getElementById('dfmPasswordModal');
+        const title = document.getElementById('dfmPasswordModalTitle');
+        const input = document.getElementById('dfmModalPasswordInput');
+        if (title) title.innerText = `Enter Password for ${selected}`;
+        if (input) input.value = '';
+        modal.classList.remove('hidden');
+        setTimeout(() => input && input.focus(), 30);
+      }
+
+      function closeDfmPasswordModal() {
+        document.getElementById('dfmPasswordModal').classList.add('hidden');
+        dfmPendingUser = '';
+      }
+
+      function submitDfmPasswordLogin() {
+        const password = document.getElementById('dfmModalPasswordInput').value;
+        if (!dfmPendingUser) return;
+        if (password !== DFM_PASSWORD) {
+          alert('Invalid password.');
+          return;
+        }
+        sessionStorage.setItem(DFM_SESSION_KEY, dfmPendingUser);
+        closeDfmPasswordModal();
+        updateDfmSessionUI();
+        window.dispatchEvent(new Event('ma-session-changed'));
+      }
+
+      function logoutDfm() {
+        sessionStorage.removeItem(DFM_SESSION_KEY);
+        updateDfmSessionUI();
+        window.dispatchEvent(new Event('ma-session-changed'));
+      }
+
+      window.addEventListener('storage', updateDfmSessionUI);
+      window.addEventListener('ma-session-changed', updateDfmSessionUI);
+      updateDfmSessionUI();
     </script>
     <script src="./seed-data.js?v=20260424c"></script>
     <script src="./app.js?v=20260424c"></script>

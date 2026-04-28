@@ -4,6 +4,8 @@
   const SYNC_META_KEY = "dfm-dashboard-sync-meta";
   const INVESTMENT_NOTES_KEY = "dfm-dashboard-investment-notes";
   const INVESTMENT_VISIBILITY_KEY = "dfm-dashboard-investment-visibility";
+  const SHARED_SESSION_KEY = "ma_session_user";
+  const DFM_LOGIN_USERS = ["Gavin", "Joe"];
   const LEGACY_STORAGE_PREFIX = "dfm-dashboard-records-";
   const PENDING_SYNC_TTL_MS = 10 * 60 * 1000;
   const FLOW_ENDPOINTS = {
@@ -87,6 +89,14 @@
       defectOnly: false,
     },
   };
+
+  function getSharedSessionUser() {
+    return (window.sessionStorage.getItem(SHARED_SESSION_KEY) || "").trim();
+  }
+
+  function canEditDfmSummary() {
+    return DFM_LOGIN_USERS.includes(getSharedSessionUser());
+  }
 
   function loadRecords() {
     const raw = window.localStorage.getItem(STORAGE_KEY) || loadLegacyStoredRecords();
@@ -1120,7 +1130,7 @@
 
     if (page === "data") {
       renderInvestmentControls();
-      renderInvestmentBoard(analytics.investmentBoard, analytics.investmentSeasonLabels, true);
+      renderInvestmentBoard(analytics.investmentBoard, analytics.investmentSeasonLabels, canEditDfmSummary());
       renderRecordCards(filteredRecords);
       if (elements.filteredSummary) {
         elements.filteredSummary.textContent = `${labelCount(filteredRecords.length, "construction row", "construction rows")} shown`;
@@ -2512,6 +2522,10 @@
         if (!row) {
           return;
         }
+        if (!canEditDfmSummary()) {
+          alert("Only Gavin or Joe can edit the DFM Summary Board.");
+          return;
+        }
         const code = row.dataset.code || "";
         if (button.dataset.action === "edit-investment") {
           state.investmentEditingCode = code;
@@ -2527,6 +2541,13 @@
         });
       });
     }
+
+    window.addEventListener("storage", (event) => {
+      if (event.key === SHARED_SESSION_KEY && page === "data") {
+        state.investmentEditingCode = null;
+        render();
+      }
+    });
 
     if (elements.investmentControls) {
       elements.investmentControls.addEventListener("click", (event) => {
