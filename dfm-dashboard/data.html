@@ -305,12 +305,14 @@
         });
       })();
 
-      const DFM_SESSION_KEY = 'ma_session_user';
+      const DFM_SESSION_KEY = 'ma_admin_session_user';
       const DFM_PASSWORD = 'Modernization@888';
+      const DFM_LOGIN_USERS = ['Gavin', 'Joe'];
       let dfmPendingUser = '';
 
       function updateDfmSessionUI() {
-        const currentUser = sessionStorage.getItem(DFM_SESSION_KEY) || '';
+        const savedUser = sessionStorage.getItem(DFM_SESSION_KEY) || '';
+        const currentUser = DFM_LOGIN_USERS.includes(savedUser) ? savedUser : '';
         const active = document.getElementById('dfm-active-user');
         const loginBtn = document.getElementById('dfm-login-btn');
         const logoutBtn = document.getElementById('dfm-logout-btn');
@@ -349,17 +351,17 @@
         sessionStorage.setItem(DFM_SESSION_KEY, dfmPendingUser);
         closeDfmPasswordModal();
         updateDfmSessionUI();
-        window.dispatchEvent(new Event('ma-session-changed'));
+        window.dispatchEvent(new Event('ma-admin-session-changed'));
       }
 
       function logoutDfm() {
         sessionStorage.removeItem(DFM_SESSION_KEY);
         updateDfmSessionUI();
-        window.dispatchEvent(new Event('ma-session-changed'));
+        window.dispatchEvent(new Event('ma-admin-session-changed'));
       }
 
       window.addEventListener('storage', updateDfmSessionUI);
-      window.addEventListener('ma-session-changed', updateDfmSessionUI);
+      window.addEventListener('ma-admin-session-changed', updateDfmSessionUI);
       updateDfmSessionUI();
     </script>
     <script src="./seed-data.js?v=20260424c"></script>

@@ -4,7 +4,7 @@
   const SYNC_META_KEY = "dfm-dashboard-sync-meta";
   const INVESTMENT_NOTES_KEY = "dfm-dashboard-investment-notes";
   const INVESTMENT_VISIBILITY_KEY = "dfm-dashboard-investment-visibility";
-  const SHARED_SESSION_KEY = "ma_session_user";
+  const SHARED_SESSION_KEY = "ma_admin_session_user";
   const DFM_LOGIN_USERS = ["Gavin", "Joe"];
   const LEGACY_STORAGE_PREFIX = "dfm-dashboard-records-";
   const PENDING_SYNC_TTL_MS = 10 * 60 * 1000;
